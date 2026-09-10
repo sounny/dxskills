@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DxSkills Scaffolding</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 360px;
+      padding: 16px;
+      background-color: #09090b;
+      color: #f4f4f5;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #27272a;
+      margin-bottom: 12px;
+    }
+    .brand { font-weight: 800; font-size: 14px; color: #ffffff; }
+    .badge {
+      font-size: 10px;
+      background: #27272a;
+      color: #a1a1aa;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    textarea {
+      width: 100%;
+      height: 90px;
+      background: #18181b;
+      color: #f4f4f5;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 8px;
+      font-family: inherit;
+      font-size: 11px;
+      resize: none;
+      margin-bottom: 10px;
+    }
+    textarea:focus { outline: none; border-color: #71717a; }
+    .btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    button {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary { background: #ffffff; color: #09090b; }
+    .btn-primary:hover { background: #e4e4e7; }
+    .btn-secondary { background: #27272a; color: #f4f4f5; border: 1px solid #3f3f46; }
+    .btn-secondary:hover { background: #3f3f46; }
+    .output-box {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 80px;
+      max-height: 160px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 11px;
+      color: #d4d4d8;
+      margin-bottom: 10px;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 8px;
+      border-top: 1px solid #27272a;
+      font-size: 10px;
+      color: #71717a;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">DxSkills</div>
+    <span class="badge">D-Mode Scaffolder</span>
+  </div>
+
+  <textarea id="popup-input" placeholder="Paste disordered thoughts, rough meeting notes, or article excerpt..."></textarea>
+
+  <div class="btn-row">
+    <button id="compile-btn" class="btn-primary">Compile D-Mode</button>
+    <button id="audio-btn" class="btn-secondary">Audio Digest</button>
+  </div>
+
+  <div id="popup-output" class="output-box">Compiled deliverable will appear here.</div>
+
+  <div class="btn-row">
+    <button id="copy-btn" class="btn-secondary">Copy Markdown</button>
+    <button id="obsidian-btn" class="btn-secondary">Open in Obsidian</button>
+  </div>
+
+  <div class="footer">
+    <span>Zero Em Dash Standard</span>
+    <span>v0.1.0</span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

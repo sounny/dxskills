@@ -176,12 +176,16 @@
 - [x] **Task 35.2:** 1-click export of visual node networks to Obsidian Canvas (.canvas) JSON format.
 
 ### Phase 36: Cognitive Scaffolding Browser Extension (Chrome & Firefox)
-- [ ] **Task 36.1:** Manifest V3 extension scaffolding for in-browser speed-of-thought capture and BLUF restructuring.
-- [ ] **Task 36.2:** One-click right-click context menu to transform dense articles into D-Mode executive summaries.
+- [x] **Task 36.1:** Manifest V3 extension scaffolding for in-browser speed-of-thought capture and BLUF restructuring.
+- [x] **Task 36.2:** One-click right-click context menu to transform dense articles into D-Mode executive summaries.
 
 ### Phase 37: Multi-Modal Audio & Spatial Architecture Parity Suite
 - [ ] **Task 37.1:** Cross-modal synchronization test verifying parity between Audio Digest, Canvas nodes, and Markdown specifications.
 - [ ] **Task 37.2:** End-to-end telemetry validation for multi-format export pipelines.
+
+### Phase 38: Autonomous Desktop Menubar Companion & Local Hotkey Daemon
+- [ ] **Task 38.1:** Standalone lightweight Python systray daemon (Windows/macOS/Linux) with global hotkey support.
+- [ ] **Task 38.2:** Instant floating popup window for global clipboard compilation without browser dependencies.
 
 ---
 
@@ -221,6 +225,7 @@
 | **Cycle 29** | 2026-09-10 23:52 | Direct Obsidian Vault & Notion Exporters, CLI commands & Test Suite | `scripts/vault_exporter.py`, `tests/test_vault_exporter.py`, `index.html` | `255d919` |
 | **Cycle 30** | 2026-09-11 00:02 | Multi-Lingual Audio Digest Synthesizer, Web Speech API Modal & CLI Suite | `scripts/audio_digest.py`, `tests/test_audio_digest.py`, `index.html` | `7c3b873` |
 | **Cycle 31** | 2026-09-11 00:12 | Spatial Mindmap Live Visualizer, Obsidian Canvas (.canvas) Exporter & SVG Suite | `scripts/canvas_exporter.py`, `tests/test_canvas_exporter.py`, `index.html` | `2e4312a` |
+| **Cycle 32** | 2026-09-11 00:22 | Manifest V3 Browser Extension (Chrome/Firefox), Context Menus & Floating HUD | `extensions/browser-dxskills/*`, `tests/test_browser_extension.py`, `index.html` | `f7ffbee` |
 
 
 
