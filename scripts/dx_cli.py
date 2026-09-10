@@ -404,6 +404,13 @@ def main():
     p_beacon.add_argument("--output-wav", "-w", default="", help="Output binaural 16-bit WAV filepath")
     p_beacon.add_argument("--svg", "-s", default="", help="Output soundstage vector SVG filepath")
     p_beacon.add_argument("--json", "-j", action="store_true", help="Output raw JSON beacon telemetry")
+
+    # dialectic
+    p_dialectic = subparsers.add_parser("dialectic", help="Autonomous cognitive multi-perspective thesis dialectic matrix and consensus engine")
+    p_dialectic.add_argument("--viewpoints", "-v", nargs="+", required=True, help="Two or more viewpoints in format 'Name:Text or File' (e.g. Eng:eng.md Product:prod.md)")
+    p_dialectic.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_dialectic.add_argument("--svg", "-s", default="", help="Output vector SVG dialectic matrix filepath")
+    p_dialectic.add_argument("--json", "-j", action="store_true", help="Output raw JSON consensus telemetry")
     
     args = parser.parse_args()
     
@@ -1129,6 +1136,67 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] 3D soundstage map SVG exported to: {args.svg}")
+    elif args.command == "dialectic":
+        import scripts.dialectic_matrix as dm
+        engine = dm.DialecticMatrixEngine()
+        for vp in args.viewpoints:
+            if ":" in vp:
+                parts = vp.split(":", 1)
+                vp_name, vp_val = parts[0], parts[1]
+            else:
+                vp_name = f"Perspective {len(engine.perspectives) + 1}"
+                vp_val = vp
+
+            if os.path.isfile(vp_val):
+                with open(vp_val, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+            else:
+                content = vp_val
+            engine.add_perspective(vp_name, content)
+
+        result = engine.analyze_dialectic()
+
+        if args.json:
+            out = {
+                "consensus_readiness_index": result.consensus_readiness_index,
+                "shared_vocabulary_pct": result.shared_vocabulary_pct,
+                "total_false_divergences": result.total_false_divergences,
+                "perspectives": [{"name": p.name, "core_values": p.core_values} for p in result.perspectives],
+                "tensions": [
+                    {
+                        "topic": t.topic,
+                        "perspective_a": t.perspective_a,
+                        "perspective_b": t.perspective_b,
+                        "claim_a": t.claim_a,
+                        "claim_b": t.claim_b,
+                        "is_false_divergence": t.is_false_divergence,
+                        "shared_concept": t.shared_concept
+                    } for t in result.tensions
+                ],
+                "syntheses": [
+                    {
+                        "title": s.title,
+                        "description": s.description,
+                        "consensus_score": s.consensus_score
+                    } for s in result.syntheses
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            summary = dm.DialecticMatrixEngine.export_summary(result)
+            print("\n" + summary)
+
+        if args.canvas:
+            canvas_data = engine.export_canvas(result)
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                json.dump(canvas_data, f, indent=2)
+            print(f"\n[DxSkills] Dialectic matrix .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = engine.export_svg(result)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Dialectic matrix SVG diagram exported to: {args.svg}")
     else:
         parser.print_help()
 
