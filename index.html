@@ -7,6 +7,14 @@
   <meta name="description" content="Open-standard AI skills and system prompts that make agentic AI naturally dyslexia-friendly. Built for rapid ideation, spatial reasoning, and zero typing friction.">
   <link rel="canonical" href="https://dxskills.sounny.com">
 
+  <!-- PWA & Mobile Web App Manifest -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/icon-192.svg">
+  <meta name="theme-color" content="#09090b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DxSkills">
+
   <!-- OpenGraph Metadata -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dxskills.sounny.com">
@@ -144,6 +152,12 @@
           <i data-lucide="search" class="w-3.5 h-3.5"></i>
           <span class="hidden xl:inline text-mono-400 dark:text-mono-500">Search</span>
           <kbd class="hidden sm:inline-block px-1 py-0.2 text-[9px] bg-mono-200 dark:bg-mono-800 text-mono-600 dark:text-mono-400 rounded">⌘K</kbd>
+        </button>
+
+        <!-- PWA Install Button -->
+        <button id="pwa-install-btn" onclick="installPWA()" class="hidden px-2.5 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 text-xs font-mono font-bold hover:opacity-90 transition flex items-center gap-1.5" title="Install App">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Install</span>
         </button>
 
         <!-- Theme Toggle Button -->
@@ -2177,6 +2191,40 @@ Directives Operationnelles Majeures:
         }
       });
     }
+
+    // ==========================================
+    // PROGRESSIVE WEB APP (PWA) & OFFLINE CACHE
+    // ==========================================
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch((err) => {
+          console.log('SW registration note:', err);
+        });
+      });
+    }
+
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const btn = document.getElementById('pwa-install-btn');
+      if (btn) btn.classList.remove('hidden');
+    });
+
+    function installPWA() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then((result) => {
+          if (result.outcome === 'accepted') {
+            const btn = document.getElementById('pwa-install-btn');
+            if (btn) btn.classList.add('hidden');
+          }
+          deferredInstallPrompt = null;
+        });
+      } else {
+        alert('To install DxSkills: open your browser settings or share menu and choose "Add to Home Screen" or "Install App".');
+      }
+    }
   </script>
 
   <!-- DOWNLOAD BUNDLE MODAL -->
@@ -2232,6 +2280,17 @@ Directives Operationnelles Majeures:
             </div>
             <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
           </a>
+
+          <button onclick="installPWA()" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group text-left">
+            <div class="flex items-center gap-3">
+              <i data-lucide="smartphone" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
+              <div class="text-left">
+                <span class="font-bold text-mono-950 dark:text-white block">Install Standalone PWA App</span>
+                <span class="text-[10px] text-mono-500">Offline desktop and mobile app with zero latency</span>
+              </div>
+            </div>
+            <i data-lucide="plus" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
+          </button>
         </div>
 
         <div class="pt-3 border-t border-mono-100 dark:border-mono-800 space-y-2">
