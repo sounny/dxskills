@@ -950,6 +950,7 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
             <button id="tab-diag-flywheel" onclick="switchDiagram('flywheel')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Cognitive Flywheel</button>
             <button id="tab-diag-curriculum" onclick="switchDiagram('curriculum')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Curriculum Map</button>
             <button id="tab-diag-decision" onclick="switchDiagram('decision')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Decision Tree</button>
+            <button id="tab-diag-mindmap" onclick="switchDiagram('mindmap')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Concept Mindmap</button>
           </div>
           <button id="copy-diag-btn" onclick="copyActiveDiagram()" class="px-3 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 hover:bg-mono-200 dark:hover:bg-mono-700 text-mono-900 dark:text-mono-100 transition flex items-center gap-1.5 font-bold shadow-sm">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i>
@@ -1009,6 +1010,29 @@ graph TD
     Q2 -- "No" --> R1["Monolith (Fastest Delivery)"]
     Q3 -- "Yes" --> R2["Event-Driven Microservices"]
     Q3 -- "No" --> R3["Serverless Edge Functions"]
+            </pre>
+          </div>
+
+          <div id="diag-view-mindmap" class="w-full justify-center hidden">
+            <pre class="mermaid">
+mindmap
+  root((Spatial AI))
+    Input Layer
+      Zero Typing Tax
+      Speed of Thought
+      Voice Ingestion
+    Visual Structure
+      BLUF Front Loading
+      Execution Tables
+      Spatial Blueprints
+    Silent Polish
+      Quiet Typo Repair
+      Zero Em Dashes
+      No Lectures
+    Voice Integrity
+      Direct and Warm
+      Zero Corporate Fluff
+      High Signal
             </pre>
           </div>
 
@@ -1472,12 +1496,30 @@ Core Operational Rules:
     Q2 -- "Yes" --> Q3{"Complex Joins?"}
     Q2 -- "No" --> R1["Monolith (Fastest Delivery)"]
     Q3 -- "Yes" --> R2["Event-Driven Microservices"]
-    Q3 -- "No" --> R3["Serverless Edge Functions"]`
+    Q3 -- "No" --> R3["Serverless Edge Functions"]`,
+      mindmap: `mindmap
+  root((Spatial AI))
+    Input Layer
+      Zero Typing Tax
+      Speed of Thought
+      Voice Ingestion
+    Visual Structure
+      BLUF Front Loading
+      Execution Tables
+      Spatial Blueprints
+    Silent Polish
+      Quiet Typo Repair
+      Zero Em Dashes
+      No Lectures
+    Voice Integrity
+      Direct and Warm
+      Zero Corporate Fluff
+      High Signal`
     };
 
     function switchDiagram(diag) {
       currentDiagram = diag;
-      const diagrams = ['arch', 'flywheel', 'curriculum', 'decision'];
+      const diagrams = ['arch', 'flywheel', 'curriculum', 'decision', 'mindmap'];
       diagrams.forEach(d => {
         const view = document.getElementById('diag-view-' + d);
         const tab = document.getElementById('tab-diag-' + d);
