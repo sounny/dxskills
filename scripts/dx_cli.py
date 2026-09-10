@@ -276,6 +276,12 @@ def main():
     p_debate.add_argument("--format", "-f", choices=["markdown", "html", "canvas", "json"], default="markdown", help="Output format (default: markdown)")
     p_debate.add_argument("--output", "-o", default="", help="Output filepath")
     
+    # sync
+    p_sync = subparsers.add_parser("sync", help="Multi-vault spatial bi-directional synchronizer and topology resolver")
+    p_sync.add_argument("vaults", nargs="*", help="Paths to vault root directories")
+    p_sync.add_argument("--canvas", "-c", default="", help="Output filepath for consolidated federation .canvas")
+    p_sync.add_argument("--json", "-j", action="store_true", help="Output raw JSON topology telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -474,6 +480,16 @@ def main():
             print(formatted)
         else:
             print(f"\n[DxSkills] Debate output written to: {args.output} (Score: {debate_data['thesis_readiness_score']}/100)")
+    elif args.command == "sync":
+        import scripts.vault_sync as vs
+        vault_paths = args.vaults if args.vaults else [os.getcwd()]
+        topology, report = vs.run_vault_sync(vault_paths, output_canvas=args.canvas or None)
+        if args.json:
+            print(json.dumps(topology, indent=2))
+        else:
+            print(report)
+        if args.canvas:
+            print(f"\n[DxSkills] Consolidated federation canvas written to: {args.canvas}")
     else:
         parser.print_help()
 
