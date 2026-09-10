@@ -452,6 +452,14 @@ def main():
     p_triangulate.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_triangulate.add_argument("--svg", "-s", default="", help="Output multimodal synthesis radar SVG filepath")
     p_triangulate.add_argument("--json", "-j", action="store_true", help="Output raw JSON triangulation telemetry")
+
+    # tradeoff
+    p_tradeoff = subparsers.add_parser("tradeoff", help="Autonomous cognitive multi-perspective architectural trade-off radar and Pareto frontier")
+    p_tradeoff.add_argument("input", nargs="?", help="Target JSON file or structured candidates data")
+    p_tradeoff.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_tradeoff.add_argument("--svg", "-s", default="", help="Output architectural trade-off radar SVG filepath")
+    p_tradeoff.add_argument("--json", "-j", action="store_true", help="Output raw JSON Pareto analysis telemetry")
+    p_tradeoff.add_argument("--demo", action="store_true", help="Run with demonstration architecture candidates")
     
     args = parser.parse_args()
     
@@ -1544,6 +1552,53 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Synthesis radar SVG exported to: {args.svg}")
+    elif args.command == "tradeoff":
+        import scripts.tradeoff_radar as tor
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            radar = tor.ArchitecturalTradeoffRadar.from_dict(data)
+        else:
+            radar = tor.create_sample_tradeoff_radar()
+
+        analysis = radar.evaluate_pareto()
+
+        if args.json:
+            out = {
+                "candidates_count": len(analysis.candidates),
+                "pareto_frontier_count": len(analysis.pareto_frontier_ids),
+                "dominated_count": len(analysis.dominated_ids),
+                "pareto_frontier_ids": analysis.pareto_frontier_ids,
+                "dominated_ids": analysis.dominated_ids,
+                "tradeoff_tensions": analysis.tradeoff_tensions,
+                "archetype_recommendations": analysis.archetype_recommendations,
+                "candidates": [
+                    {
+                        "id": c.candidate_id,
+                        "name": c.name,
+                        "scores": c.scores,
+                        "is_pareto_optimal": c.is_pareto_optimal,
+                        "dominates": c.dominates,
+                        "dominated_by": c.dominated_by
+                    }
+                    for c in analysis.candidates
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            print("\n" + radar.export_summary_markdown())
+
+        if args.canvas:
+            canvas_data = radar.export_pareto_canvas()
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                json.dump(canvas_data, f, indent=2)
+            print(f"\n[DxSkills] Pareto Frontier .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = radar.export_radar_svg()
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Architectural Trade-Off Radar SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
