@@ -445,6 +445,13 @@ def main():
     p_rhythm.add_argument("--output-wav", "-a", default="", help="Output acoustic metronome WAV filepath")
     p_rhythm.add_argument("--svg", "-s", default="", help="Output visual metronome SVG filepath")
     p_rhythm.add_argument("--json", "-j", action="store_true", help="Output raw JSON rhythm telemetry")
+
+    # triangulate
+    p_triangulate = subparsers.add_parser("triangulate", help="Autonomous cognitive multimodal knowledge synthesis and triangulation radar")
+    p_triangulate.add_argument("input", nargs="?", help="Target markdown claims file or structured text")
+    p_triangulate.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_triangulate.add_argument("--svg", "-s", default="", help="Output multimodal synthesis radar SVG filepath")
+    p_triangulate.add_argument("--json", "-j", action="store_true", help="Output raw JSON triangulation telemetry")
     
     args = parser.parse_args()
     
@@ -1478,6 +1485,65 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Visual metronome SVG exported to: {args.svg}")
+    elif args.command == "triangulate":
+        import scripts.knowledge_triangulator as kt
+        triangulator = kt.MultimodalKnowledgeTriangulator()
+        if args.input:
+            content = read_input(args.input)
+            triangulator.parse_markdown_evidence(content)
+        else:
+            sample_doc = """### Claim: Zero-Copy Network Buffers Minimize Latency
+- Text: Architecture Specification Section 3.2 | Ref: docs/spec.md | Excerpt: Zero-copy DMA buffers eliminate kernel copies.
+- Code: fn send_packet_zerocopy() | Ref: src/net.rs:L140
+- Audio: Core Engineering Sync 14:10 | Ref: audio/sync_04.mp3
+- Visual: Packet Pipeline Topology | Ref: diagrams/packet_flow.svg
+
+### Claim: Visual Canvases Accelerate Conceptual Reasoning
+- Text: Cognitive Research Monograph | Ref: papers/eide2023.pdf | Excerpt: Spatial mapping offloads working memory.
+- Code: Canvas Renderer AST | Ref: scripts/canvas_exporter.py:L50
+- Visual: 2D Spatial Constellation | Ref: assets/canvas_preview.svg
+
+### Claim: Linear Monolith Outlines Suffer Cognitive Drift
+- Text: Working Memory Study | Ref: notes/baddeley.md | Excerpt: Single-track linear processing creates phonological stalls."""
+            triangulator.parse_markdown_evidence(sample_doc)
+
+        audit = triangulator.audit_synthesis()
+
+        if args.json:
+            out = {
+                "total_claims": audit.total_claims,
+                "corroborated_claims_count": audit.corroborated_claims_count,
+                "uncorroborated_claims_count": audit.uncorroborated_claims_count,
+                "overall_synthesis_confidence": audit.overall_synthesis_confidence,
+                "modality_distribution": audit.modality_distribution,
+                "claims": [
+                    {
+                        "claim_id": c.claim_id,
+                        "statement": c.statement,
+                        "confidence_score": c.confidence_score,
+                        "is_corroborated": c.is_corroborated,
+                        "modalities": list(c.modalities_present),
+                        "recommendation": c.recommendation,
+                        "sources_count": len(c.sources)
+                    } for c in triangulator.claims.values()
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            summary = kt.MultimodalKnowledgeTriangulator.export_summary(audit, list(triangulator.claims.values()))
+            print("\n" + summary)
+
+        if args.canvas:
+            canvas_data = triangulator.export_canvas()
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                json.dump(canvas_data, f, indent=2)
+            print(f"\n[DxSkills] Triangulation .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = triangulator.export_svg()
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Synthesis radar SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
