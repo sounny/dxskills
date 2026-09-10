@@ -1,0 +1,40 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "dxskills",
+  "title": "DxSkills D-Mode",
+  "description": "Cognitive scaffolding and speed-of-thought compiler for non-linear, spatial, and dyslexic thinkers.",
+  "icon": "command-icon.png",
+  "author": "sounny",
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "d-mode-compile",
+      "title": "Compile Clipboard with D-Mode",
+      "subtitle": "Speed-of-Thought Cognitive Scaffolding",
+      "description": "Transforms raw brain dumps into BLUF, markdown tables, and refined action drafts.",
+      "mode": "view"
+    },
+    {
+      "name": "d-mode-diagram",
+      "title": "Insert Visual Architecture Diagram",
+      "subtitle": "Mermaid.js Spatial Blueprints",
+      "description": "Quickly browse and copy modular Mermaid architecture templates.",
+      "mode": "view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.70.0",
+    "@raycast/utils": "^1.14.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.8",
+    "@types/node": "^20.8.10",
+    "@types/react": "^18.2.0",
+    "eslint": "^8.51.0",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop"
+  }
+}

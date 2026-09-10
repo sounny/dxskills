@@ -79,13 +79,17 @@
 - [x] **Task 11.2:** Create `skills/dx-dump/templates/journal_cover_letter.md` (high-signal editor pitch highlighting novelty and methodology).
 - [x] **Task 11.3:** Create `skills/dx-read/templates/literature_matrix_extract.md` (multi-paper synthesis matrix comparing variables, methods, and results).
 
-### Phase 12: Native Raycast Extension & Terminal Utilities (Next Cycles)
-- [ ] **Task 12.1:** Scaffold `extensions/raycast-dxskills/` manifest and quick-capture action command.
-- [ ] **Task 12.2:** Build local clipboard listener script for automated speed-of-thought capture.
+### Phase 12: Native Raycast Extension & Terminal Utilities
+- [x] **Task 12.1:** Scaffold `extensions/raycast-dxskills/` manifest and quick-capture action command (`d-mode-compile`, `d-mode-diagram`).
+- [x] **Task 12.2:** Build local clipboard listener daemon script (`scripts/clipboard_listener.py`) for automated speed-of-thought capture.
 
-### Phase 13: Local LLM Integration (Ollama & LM Studio)
+### Phase 13: Local LLM Integration (Ollama & LM Studio - Next Cycles)
 - [ ] **Task 13.1:** Create `scripts/ollama_bridge.py` for direct offline local inference.
 - [ ] **Task 13.2:** Add Modelfile configurations for local Mistral / Llama 3 D-Mode agents.
+
+### Phase 14: Visual Concept Matrix & Mindmap Exporters
+- [ ] **Task 14.1:** Build ASCII table and flowchart generator for terminal-only / ssh environments.
+- [ ] **Task 14.2:** Add interactive mindmap viewer shell in `index.html`.
 
 ---
 
@@ -101,5 +105,7 @@
 | **Cycle 5** | 2026-09-10 19:50 | Venture Pitch Scaffolding, Voice Calibration & Modal Bundle | `skills/dx-dump/*`, `prompts/*`, `index.html` | `6a96c7c` |
 | **Cycle 6** | 2026-09-10 20:02 | Benchmark Evaluation Suite, 10-Corpus Test & Live Browser Playground | `tests/benchmark_corpus.json`, `scripts/eval_benchmarks.py`, `index.html` | `2baa1de` |
 | **Cycle 7** | 2026-09-10 20:05 | Academic Scaffolding Suite: Peer Review, Cover Letter & Literature Matrix | `skills/dx-dump/*`, `skills/dx-read/*` | `a698472` |
+| **Cycle 8** | 2026-09-10 20:12 | Native Raycast Extension & Background Clipboard Daemon | `extensions/raycast-dxskills/*`, `scripts/clipboard_listener.py` | `7f4459b` |
+
 
 
