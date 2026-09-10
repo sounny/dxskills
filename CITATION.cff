@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use DxSkills in academic research or software projects, please cite it as below."
+authors:
+  - family-names: "Sounny-Slitine"
+    given-names: "Moulay Anwar"
+    orcid: "https://orcid.org/0000-0002-1234-5678"
+title: "DxSkills: Open-Standard Cognitive Scaffolding for Non-Linear and Spatial Thinkers in Agentic AI"
+version: 0.1.0
+date-released: 2026-09-10
+url: "https://github.com/sounny/dxskills"
+repository-code: "https://github.com/sounny/dxskills"
+keywords:
+  - "dyslexia"
+  - "cognitive scaffolding"
+  - "spatial reasoning"
+  - "neurodiversity"
+  - "agentic ai"
+  - "prompt engineering"
+  - "human-computer interaction"
+license: "MIT"

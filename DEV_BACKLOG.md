@@ -3,21 +3,21 @@
 > **Objective:** Systematically develop the DxSkills open-standard cognitive scaffolding suite, modular skills, tooling, platform configs, and web documentation over 24 hours (every 10 minutes).  
 > **Repository:** `https://github.com/sounny/dxskills`  
 > **Local Path:** `G:\My Drive\dxskills\`  
-> **Hard Rule:** Strictly NO em dashes (`—`) anywhere in code, markdown, comments, or prompts. Use hyphens, commas, colons, or parentheses.
+> **Hard Rule:** Strictly NO em dashes (Unicode U+2014) anywhere in code, markdown, comments, or prompts. Use hyphens, commas, colons, or parentheses.
 
 ---
 
 ## 🧭 Milestone Roadmap
 
 ### Phase 1: Platform Presets & Configs (Ready-to-Use Files)
-- [ ] **Task 1.1:** Create `prompts/cursorrules.md` (optimized `.cursorrules` file for Cursor IDE).
-- [ ] **Task 1.2:** Create `prompts/claude-project.md` (optimized system instructions for Claude Projects).
-- [ ] **Task 1.3:** Create `prompts/chatgpt-custom-instructions.md` (two-part setup for ChatGPT Custom Instructions).
-- [ ] **Task 1.4:** Create `prompts/gemini-gem.md` (custom instructions for Google Gemini Gems).
+- [x] **Task 1.1:** Create `prompts/cursorrules.md` (optimized `.cursorrules` file for Cursor IDE).
+- [x] **Task 1.2:** Create `prompts/claude-project.md` (optimized system instructions for Claude Projects).
+- [x] **Task 1.3:** Create `prompts/chatgpt-custom-instructions.md` (two-part setup for ChatGPT Custom Instructions).
+- [x] **Task 1.4:** Create `prompts/gemini-gem.md` (custom instructions for Google Gemini Gems).
 
 ### Phase 2: Scientific & Cognitive Foundation
-- [ ] **Task 2.1:** Create `RESEARCH.md` (empirical backing from Eide & Eide, cognitive load theory, spatial reasoning vs. linear phonological loops, and working memory scaffolding).
-- [ ] **Task 2.2:** Create `CITATION.cff` (formal citation metadata for academic and institutional references).
+- [x] **Task 2.1:** Create `RESEARCH.md` (empirical backing from Eide & Eide, cognitive load theory, spatial reasoning vs. linear phonological loops, and working memory scaffolding).
+- [x] **Task 2.2:** Create `CITATION.cff` (formal citation metadata for academic and institutional references).
 
 ### Phase 3: Modular Skill Expansion & Templates
 - [ ] **Task 3.1:** Build `skills/dx-map/templates/` containing 5 plug-and-play Mermaid templates:
@@ -47,7 +47,7 @@
 - [ ] **Task 5.3:** Add downloadable `.zip` / JSON skill manifest links to the web navigation.
 
 ### Phase 6: Sync & Quality Assurance
-- [ ] **Task 6.1:** Verify zero em dashes across all files.
+- [x] **Task 6.1:** Verify zero em dashes across all files.
 - [ ] **Task 6.2:** Sync updates from `g:\My Drive\dxskills\` to `g:\My Drive\skills\dxskills` and `C:\Users\sounn\.gemini\config\skills\dxskills`.
 - [ ] **Task 6.3:** Commit and push all additions to GitHub repository (`origin/main`).
 
@@ -58,3 +58,4 @@
 | Cycle | Timestamp | Task Completed | Output Files | Git Commit |
 | :--- | :--- | :--- | :--- | :--- |
 | **Initial** | 2026-09-10 19:04 | Core Suite v0.1.0 Released | `SKILL.md`, `skills/*`, `scripts/*` | `8ffce8e` |
+| **Cycle 1** | 2026-09-10 19:10 | Platform Presets & Research Basis | `prompts/*`, `RESEARCH.md`, `CITATION.cff` | `pending` |

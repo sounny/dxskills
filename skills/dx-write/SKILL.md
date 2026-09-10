@@ -26,7 +26,7 @@ The `dx-write` skill solves a persistent tension for dyslexic professionals: the
 
 3. **Strict Ban on AI Fluff & Jargon:**
    - Eliminate corporate filler: "I hope this email finds you well", "In today's fast-paced world", "delve", "testament", "beacon", "orchestrate", "leverage" (when used as a cliché).
-   - **Zero Em Dashes:** Never generate em dashes (`—`) anywhere. Use commas, hyphens, colons, or parentheses instead.
+   - **Zero Em Dashes:** Never generate em dashes (Unicode U+2014) anywhere. Use commas, hyphens, colons, or parentheses instead.
 
 ---
 
