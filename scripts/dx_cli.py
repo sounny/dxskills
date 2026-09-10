@@ -254,6 +254,14 @@ def main():
     p_comp.add_argument("--daemon", "-d", action="store_true", help="Run background hotkey and clipboard listener daemon")
     p_comp.add_argument("--compile", "-c", nargs="?", default="", help="Compile input directly")
     
+    # dictation / voice-stream
+    p_stream = subparsers.add_parser("dictation", help="Stream voice dictation in real time into Obsidian Canvas (.canvas) and SVG")
+    p_stream.add_argument("input", nargs="?", default="", help="Input text, audio transcript, or file path")
+    p_stream.add_argument("--title", "-t", default="Voice Dictation Session", help="Session title")
+    p_stream.add_argument("--canvas", "-c", default="", help="Output .canvas file path")
+    p_stream.add_argument("--svg", "-s", default="", help="Output vector .svg file path")
+    p_stream.add_argument("--export", "-e", default="", help="Base filepath prefix to export .canvas, .svg, and .md")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -366,6 +374,32 @@ def main():
             companion.run_daemon_loop()
         else:
             companion.launch_floating_hud()
+    elif args.command == "dictation":
+        import scripts.voice_streamer as vs
+        text = read_input(args.input) if args.input else "The primary objective is to launch the voice streaming canvas engine. First, decouple audio chunk queues. Second, verify live Obsidian Canvas JSON updates. Third, ship the release to production."
+        streamer = vs.LiveCanvasStreamer(session_title=args.title)
+        chunks = [s.strip() + "." for s in text.split(".") if s.strip()]
+        print(f"\n=== [DxSkills: Live Voice Dictation & Canvas Streamer] ===")
+        for idx, chunk in enumerate(chunks, 1):
+            status = streamer.process_chunk(chunk)
+            print(f" [Stream Chunk {idx}] Nodes: {status['nodes_count']} | Edges: {status['edges_count']} | BLUF: {status['bluf'][:40]}...")
+        
+        if args.export:
+            files = streamer.export_session(output_prefix=args.export)
+            print(f"\n[DxSkills] Session exported:")
+            for k, p in files.items():
+                print(f"  - {k}: {p}")
+        elif args.canvas:
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                f.write(streamer.get_canvas_json())
+            print(f"\n[DxSkills] Saved Obsidian Canvas: {args.canvas}")
+        elif args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(streamer.get_canvas_svg())
+            print(f"\n[DxSkills] Saved Vector SVG Canvas: {args.svg}")
+        else:
+            print("\n--- Finalized D-Mode Markdown Summary ---")
+            print(streamer.get_markdown_summary())
     else:
         parser.print_help()
 
