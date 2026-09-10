@@ -113,6 +113,7 @@
         <a href="#skills" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Skills Suite</a>
         <a href="#simulator" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Live Demo</a>
         <a href="#d-mode" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Universal Prompt</a>
+        <a href="#install" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Install & Sync</a>
         <a href="#architecture" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Architecture</a>
       </div>
 
@@ -619,6 +620,93 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
     </div>
   </section>
 
+  <!-- INSTALLATION & GITHUB AUTO-SYNC -->
+  <section id="install" class="py-16 md:py-24 border-b border-mono-200 dark:border-mono-800/80 bg-mono-100/40 dark:bg-mono-900/40 transition-colors duration-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 block mb-1">Agent Integration</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-mono-950 dark:text-mono-100">
+          Install for AI & Auto-Sync
+        </h2>
+        <p class="text-sm text-mono-600 dark:text-mono-400 mt-2">
+          Equip your agentic AI (Antigravity, Claude Code, Cursor) with the full DxSkills suite, with continuous version tracking from GitHub.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Method 1: Prompt Your Agent Directly -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 flex flex-col justify-between shadow-sm">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-bold text-mono-950 dark:text-white px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 border border-mono-200 dark:border-mono-700">Method 1: Zero Terminal</span>
+              <span class="text-[10px] font-mono text-mono-500">Agent Prompt</span>
+            </div>
+            <h3 class="text-lg font-bold text-mono-950 dark:text-mono-100">Tell Your AI to Install It</h3>
+            <p class="text-xs text-mono-600 dark:text-mono-400 leading-relaxed">
+              In Antigravity, Claude, or any coding agent with tool access, paste this single instruction. The agent will read the GitHub repository and configure the skills automatically:
+            </p>
+            <div class="p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-xs text-mono-800 dark:text-mono-300">
+              <code id="agent-prompt-cmd">"Install the DxSkills cognitive scaffolding suite from https://github.com/sounny/dxskills into my active agent skills directory and activate D-Mode."</code>
+            </div>
+          </div>
+          <div class="pt-4 mt-4 border-t border-mono-100 dark:border-mono-800 flex justify-end">
+            <button onclick="copyAgentPrompt()" class="px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 text-xs font-mono font-bold hover:bg-black dark:hover:bg-white transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span id="agent-prompt-copy-text">Copy Agent Instruction</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Method 2: Git Clone & Auto-Sync -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 flex flex-col justify-between shadow-sm">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-bold text-mono-950 dark:text-white px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 border border-mono-200 dark:border-mono-700">Method 2: Git Clone</span>
+              <span class="text-[10px] font-mono text-mono-500">CLI / Terminal</span>
+            </div>
+            <h3 class="text-lg font-bold text-mono-950 dark:text-mono-100">Clone into Skills Directory</h3>
+            <p class="text-xs text-mono-600 dark:text-mono-400 leading-relaxed">
+              Clone the open-source repository directly into your local workspace or Antigravity skills path:
+            </p>
+            <div class="p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-xs text-mono-800 dark:text-mono-300">
+              <code id="git-clone-cmd">git clone https://github.com/sounny/dxskills.git skills/dxskills</code>
+            </div>
+          </div>
+          <div class="pt-4 mt-4 border-t border-mono-100 dark:border-mono-800 flex justify-end">
+            <button onclick="copyGitClone()" class="px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 text-xs font-mono font-bold hover:bg-black dark:hover:bg-white transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span id="git-clone-copy-text">Copy Terminal Command</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Auto-Sync Feature Callout -->
+      <div class="mt-8 p-6 rounded-2xl bg-white dark:bg-mono-900/80 border border-mono-300 dark:border-mono-700 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-xs font-mono uppercase tracking-wider text-mono-600 dark:text-mono-300 font-bold">Continuous GitHub Auto-Sync:</span>
+          </div>
+          <h4 class="text-base font-bold text-mono-950 dark:text-white">Your AI always stays up to date with new skills.</h4>
+          <p class="text-xs text-mono-600 dark:text-mono-400 max-w-2xl leading-relaxed">
+            DxSkills tracks remote updates on GitHub via <code class="text-mono-900 dark:text-mono-200 font-bold">VERSION</code>. Whenever you run <code class="text-mono-900 dark:text-mono-200 font-bold">/dx update</code> or execute <code class="text-mono-900 dark:text-mono-200">python scripts/check_updates.py</code>, the agent checks for newly published modular skills and pulls the latest improvements automatically.
+          </p>
+        </div>
+        <div class="flex-shrink-0">
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 border border-mono-200 dark:border-mono-700 text-xs font-mono text-mono-900 dark:text-mono-200 font-bold">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>/dx update</span>
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
   <!-- ARCHITECTURE & PIPELINE DIAGRAM -->
   <section id="architecture" class="py-16 md:py-24 border-b border-mono-200 dark:border-mono-800/80 bg-mono-50 dark:bg-mono-950 transition-colors duration-200">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -765,6 +853,30 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
         copyText.innerText = 'Copied to Clipboard!';
         setTimeout(() => {
           copyText.innerText = 'Copy Prompt Card';
+        }, 2000);
+      });
+    }
+
+    // Copy Agent Prompt
+    function copyAgentPrompt() {
+      const text = document.getElementById('agent-prompt-cmd').innerText.replace(/^"|"$/g, '');
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('agent-prompt-copy-text');
+        btn.innerText = 'Copied!';
+        setTimeout(() => {
+          btn.innerText = 'Copy Agent Instruction';
+        }, 2000);
+      });
+    }
+
+    // Copy Git Clone
+    function copyGitClone() {
+      const text = document.getElementById('git-clone-cmd').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('git-clone-copy-text');
+        btn.innerText = 'Copied!';
+        setTimeout(() => {
+          btn.innerText = 'Copy Terminal Command';
         }, 2000);
       });
     }

@@ -57,36 +57,41 @@ DxSkills is organized as a modular toolkit. You can use the entire suite togethe
                     └─────────────────────────┘
 ```
 
-### 1. `dx-dump` (Brain Dump to Architecture)
+### 1. [`dx-dump`](./skills/dx-dump/SKILL.md) (Brain Dump to Architecture)
 * **The Problem:** Thoughts arrive as a rapid flood of fragments, voice dictations, and half-formed bullet points.
 * **The Fix:** Ingests raw, unstructured notes and automatically decomposes them into:
   1. A clear hierarchical outline.
   2. A visual system diagram or flowchart.
   3. Actionable next steps and deliverables.
 * **Result:** You never need to write in linear order; drop your ideas as they fire.
+* **Command:** `/dx dump`
 
-### 2. `dx-read` (Anti-Wall-of-Text)
+### 2. [`dx-read`](./skills/dx-read/SKILL.md) (Anti-Wall-of-Text)
 * **The Problem:** Dense, unbroken paragraphs in academic memos, long emails, and bureaucratic reports trigger cognitive fatigue and visual tracking loss.
 * **The Fix:** Re-renders incoming text with high-signal visual anchors:
   * 2-sentence **Bottom Line Up Front (BLUF)**.
   * Side-by-side comparison tables and decision matrices.
   * Generous white space with bold thematic signposts.
 * **Result:** You grasp the entire situation in five seconds without getting trapped in filler text.
+* **Command:** `/dx read`
 
-### 3. `dx-write` (Voice Preservation & Silent Polish)
+### 3. [`dx-write`](./skills/dx-write/SKILL.md) (Voice Preservation & Silent Polish)
 * **The Problem:** Typical AI grammar checkers sterilize your text into bland, robotic corporate filler, while standard spellcheckers constantly interrupt your flow.
 * **The Fix:** Silently repairs phonetics, homophones, typos, and syntax in the background, while strictly preserving your authentic conversational warmth, directness, and cadence.
 * **Result:** No generic corporate cheerleading, no robotic platitudes, and zero em dashes.
+* **Command:** `/dx write`
 
-### 4. `dx-interview` (Socratic Drafter)
+### 4. [`dx-interview`](./skills/dx-interview/SKILL.md) (Socratic Drafter)
 * **The Problem:** Starting a complex document, grant proposal, or article from a blank page is a massive friction point.
 * **The Fix:** The AI takes the role of an interviewer. It asks 3 to 4 targeted, multiple-choice or forcing questions. You answer rapidly using speech-to-text or short phrases, and the AI drafts the linear prose from your spoken logic.
 * **Result:** Blank-page anxiety is completely eliminated.
+* **Command:** `/dx ask`
 
-### 5. `dx-map` (Spatial Concept Mapper)
+### 5. [`dx-map`](./skills/dx-map/SKILL.md) (Spatial Concept Mapper)
 * **The Problem:** Dyslexic thinkers think in spatial relationships, but conventional writing tools are strictly linear.
 * **The Fix:** Automatically generates Mermaid.js flowcharts, state charts, quadrant diagrams, and concept maps for any idea, process, or curriculum.
 * **Result:** Instant visual alignment between how you imagine a system and how it is documented.
+* **Command:** `/dx map`
 
 ---
 
@@ -109,23 +114,31 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
 5. Systems-First: Explain workflows and processes with structured tables or Mermaid.js diagrams.
 ```
 
-### Option B: Agentic AI (Antigravity / Claude Code)
-Clone this repository directly into your agent skills directory:
+### Option B: Agentic AI Installation & Continuous Auto-Sync
+
+Equip Antigravity, Claude Code, Cursor, or any coding agent with the master skill suite:
 
 ```bash
-git clone https://github.com/sounny/dxskills.git
+# Clone directly into your active skills directory
+git clone https://github.com/sounny/dxskills.git skills/dxskills
 ```
 
-Reference the modular `skills/` folders in your workflows or trigger them directly with `/dx`.
+#### Automatic Version Syncing
+DxSkills includes a built-in auto-update protocol tracked via `VERSION`. To pull newly published skills and improvements:
+- In chat: run `/dx update`
+- In terminal: run `python skills/dxskills/scripts/check_updates.py`
+
+Or prompt your AI assistant directly:
+> *"Install the DxSkills cognitive scaffolding suite from https://github.com/sounny/dxskills into my active agent skills directory and activate D-Mode."*
 
 ---
 
 ## 📂 Repository Roadmap
 
 - [x] **v0.1:** Core architecture, README manifesto, and universal system prompt.
-- [ ] **v0.2:** Standalone `SKILL.md` definitions for `dx-dump`, `dx-read`, and `dx-write`.
-- [ ] **v0.3:** Interactive Socratic interview templates for academic and professional writing.
-- [ ] **v0.4:** Mermaid.js visual template library for spatial concept mapping.
+- [x] **v0.2:** Standalone `SKILL.md` definitions for `dx-dump`, `dx-read`, and `dx-write`.
+- [x] **v0.3:** Interactive Socratic interview templates for academic and professional writing (`dx-interview`).
+- [x] **v0.4:** Mermaid.js visual template library for spatial concept mapping (`dx-map`).
 - [ ] **v0.5:** Ready-to-use Cursor rules (`.cursorrules`) and Claude Project presets.
 
 ---
