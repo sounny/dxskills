@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DxSkills: Cognitive Scaffolding for Non-Linear & Spatial Thinkers</title>
   <meta name="description" content="Open-standard AI skills and system prompts that make agentic AI naturally dyslexia-friendly. Built for rapid ideation, spatial reasoning, and zero typing friction.">
+  <link rel="canonical" href="https://dxskills.sounny.com">
+
+  <!-- OpenGraph Metadata -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://dxskills.sounny.com">
+  <meta property="og:site_name" content="DxSkills">
+  <meta property="og:title" content="DxSkills: Cognitive Scaffolding for Non-Linear & Spatial Thinkers">
+  <meta property="og:description" content="Open-standard AI skills and system prompts that make agentic AI naturally dyslexia-friendly. Built for rapid ideation, spatial reasoning, and zero typing friction.">
+  
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://dxskills.sounny.com">
+  <meta name="twitter:title" content="DxSkills: Cognitive Scaffolding for Non-Linear & Spatial Thinkers">
+  <meta name="twitter:description" content="Open-standard AI skills and system prompts that make agentic AI naturally dyslexia-friendly.">
   
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -118,7 +132,7 @@
         <a href="#d-mode" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Presets</a>
         <a href="#install" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Install & Sync</a>
         <a href="https://github.com/sounny/dxskills/blob/main/RESEARCH.md" target="_blank" class="hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center gap-1">Science <i data-lucide="external-link" class="w-3 h-3"></i></a>
-        <a href="https://github.com/sounny/dxskills/raw/main/dist/dxskills-v0.1.0.zip" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center gap-1 font-bold">Bundle (.zip) <i data-lucide="download" class="w-3 h-3"></i></a>
+        <button onclick="openBundleModal()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center gap-1 font-bold">Bundle (.zip) <i data-lucide="download" class="w-3 h-3"></i></button>
       </div>
 
       <!-- Actions (Theme Toggle + Copy Button) -->
@@ -1214,7 +1228,90 @@ Core Operational Rules:
         }, 2000);
       });
     }
+
+    // Modal Control Functions
+    function openBundleModal() {
+      const modal = document.getElementById('bundle-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeBundleModal() {
+      const modal = document.getElementById('bundle-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function copyModalGit() {
+      navigator.clipboard.writeText('git clone https://github.com/sounny/dxskills.git skills/dxskills').then(() => {
+        const btn = document.getElementById('copy-modal-git-text');
+        if (btn) btn.innerText = 'Copied!';
+        setTimeout(() => {
+          if (btn) btn.innerText = 'Copy';
+        }, 2000);
+      });
+    }
+
+    // Close on Escape or click outside
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeBundleModal();
+    });
   </script>
+
+  <!-- DOWNLOAD BUNDLE MODAL -->
+  <div id="bundle-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+    <div class="bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-mono-100 dark:border-mono-800">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 flex items-center justify-center font-mono font-bold text-xs">
+            Dx
+          </div>
+          <h3 class="text-base font-bold text-mono-950 dark:text-white">Download DxSkills Bundle</h3>
+        </div>
+        <button onclick="closeBundleModal()" class="p-1 rounded-lg hover:bg-mono-100 dark:hover:bg-mono-800 text-mono-500 hover:text-mono-950 dark:hover:text-white transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs font-mono">
+        <p class="text-mono-600 dark:text-mono-400 leading-relaxed">
+          The DxSkills bundle contains the complete suite of modular skills, prompts for all major LLMs, visual Mermaid templates, and CLI scripts for offline use.
+        </p>
+
+        <div class="space-y-3">
+          <a href="https://github.com/sounny/dxskills/raw/main/dist/dxskills-v0.1.0.zip" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <i data-lucide="archive" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
+              <div class="text-left">
+                <span class="font-bold text-mono-950 dark:text-white block">Full Release Archive (v0.1.0)</span>
+                <span class="text-[10px] text-mono-500">Standalone .zip including all 6 skills and 13 templates</span>
+              </div>
+            </div>
+            <i data-lucide="download" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
+          </a>
+
+          <a href="https://github.com/sounny/dxskills/raw/main/dist/manifest.json" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
+            <div class="flex items-center gap-3">
+              <i data-lucide="file-json" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
+              <div class="text-left">
+                <span class="font-bold text-mono-950 dark:text-white block">Skills Manifest (JSON)</span>
+                <span class="text-[10px] text-mono-500">Machine-readable index for automated agent installers</span>
+              </div>
+            </div>
+            <i data-lucide="download" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
+          </a>
+        </div>
+
+        <div class="pt-3 border-t border-mono-100 dark:border-mono-800 space-y-2">
+          <span class="text-[10px] uppercase text-mono-500 font-bold block">Or Clone Directly via Git:</span>
+          <div class="p-2.5 rounded-lg bg-mono-100 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-[11px] text-mono-800 dark:text-mono-200 flex items-center justify-between">
+            <code>git clone https://github.com/sounny/dxskills.git skills/dxskills</code>
+            <button onclick="copyModalGit()" class="text-mono-500 hover:text-mono-950 dark:hover:text-white font-bold text-xs" id="copy-modal-git-text">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
