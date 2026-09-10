@@ -395,6 +395,15 @@ def main():
     p_glare.add_argument("--output-canvas", "-c", default="", help="Output optimized Obsidian .canvas filepath")
     p_glare.add_argument("--svg", "-s", default="", help="Output visual attention heatmap SVG filepath")
     p_glare.add_argument("--json", "-j", action="store_true", help="Output raw JSON optical audit telemetry")
+
+    # audio-beacon
+    p_beacon = subparsers.add_parser("audio-beacon", help="Autonomous cognitive spatial audio landmark and acoustic beacon anchoring")
+    p_beacon.add_argument("canvas", help="Target Obsidian .canvas filepath to extract beacons and synthesize soundscape")
+    p_beacon.add_argument("--duration", "-d", type=float, default=4.0, help="Audio duration in seconds (default: 4.0)")
+    p_beacon.add_argument("--max-beacons", "-m", type=int, default=5, help="Maximum number of acoustic beacons (default: 5)")
+    p_beacon.add_argument("--output-wav", "-w", default="", help="Output binaural 16-bit WAV filepath")
+    p_beacon.add_argument("--svg", "-s", default="", help="Output soundstage vector SVG filepath")
+    p_beacon.add_argument("--json", "-j", action="store_true", help="Output raw JSON beacon telemetry")
     
     args = parser.parse_args()
     
@@ -1077,6 +1086,49 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Visual attention heatmap SVG exported to: {args.svg}")
+    elif args.command == "audio-beacon":
+        import scripts.acoustic_beacon as ab
+        canvas_path = os.path.abspath(args.canvas)
+        if not os.path.isfile(canvas_path):
+            print(f"[DxSkills] Error: Canvas file not found: {canvas_path}")
+            sys.exit(1)
+        with open(canvas_path, "r", encoding="utf-8") as f:
+            canvas_data = json.load(f)
+
+        engine = ab.AcousticBeaconEngine()
+        beacons = engine.extract_beacons_from_canvas(canvas_data, max_beacons=args.max_beacons)
+
+        if args.json:
+            out = {
+                "canvas": canvas_path,
+                "total_beacons": len(beacons),
+                "beacons": [
+                    {
+                        "beacon_id": b.beacon_id,
+                        "node_id": b.node_id,
+                        "title": b.title,
+                        "x": b.x,
+                        "y": b.y,
+                        "frequency_hz": b.frequency,
+                        "tone_label": b.tone_label,
+                        "pulse_hz": b.pulse_hz
+                    } for b in beacons
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            summary = ab.AcousticBeaconEngine.export_summary(beacons)
+            print("\n" + summary)
+
+        if args.output_wav:
+            engine.write_wav_file(args.output_wav, duration_sec=args.duration)
+            print(f"\n[DxSkills] Synthesized binaural soundscape WAV: {args.output_wav}")
+
+        if args.svg:
+            svg_code = engine.export_soundstage_svg()
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] 3D soundstage map SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
