@@ -210,6 +210,22 @@ def main():
     # reset
     p_reset = subparsers.add_parser("reset", help="Launch 60-second terminal box breathing spatial reset")
     p_reset.add_argument("--cycles", "-c", type=int, default=3, help="Number of 16-second breathing cycles (default: 3)")
+
+    # obsidian
+    p_obsidian = subparsers.add_parser("obsidian", help="Export notes to native Obsidian vault Markdown with frontmatter")
+    p_obsidian.add_argument("input", nargs="?", default="", help="Raw text or path to file")
+    p_obsidian.add_argument("--vault", "-v", default="", help="Target Obsidian vault name")
+    p_obsidian.add_argument("--title", "-t", default="", help="Note title")
+    p_obsidian.add_argument("--tags", default="dxskills,cognitive-scaffolding", help="Comma-separated tags")
+    p_obsidian.add_argument("--output", "-o", default="", help="Output filepath")
+
+    # notion
+    p_notion = subparsers.add_parser("notion", help="Export notes to structured Notion page block payload")
+    p_notion.add_argument("input", nargs="?", default="", help="Raw text or path to file")
+    p_notion.add_argument("--database", "-d", default="", help="Target Notion database ID")
+    p_notion.add_argument("--title", "-t", default="", help="Page title")
+    p_notion.add_argument("--webhook", "-w", default="", help="Webhook URL to dispatch payload")
+    p_notion.add_argument("--output", "-o", default="", help="Output JSON filepath")
     
     args = parser.parse_args()
     
@@ -231,6 +247,33 @@ def main():
     elif args.command == "reset":
         import scripts.cognitive_fatigue as cf
         cf.run_terminal_box_breathing(cycles=args.cycles)
+    elif args.command == "obsidian":
+        import scripts.vault_exporter as ve
+        text = read_input(args.input)
+        res = ve.format_obsidian_markdown(text, title=args.title, tags=args.tags, vault=args.vault)
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as f:
+                f.write(res["markdown"])
+            print(f"[DxSkills] Exported Obsidian note: {args.output}")
+        else:
+            print("\n=== [DxSkills: Obsidian Markdown Note] ===")
+            print(res["markdown"])
+        print(f"\n[Obsidian URI]: {res['obsidian_uri']}")
+    elif args.command == "notion":
+        import json
+        import scripts.vault_exporter as ve
+        text = read_input(args.input)
+        payload = ve.format_notion_payload(text, title=args.title, database_id=args.database)
+        if args.webhook:
+            status, resp = ve.dispatch_notion_webhook(payload, args.webhook)
+            print(f"[DxSkills] Dispatched to Notion webhook (Status {status}): {resp[:120]}")
+        elif args.output:
+            with open(args.output, "w", encoding="utf-8") as f:
+                json.dump(payload, f, indent=2)
+            print(f"[DxSkills] Exported Notion JSON payload: {args.output}")
+        else:
+            print("\n=== [DxSkills: Notion Page Payload] ===")
+            print(json.dumps(payload, indent=2))
     else:
         parser.print_help()
 

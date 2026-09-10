@@ -163,13 +163,17 @@
 - [x] **Task 32.1:** Implement session cognitive load meter tracking input duration and phonological fatigue threshold.
 - [x] **Task 32.2:** Add non-intrusive spatial reset prompt and stretch reminder in `index.html` and CLI.
 
-### Phase 33: Direct Obsidian Vault & Notion Database Exporter (Next Cycles)
-- [ ] **Task 33.1:** Add 1-click Markdown export formatted specifically for Obsidian properties and frontmatter tags.
-- [ ] **Task 33.2:** Build webhook dispatcher to auto-append structured specifications into Notion databases.
+### Phase 33: Direct Obsidian Vault & Notion Database Exporter
+- [x] **Task 33.1:** Add 1-click Markdown export formatted specifically for Obsidian properties and frontmatter tags.
+- [x] **Task 33.2:** Build webhook dispatcher to auto-append structured specifications into Notion databases.
 
 ### Phase 34: Multi-Lingual D-Mode Voice Synthesis & Audio Digest Exporter
 - [ ] **Task 34.1:** Build local TTS synthesizer exporting audio digests of compiled deliverables.
 - [ ] **Task 34.2:** Integrate dual audio playback player in web interface.
+
+### Phase 35: Spatial Mindmap Live Visualizer & Canvas Flow Editor
+- [ ] **Task 35.1:** Interactive SVG drag-and-drop node graph visualizer for multi-level hierarchical breakdown.
+- [ ] **Task 35.2:** 1-click export of visual node networks to Obsidian Canvas (.canvas) JSON format.
 
 ---
 
@@ -206,6 +210,7 @@
 | **Cycle 26** | 2026-09-10 23:22 | SounnyForms Multi-Modal Form Ingestion Adapter & Test Suite | `scripts/forms_adapter.py`, `tests/test_forms_adapter.py` | `d506268` |
 | **Cycle 27** | 2026-09-10 23:32 | Multi-Turn Socratic Clarification Tree UI Widget & Test Suite | `index.html`, `tests/test_interview_widget.py`, `dist/*` | `6e527ab` |
 | **Cycle 28** | 2026-09-10 23:42 | Cognitive Fatigue Telemetry, Spatial Reset Modal & Test Suite | `index.html`, `scripts/cognitive_fatigue.py`, `tests/test_cognitive_fatigue.py` | `db1a225` |
+| **Cycle 29** | 2026-09-10 23:52 | Direct Obsidian Vault & Notion Exporters, CLI commands & Test Suite | `scripts/vault_exporter.py`, `tests/test_vault_exporter.py`, `index.html` | pending |
 
 
 

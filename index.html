@@ -500,10 +500,20 @@
                 <span class="w-2 h-2 rounded-full bg-mono-950 dark:bg-mono-100"></span>
                 <strong class="text-mono-950 dark:text-white">Compiled Visual Architecture</strong>
               </span>
-              <button onclick="copyPlaygroundMarkdown()" class="text-xs font-mono text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white flex items-center gap-1">
-                <i data-lucide="copy" class="w-3 h-3"></i>
-                <span id="copy-play-text">Copy Markdown</span>
-              </button>
+              <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="copyPlaygroundMarkdown()" class="text-xs font-mono text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white flex items-center gap-1">
+                  <i data-lucide="copy" class="w-3 h-3"></i>
+                  <span id="copy-play-text">Copy</span>
+                </button>
+                <button onclick="exportPlaygroundToObsidian()" class="text-xs font-mono text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white flex items-center gap-1" title="Export to Obsidian with Frontmatter">
+                  <i data-lucide="folder-git-2" class="w-3 h-3"></i>
+                  <span>Obsidian</span>
+                </button>
+                <button onclick="exportPlaygroundToNotion()" class="text-xs font-mono text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white flex items-center gap-1" title="Export as Notion Block Payload">
+                  <i data-lucide="layers" class="w-3 h-3"></i>
+                  <span>Notion</span>
+                </button>
+              </div>
             </div>
 
             <div id="playground-output-container" class="p-4 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-sans text-xs sm:text-sm text-mono-800 dark:text-mono-200 space-y-3">
@@ -696,7 +706,7 @@
                 <i data-lucide="file-check-2" class="w-4 h-4 text-mono-950 dark:text-white"></i>
                 <span class="text-xs font-mono font-bold text-mono-950 dark:text-white">Compiled Specification Block</span>
               </div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 flex-wrap justify-end">
                 <button onclick="copyInterviewSpec()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Copy Markdown to Clipboard">
                   <i data-lucide="copy" class="w-3 h-3"></i>
                   <span id="copy-spec-btn-text">Copy Spec</span>
@@ -704,6 +714,14 @@
                 <button onclick="sendInterviewToPlayground()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Send to Live Playground">
                   <i data-lucide="send" class="w-3 h-3"></i>
                   <span>Playground</span>
+                </button>
+                <button onclick="exportInterviewToObsidian()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Export to Obsidian with Frontmatter">
+                  <i data-lucide="folder-git-2" class="w-3 h-3"></i>
+                  <span>Obsidian</span>
+                </button>
+                <button onclick="exportInterviewToNotion()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Export as Notion Block Payload">
+                  <i data-lucide="layers" class="w-3 h-3"></i>
+                  <span>Notion</span>
                 </button>
                 <button onclick="downloadInterviewSpec()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Download Markdown File">
                   <i data-lucide="download" class="w-3 h-3"></i>
@@ -2349,6 +2367,142 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       URL.revokeObjectURL(link.href);
     }
 
+    function formatObsidianFrontmatter(title, content, docType = "specification", tags = ["dxskills", "cognitive-scaffolding"]) {
+      const today = new Date().toISOString().split('T')[0];
+      const tagLines = tags.map(t => `  - ${t}`).join('\n');
+      const frontmatter = `---\ntitle: "${title}"\ntype: ${docType}\ncreated: ${today}\nstatus: active\ntags:\n${tagLines}\n---\n\n`;
+      return frontmatter + content.trim() + '\n';
+    }
+
+    function exportToObsidianVault(title, content, docType) {
+      const fullMarkdown = formatObsidianFrontmatter(title, content, docType);
+      const encodedTitle = encodeURIComponent(title);
+      const encodedContent = encodeURIComponent(fullMarkdown);
+      const obsidianUri = `obsidian://new?name=${encodedTitle}&content=${encodedContent}`;
+
+      window.location.href = obsidianUri;
+
+      setTimeout(() => {
+        const filename = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-obsidian.md`;
+        const blob = new Blob([fullMarkdown], { type: 'text/markdown;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }, 500);
+    }
+
+    function exportInterviewToObsidian() {
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      const spec = compileInterviewSpec();
+      const title = `${track.name} Specification`;
+      exportToObsidianVault(title, spec, currentInterviewTrack);
+    }
+
+    function exportPlaygroundToObsidian() {
+      const input = document.getElementById('playground-input');
+      const bluf = document.getElementById('play-bluf-text');
+      const content = input && input.value ? input.value : (bluf ? bluf.innerText : "DxSkills Playground Note");
+      exportToObsidianVault("Playground Synthesis", content, "brain-dump");
+    }
+
+    function formatNotionPagePayload(title, content) {
+      const today = new Date().toISOString().split('T')[0];
+      const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+      const children = [];
+
+      let bluf = "";
+      for (const line of lines) {
+        if (line.startsWith('> ') && (line.includes('BLUF') || line.includes('Decision Requested') || line.includes('Core Value'))) {
+          bluf = line.replace('> ', '').trim();
+          break;
+        }
+      }
+
+      if (bluf) {
+        children.push({
+          object: "block",
+          type: "callout",
+          callout: {
+            rich_text: [{ type: "text", text: { content: bluf } }],
+            icon: { emoji: "⚡" }
+          }
+        });
+      }
+
+      for (const line of lines) {
+        if (line.startsWith('# ') || line.startsWith('> ')) continue;
+        if (line.startsWith('## ')) {
+          children.push({
+            object: "block",
+            type: "heading_2",
+            heading_2: { rich_text: [{ type: "text", text: { content: line.replace('## ', '').trim() } }] }
+          });
+        } else if (line.startsWith('- ') || line.startsWith('* ')) {
+          children.push({
+            object: "block",
+            type: "bulleted_list_item",
+            bulleted_list_item: { rich_text: [{ type: "text", text: { content: line.replace(/^[-*]\s+/, '').trim() } }] }
+          });
+        } else if (/^\d+\.\s/.test(line)) {
+          children.push({
+            object: "block",
+            type: "numbered_list_item",
+            numbered_list_item: { rich_text: [{ type: "text", text: { content: line.replace(/^\d+\.\s+/, '').trim() } }] }
+          });
+        } else {
+          children.push({
+            object: "block",
+            type: "paragraph",
+            paragraph: { rich_text: [{ type: "text", text: { content: line } }] }
+          });
+        }
+      }
+
+      return {
+        parent: { database_id: "DATABASE_ID_PLACEHOLDER" },
+        properties: {
+          Name: { title: [{ text: { content: title } }] },
+          Type: { select: { name: "Cognitive Specification" } },
+          Status: { select: { name: "Active" } },
+          Created: { date: { start: today } }
+        },
+        children: children
+      };
+    }
+
+    function exportToNotionPayload(title, content) {
+      const payload = formatNotionPagePayload(title, content);
+      const jsonStr = JSON.stringify(payload, null, 2);
+
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        alert("Notion page payload copied to clipboard and downloaded as JSON! Ready for Notion API, Make.com, or n8n.");
+      });
+
+      const filename = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-notion.json`;
+      const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function exportInterviewToNotion() {
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      const spec = compileInterviewSpec();
+      const title = `${track.name} Specification`;
+      exportToNotionPayload(title, spec);
+    }
+
+    function exportPlaygroundToNotion() {
+      const input = document.getElementById('playground-input');
+      const bluf = document.getElementById('play-bluf-text');
+      const content = input && input.value ? input.value : (bluf ? bluf.innerText : "DxSkills Playground Note");
+      exportToNotionPayload("Playground Synthesis", content);
+    }
+
     function switchDemo(mode) {
       const viewDx = document.getElementById('view-dx');
       const viewStd = document.getElementById('view-standard');
@@ -2820,7 +2974,9 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       { title: "Cognitive Load Benchmarks", category: "CLI", desc: "10-domain empirical telemetry evaluation matrix", link: "#benchmarks", action: "Jump" },
       { title: "Local Ollama Bridge", category: "CLI", desc: "Run D-Mode locally with Llama 3 or Mistral via Ollama", link: "#install", action: "Jump" },
       { title: "OpenDyslexic Font Mode", category: "Accessibility", desc: "Toggle weighted bottoms and expanded letter spacing for crowding relief", link: "#", action: "Toggle" },
-      { title: "Spatial Cognitive Reset", category: "Interactive", desc: "60-second breathing guide and working memory stamina tracker", link: "#", action: "Reset" }
+      { title: "Spatial Cognitive Reset", category: "Interactive", desc: "60-second breathing guide and working memory stamina tracker", link: "#", action: "Reset" },
+      { title: "Export to Obsidian Vault", category: "Interactive", desc: "1-click Obsidian URI export with YAML frontmatter tags and properties", link: "#simulator", action: "Jump" },
+      { title: "Export to Notion Database", category: "Interactive", desc: "Copy structured block payload or webhook payload for Notion databases", link: "#simulator", action: "Jump" }
     ];
 
     let currentSearchCategory = 'All';
