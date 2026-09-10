@@ -74,14 +74,18 @@
 - [x] **Task 10.2:** Build evaluation script `scripts/eval_benchmarks.py` calculating BLUF adherence, table completeness, and zero-em-dash compliance across models.
 - [x] **Task 10.3:** Add interactive live playground in `index.html` where users can test quick-capture transformation directly in their browser with instant client-side execution.
 
-### Phase 11: Academic & Research Writing Scaffolding (Next Cycles)
-- [ ] **Task 11.1:** Create `skills/dx-dump/templates/peer_review_rebuttal.md` (distill emotional review feedback into structured point-by-point defense matrix).
-- [ ] **Task 11.2:** Create `skills/dx-dump/templates/journal_cover_letter.md` (high-signal editor pitch highlighting novelty and methodology).
-- [ ] **Task 11.3:** Create `skills/dx-read/templates/literature_matrix_extract.md` (multi-paper synthesis matrix comparing variables, methods, and results).
+### Phase 11: Academic & Research Writing Scaffolding
+- [x] **Task 11.1:** Create `skills/dx-dump/templates/peer_review_rebuttal.md` (distill emotional review feedback into structured point-by-point defense matrix).
+- [x] **Task 11.2:** Create `skills/dx-dump/templates/journal_cover_letter.md` (high-signal editor pitch highlighting novelty and methodology).
+- [x] **Task 11.3:** Create `skills/dx-read/templates/literature_matrix_extract.md` (multi-paper synthesis matrix comparing variables, methods, and results).
 
-### Phase 12: Native Raycast Extension & Terminal Utilities
+### Phase 12: Native Raycast Extension & Terminal Utilities (Next Cycles)
 - [ ] **Task 12.1:** Scaffold `extensions/raycast-dxskills/` manifest and quick-capture action command.
 - [ ] **Task 12.2:** Build local clipboard listener script for automated speed-of-thought capture.
+
+### Phase 13: Local LLM Integration (Ollama & LM Studio)
+- [ ] **Task 13.1:** Create `scripts/ollama_bridge.py` for direct offline local inference.
+- [ ] **Task 13.2:** Add Modelfile configurations for local Mistral / Llama 3 D-Mode agents.
 
 ---
 
@@ -96,4 +100,6 @@
 | **Cycle 4** | 2026-09-10 19:40 | Community Guidelines, CI/CD Actions & Issue Templates | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/*` | `e070e67` |
 | **Cycle 5** | 2026-09-10 19:50 | Venture Pitch Scaffolding, Voice Calibration & Modal Bundle | `skills/dx-dump/*`, `prompts/*`, `index.html` | `6a96c7c` |
 | **Cycle 6** | 2026-09-10 20:02 | Benchmark Evaluation Suite, 10-Corpus Test & Live Browser Playground | `tests/benchmark_corpus.json`, `scripts/eval_benchmarks.py`, `index.html` | `2baa1de` |
+| **Cycle 7** | 2026-09-10 20:05 | Academic Scaffolding Suite: Peer Review, Cover Letter & Literature Matrix | `skills/dx-dump/*`, `skills/dx-read/*` | `a698472` |
+
 
