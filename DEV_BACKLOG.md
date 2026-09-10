@@ -127,9 +127,13 @@
 - [x] **Task 23.1:** Create standalone terminal TUI (`scripts/dx_tui.py`) with split-pane live structuring and vim/arrow key navigation.
 - [x] **Task 23.2:** Add fast keyboard shortcuts for 1-click diagram and table template injection.
 
-### Phase 24: Real-Time Event Telemetry & Status API (Next Cycles)
-- [ ] **Task 24.1:** Build real-time event log and streaming stats endpoint in `server/gateway.py`.
-- [ ] **Task 24.2:** Add live telemetry stream and active server status monitor in web interface (`index.html`).
+### Phase 24: Real-Time Event Telemetry & Status API
+- [x] **Task 24.1:** Build real-time event log and streaming stats endpoint in `server/gateway.py`.
+- [x] **Task 24.2:** Add live telemetry stream and active server status monitor in web interface (`index.html`).
+
+### Phase 25: Git Pre-Commit Hook & Automated Linter (Next Cycles)
+- [ ] **Task 25.1:** Create `scripts/pre_commit_hook.py` verifying zero em dashes, valid frontmatter, and compilation benchmarks before commit.
+- [ ] **Task 25.2:** Add fast installation script `scripts/install_git_hook.py` to auto-link hook into `.git/hooks/pre-commit`.
 
 ---
 
@@ -157,6 +161,7 @@
 | **Cycle 17** | 2026-09-10 21:52 | Multi-Channel Webhook Receiver & Docker Compose Service | `server/webhook_receiver.py`, `docker-compose.yml` | `533428f` |
 | **Cycle 18** | 2026-09-10 22:02 | Team Review Lenses & Conflict Resolution Matrix | `prompts/team-review-*`, `skills/dx-read/templates/*` | `cad20e7` |
 | **Cycle 19** | 2026-09-10 22:12 | Interactive Terminal TUI & CLI Subcommand Integration | `scripts/dx_tui.py`, `scripts/dx_cli.py` | `8e9c97a` |
+| **Cycle 20** | 2026-09-10 22:22 | Real-Time Event Telemetry API & Live Web Gateway Monitor | `server/gateway.py`, `index.html` | `b0176ef` |
 
 
 

@@ -431,8 +431,11 @@
             </div>
 
             <div class="pt-4 border-t border-mono-100 dark:border-mono-800 text-[11px] font-mono text-mono-500 flex items-center justify-between">
-              <span>Runs 100% locally in browser</span>
-              <span>Zero data transmission</span>
+              <div class="flex items-center gap-1.5">
+                <span id="gateway-status-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span id="gateway-status-text" class="text-mono-700 dark:text-mono-300">Local Zero-Latency Engine</span>
+              </div>
+              <button onclick="checkGatewayConnection()" class="text-mono-400 hover:text-mono-950 dark:hover:text-white underline transition">Ping Gateway</button>
             </div>
           </div>
 
@@ -1627,6 +1630,31 @@ Directives Operationnelles Majeures:
           btn.innerText = 'Copy Agent Instruction';
         }, 2000);
       });
+    }
+
+    // Ping Local Gateway Health
+    function checkGatewayConnection() {
+      const dot = document.getElementById('gateway-status-dot');
+      const text = document.getElementById('gateway-status-text');
+      if (!dot || !text) return;
+
+      text.innerText = 'Pinging Gateway...';
+      const start = performance.now();
+
+      fetch('http://localhost:8080/health', { method: 'GET', mode: 'cors' })
+        .then(res => {
+          if (res.ok) return res.json();
+          throw new Error('Gateway returned status ' + res.status);
+        })
+        .then(data => {
+          const latency = Math.round(performance.now() - start);
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+          text.innerText = `Gateway Active (8080 - ${latency}ms)`;
+        })
+        .catch(() => {
+          dot.className = 'w-2 h-2 rounded-full bg-mono-400';
+          text.innerText = 'Local Zero-Latency Engine';
+        });
     }
 
     // Diagram Switcher & Raw Sources
