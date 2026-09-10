@@ -8,6 +8,7 @@ Strict Rule: NO em dashes anywhere (use hyphens, commas, or parentheses).
 
 import os
 import sys
+import re
 import json
 import argparse
 import subprocess
@@ -427,6 +428,14 @@ def main():
     p_narrative.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_narrative.add_argument("--svg", "-s", default="", help="Output 2D narrative timeline SVG filepath")
     p_narrative.add_argument("--json", "-j", action="store_true", help="Output raw JSON narrative audit telemetry")
+
+    # semantic-zoom
+    p_zoom = subparsers.add_parser("semantic-zoom", help="Autonomous cognitive multi-scale hierarchical zoom and semantic chunking engine")
+    p_zoom.add_argument("input", nargs="?", help="Target text file or Obsidian .canvas file to decompose")
+    p_zoom.add_argument("--lod", "-l", type=int, choices=[0, 1, 2], default=1, help="Target Level of Detail: 0 (Macro), 1 (Meso), 2 (Micro)")
+    p_zoom.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_zoom.add_argument("--svg", "-s", default="", help="Output multi-scale semantic zoom SVG filepath")
+    p_zoom.add_argument("--json", "-j", action="store_true", help="Output raw JSON semantic zoom telemetry")
     
     args = parser.parse_args()
     
@@ -1346,6 +1355,76 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Narrative timeline SVG exported to: {args.svg}")
+    elif args.command == "semantic-zoom":
+        import scripts.semantic_zoom as sz
+        engine = sz.SemanticZoomEngine()
+
+        is_canvas = args.input and args.input.endswith(".canvas") and os.path.isfile(args.input)
+        if is_canvas:
+            with open(args.input, "r", encoding="utf-8") as f:
+                canvas_data = json.load(f)
+            decomposed_canvas = engine.decompose_canvas(canvas_data, max_words=70)
+            for n in decomposed_canvas.get("nodes", []):
+                if n.get("type") == "text":
+                    engine.add_node(n.get("id", "node"), n.get("text", ""), x=n.get("x", 0), y=n.get("y", 0))
+
+            if args.canvas:
+                with open(args.canvas, "w", encoding="utf-8") as f:
+                    json.dump(decomposed_canvas, f, indent=2)
+                print(f"\n[DxSkills] Decomposed semantic .canvas exported to: {args.canvas}")
+        else:
+            if args.input:
+                raw_text = read_input(args.input)
+            else:
+                raw_text = (
+                    "Distributed spatial memory models offload executive working memory onto spatial canvasing. "
+                    "Visual nodes eliminate linear phonological decoding fatigue. "
+                    "Bi-directional graph topologies provide immediate topological context. "
+                    "Satellite detail cards unpack dense technical explanations without breaking focus."
+                )
+
+            paragraphs = [p.strip() for p in raw_text.split("\n\n") if p.strip()]
+            for idx, p in enumerate(paragraphs, 1):
+                title_match = re.match(r'^(?:#+\s*)?([^\n]+)', p)
+                title = title_match.group(1).strip() if title_match else f"Core Concept {idx}"
+                engine.add_node(title, p)
+
+            if args.canvas:
+                canvas_data = engine.export_canvas_lod(lod_level=args.lod)
+                with open(args.canvas, "w", encoding="utf-8") as f:
+                    json.dump(canvas_data, f, indent=2)
+                print(f"\n[DxSkills] Exported LOD {args.lod} .canvas to: {args.canvas}")
+
+        audit = engine.audit_engine()
+
+        if args.json:
+            out = {
+                "total_nodes": audit.total_nodes,
+                "oversized_monoliths_count": audit.oversized_monoliths_count,
+                "lod_levels_supported": audit.lod_levels_supported,
+                "average_compression_ratio_lod0": audit.average_compression_ratio_lod0,
+                "average_compression_ratio_lod1": audit.average_compression_ratio_lod1,
+                "spatial_landmark_stability_index": audit.spatial_landmark_stability_index,
+                "nodes": [
+                    {
+                        "id": n.id,
+                        "title": n.title,
+                        "macro_summary": n.macro_summary,
+                        "meso_bullets": n.meso_bullets,
+                        "micro_body": n.micro_body
+                    } for n in engine.nodes.values()
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            summary = sz.SemanticZoomEngine.export_summary(audit, list(engine.nodes.values()))
+            print("\n" + summary)
+
+        if args.svg:
+            svg_code = engine.export_svg(lod_level=args.lod)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Semantic zoom SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
