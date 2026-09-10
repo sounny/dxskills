@@ -150,6 +150,11 @@
           </span>
         </button>
 
+        <!-- Language Toggle Button -->
+        <button id="lang-toggle-btn" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1 text-xs font-mono font-bold" title="Toggle Language (EN / FR)">
+          <span id="lang-label">FR</span>
+        </button>
+
         <a href="#d-mode" class="px-3 py-1.5 text-xs font-mono font-medium rounded-lg bg-mono-100 dark:bg-mono-900 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-900 dark:text-mono-200 border border-mono-300 dark:border-mono-700 transition flex items-center gap-1.5">
           <i data-lucide="copy" class="w-3.5 h-3.5"></i>
           <span>Copy D-Mode</span>
@@ -709,6 +714,10 @@
         <button id="tab-plat-claude" onclick="switchPlatform('claude')" class="px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition">Claude Projects</button>
         <button id="tab-plat-chatgpt" onclick="switchPlatform('chatgpt')" class="px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition">ChatGPT</button>
         <button id="tab-plat-gemini" onclick="switchPlatform('gemini')" class="px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition">Gemini Gem</button>
+        <button id="tab-plat-french" onclick="switchPlatform('french')" class="px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1">
+          <span>FR</span>
+          <span>Français</span>
+        </button>
       </div>
 
       <!-- Code Card (Always sleek dark container for readability) -->
@@ -1248,6 +1257,36 @@ Core Operational Rules:
 
 5. Spatial Systems:
 - Prioritize structured tables, process maps, and Mermaid diagrams over linear narrative prose.`
+      },
+      french: {
+        file: "prompts/d-mode-fr.md",
+        code: `# Mode D: Echafaudage Cognitif pour Penseurs Spatiaux (Francais)
+# Compatible: ChatGPT, Claude, Gemini, Cursor
+
+Vous operez en Mode D (Echafaudage Cognitif), un compilateur concu pour les esprits spatiaux, non-lineaires et dyslexiques.
+
+Directives Operationnelles Majeures:
+
+1. Ingestion a Frottement Zero:
+- Acceptez mes notes rapides, fragments d'idees, dictees vocales brutes et approximations phonetiques sans commentaire ni jugement.
+- Deduisez instantanement mes intentions profondes, la logique spatiale et les objectifs operationnels sous-jacents.
+
+2. Presentation Anti-Mur-de-Texte:
+- Ne genere jamais de longs paragraphes denses.
+- Commencez toujours par 1 ou 2 phrases sous la banniere L'Essentiel d'Abord (BLUF - Bottom Line Up Front).
+- Segmentez avec des balises en gras, des puces aerees et des tableaux Markdown.
+
+3. Polissage Mecanique Silencieux:
+- Corrigez discretement l'orthographe, les accords grammaticaux et les homophones (e/er, a/a, et/est, son/sont).
+- Ne signalez jamais les fautes corrigees. Aucune remarque condescendante.
+
+4. Voix Authentique & Directe:
+- Conservez une tonalite humaine, directe et collegiale.
+- Eliminez les cliches generiques de l'IA ("dans le paysage actuel", "force est de constater", "veritable catalyseur").
+- Zero Tiret Cadratin: N'utilisez jamais de tirets cadratins. Utilisez des virgules, des traits d'union (-) ou des parentheses.
+
+5. Systemes Spatiaux:
+- Privilegiez les tableaux Markdown et les diagrammes Mermaid.js plutot que la prose descriptive.`
       }
     };
 
@@ -1258,7 +1297,7 @@ Core Operational Rules:
       document.getElementById('prompt-code').innerText = preset.code;
       document.getElementById('prompt-file-label').innerText = preset.file;
 
-      const platforms = ['universal', 'cursor', 'claude', 'chatgpt', 'gemini'];
+      const platforms = ['universal', 'cursor', 'claude', 'chatgpt', 'gemini', 'french'];
       platforms.forEach(p => {
         const btn = document.getElementById('tab-plat-' + p);
         if (!btn) return;
@@ -1268,6 +1307,22 @@ Core Operational Rules:
           btn.className = 'px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition';
         }
       });
+    }
+
+    let currentLang = 'en';
+    function toggleLanguage() {
+      const label = document.getElementById('lang-label');
+      if (currentLang === 'en') {
+        currentLang = 'fr';
+        if (label) label.innerText = 'EN';
+        switchPlatform('french');
+        const promptSection = document.getElementById('d-mode');
+        if (promptSection) promptSection.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        currentLang = 'en';
+        if (label) label.innerText = 'FR';
+        switchPlatform('universal');
+      }
     }
 
     // Copy Prompt Card

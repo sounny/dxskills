@@ -95,13 +95,17 @@
 - [x] **Task 15.1:** Integrate faster-whisper real-time streaming audio pipeline into `skills/dx-voice/scripts/voice_transcribe.py`.
 - [x] **Task 15.2:** Add browser Web Audio speech-to-text input button in `index.html` playground.
 
-### Phase 16: Internationalization & Multilingual Scaffolding (Next Cycles)
-- [ ] **Task 16.1:** Add French cognitive prompts (`prompts/d-mode-fr.md`) for francophone spatial researchers.
-- [ ] **Task 16.2:** Add bilingual language toggle in `index.html`.
+### Phase 16: Internationalization & Multilingual Scaffolding
+- [x] **Task 16.1:** Add French cognitive prompts (`prompts/d-mode-fr.md`) for francophone spatial researchers.
+- [x] **Task 16.2:** Add bilingual language toggle and French prompt tab in `index.html`.
 
-### Phase 17: Enterprise & Self-Hosted Deployment
+### Phase 17: Enterprise & Self-Hosted Deployment (Next Cycles)
 - [ ] **Task 17.1:** Create Dockerfile and `docker-compose.yml` for self-hosted D-Mode gateway with local Whisper and Ollama.
 - [ ] **Task 17.2:** Add health check endpoints and latency telemetry dashboard.
+
+### Phase 18: VS Code Native Extension & Editor Scaffolding
+- [ ] **Task 18.1:** Scaffold `extensions/vscode-dxskills/` with status bar quick-capture command.
+- [ ] **Task 18.2:** Add automatic typo auto-fixer that operates quietly without red squiggly anxiety.
 
 ---
 
@@ -120,7 +124,9 @@
 | **Cycle 8** | 2026-09-10 20:12 | Native Raycast Extension & Background Clipboard Daemon | `extensions/raycast-dxskills/*`, `scripts/clipboard_listener.py` | `8b0bb23` |
 | **Cycle 9** | 2026-09-10 20:22 | Local LLM Suite: Ollama Bridge, Llama 3 & Mistral Modelfiles | `models/*`, `scripts/ollama_bridge.py` | `d3d43ad` |
 | **Cycle 10** | 2026-09-10 20:32 | Terminal ASCII Scaffolding & Live Web Concept Mindmap | `scripts/ascii_scaffold.py`, `index.html` | `be7d5c3` |
-| **Cycle 11** | 2026-09-10 20:42 | Whisper Audio Pipeline & Browser Web Audio Dictation | `skills/dx-voice/*`, `index.html` | `1266e2a` |
+| **Cycle 11** | 2026-09-10 20:42 | Whisper Audio Pipeline & Browser Web Audio Dictation | `skills/dx-voice/*`, `index.html` | `9af66e7` |
+| **Cycle 12** | 2026-09-10 20:52 | Multilingual Scaffolding: French D-Mode & Navbar Language Toggle | `prompts/d-mode-fr.md`, `index.html` | `c8b1ecd` |
+
 
 
 
