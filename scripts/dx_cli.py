@@ -196,6 +196,9 @@ def main():
 
     # update
     p_update = subparsers.add_parser("update", help="Check for remote updates and pull from GitHub")
+
+    # tui
+    p_tui = subparsers.add_parser("tui", help="Launch interactive terminal scaffolding interface")
     
     args = parser.parse_args()
     
@@ -207,6 +210,9 @@ def main():
         cmd_export(args)
     elif args.command == "update":
         cmd_update(args)
+    elif args.command == "tui":
+        import scripts.dx_tui as tui_mod
+        tui_mod.main_menu()
     else:
         parser.print_help()
 

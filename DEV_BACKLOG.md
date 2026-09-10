@@ -123,9 +123,13 @@
 - [x] **Task 22.1:** Create role-specific cognitive review lenses (`prompts/team-review-engineering.md`, `prompts/team-review-executive.md`).
 - [x] **Task 22.2:** Add multi-perspective synthesis template for resolving architectural disagreements without wall-of-text debates (`skills/dx-read/templates/architectural_conflict_resolution.md`).
 
-### Phase 23: Interactive Terminal TUI & Keyboard Scaffolding Navigation (Next Cycles)
-- [ ] **Task 23.1:** Create standalone terminal TUI (`scripts/dx_tui.py`) with split-pane live structuring and vim/arrow key navigation.
-- [ ] **Task 23.2:** Add fast keyboard shortcuts for 1-click diagram and table template injection.
+### Phase 23: Interactive Terminal TUI & Keyboard Scaffolding Navigation
+- [x] **Task 23.1:** Create standalone terminal TUI (`scripts/dx_tui.py`) with split-pane live structuring and vim/arrow key navigation.
+- [x] **Task 23.2:** Add fast keyboard shortcuts for 1-click diagram and table template injection.
+
+### Phase 24: Real-Time Event Telemetry & Status API (Next Cycles)
+- [ ] **Task 24.1:** Build real-time event log and streaming stats endpoint in `server/gateway.py`.
+- [ ] **Task 24.2:** Add live telemetry stream and active server status monitor in web interface (`index.html`).
 
 ---
 
@@ -152,6 +156,7 @@
 | **Cycle 16** | 2026-09-10 21:42 | Typst & HTML Swiss Executive Briefing Exporter | `templates/executive_briefing.*`, `scripts/dx_cli.py` | `4db9dc7` |
 | **Cycle 17** | 2026-09-10 21:52 | Multi-Channel Webhook Receiver & Docker Compose Service | `server/webhook_receiver.py`, `docker-compose.yml` | `533428f` |
 | **Cycle 18** | 2026-09-10 22:02 | Team Review Lenses & Conflict Resolution Matrix | `prompts/team-review-*`, `skills/dx-read/templates/*` | `cad20e7` |
+| **Cycle 19** | 2026-09-10 22:12 | Interactive Terminal TUI & CLI Subcommand Integration | `scripts/dx_tui.py`, `scripts/dx_cli.py` | `8e9c97a` |
 
 
 
