@@ -377,6 +377,16 @@ def main():
     p_vsearch.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_vsearch.add_argument("--svg", "-s", default="", help="Output vector SVG constellation filepath")
     p_vsearch.add_argument("--json", "-j", action="store_true", help="Output raw JSON search results")
+
+    # saccade-opt
+    p_saccade = subparsers.add_parser("saccade-opt", help="Autonomous cognitive spatial working memory saccade and visual glance path optimizer")
+    p_saccade.add_argument("canvas", help="Target Obsidian .canvas filepath to evaluate and optimize")
+    p_saccade.add_argument("--cols", type=int, default=3, help="Grid columns for serpentine repack (default: 3)")
+    p_saccade.add_argument("--gutter-x", type=int, default=60, help="Horizontal gutter spacing in px (default: 60)")
+    p_saccade.add_argument("--gutter-y", type=int, default=80, help="Vertical gutter spacing in px (default: 80)")
+    p_saccade.add_argument("--output-canvas", "-c", default="", help="Output optimized Obsidian .canvas filepath")
+    p_saccade.add_argument("--svg", "-s", default="", help="Output ocular scanpath SVG filepath")
+    p_saccade.add_argument("--json", "-j", action="store_true", help="Output raw JSON saccadic metrics")
     
     args = parser.parse_args()
     
@@ -972,6 +982,46 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Vector SVG constellation exported to: {args.svg}")
+    elif args.command == "saccade-opt":
+        import scripts.saccade_optimizer as so
+        canvas_path = os.path.abspath(args.canvas)
+        if not os.path.isfile(canvas_path):
+            print(f"[DxSkills] Error: Canvas file not found: {canvas_path}")
+            sys.exit(1)
+        with open(canvas_path, "r", encoding="utf-8") as f:
+            canvas_data = json.load(f)
+
+        optimizer = so.SaccadeGlancePathOptimizer()
+        optimizer.load_canvas_data(canvas_data)
+        scanpath_orig = optimizer.compute_scanpath()
+        orig_metrics = optimizer.evaluate_metrics(scanpath_orig)
+
+        opt_nodes = optimizer.optimize_layout(cols=args.cols, gutter_x=args.gutter_x, gutter_y=args.gutter_y)
+        opt_scanpath = list(opt_nodes.values())
+        opt_metrics = optimizer.evaluate_metrics(opt_scanpath)
+
+        if args.json:
+            out = {
+                "canvas": canvas_path,
+                "original_metrics": orig_metrics.__dict__,
+                "optimized_metrics": opt_metrics.__dict__
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            summary = so.SaccadeGlancePathOptimizer.export_audit_summary(orig_metrics, opt_metrics)
+            print("\n" + summary)
+
+        if args.output_canvas:
+            opt_canvas = optimizer.export_canvas(opt_nodes)
+            with open(args.output_canvas, "w", encoding="utf-8") as f:
+                json.dump(opt_canvas, f, indent=2)
+            print(f"\n[DxSkills] Optimized .canvas exported to: {args.output_canvas}")
+
+        if args.svg:
+            svg_code = optimizer.export_scanpath_svg(opt_scanpath)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Visual scanpath SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
