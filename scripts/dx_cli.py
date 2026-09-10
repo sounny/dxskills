@@ -420,6 +420,13 @@ def main():
     p_typo.add_argument("--output", "-o", default="", help="Output balanced text/canvas filepath")
     p_typo.add_argument("--svg", "-s", default="", help="Output comparative typography SVG filepath")
     p_typo.add_argument("--json", "-j", action="store_true", help="Output raw JSON typography audit telemetry")
+
+    # narrative-branch
+    p_narrative = subparsers.add_parser("narrative-branch", help="Autonomous cognitive non-linear narrative branching simulator and plot mesh")
+    p_narrative.add_argument("input", nargs="?", help="Target markdown storyline file or structured text")
+    p_narrative.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_narrative.add_argument("--svg", "-s", default="", help="Output 2D narrative timeline SVG filepath")
+    p_narrative.add_argument("--json", "-j", action="store_true", help="Output raw JSON narrative audit telemetry")
     
     args = parser.parse_args()
     
@@ -1256,6 +1263,89 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Typography comparison SVG exported to: {args.svg}")
+    elif args.command == "narrative-branch":
+        import scripts.narrative_brancher as nb
+        sim = nb.NarrativeBranchingSimulator()
+        if args.input:
+            content = read_input(args.input)
+            sim.parse_markdown_storyline(content)
+        else:
+            default_story = """### Beat: The Signal Intercept
+- Character: Cryptographer
+- Tension: 30
+- Act: Act 1
+- Description: Deep-space quantum signal intercepted at relay station.
+- Leads To: Decryption Protocol | Condition: If cipher key resolves
+
+### Beat: Decryption Protocol
+- Character: AI Architect
+- Tension: 55
+- Act: Act 2
+- Description: AI unravels anomalous coordinate vector pointing to exoplanet.
+- Leads To: Hostile Encounter | Condition: If containment breached
+- Leads To: First Contact Handshake | Condition: If diplomatic beacon deployed
+
+### Beat: Hostile Encounter
+- Character: Commander
+- Tension: 90
+- Act: Act 3
+- Description: Kinetic defense grid activated under swarm pressure.
+- Terminal: true
+
+### Beat: First Contact Handshake
+- Character: Ambassador
+- Tension: 45
+- Act: Act 3
+- Description: Mutual peaceful synthesis established across species.
+- Terminal: true"""
+            sim.parse_markdown_storyline(default_story)
+
+        audit = sim.audit_narrative()
+
+        if args.json:
+            out = {
+                "total_beats": audit.total_beats,
+                "total_branches": audit.total_branches,
+                "characters_count": audit.characters_count,
+                "dangling_threads_count": audit.dangling_threads_count,
+                "pacing_bottlenecks_count": audit.pacing_bottlenecks_count,
+                "narrative_agency_score": audit.narrative_agency_score,
+                "average_tension": audit.average_tension,
+                "beats": [
+                    {
+                        "id": b.id,
+                        "title": b.title,
+                        "character": b.character,
+                        "act": b.act,
+                        "tension": b.tension_level,
+                        "is_terminal": b.is_terminal
+                    } for b in sim.beats.values()
+                ],
+                "branches": [
+                    {
+                        "source": br.source_id,
+                        "target": br.target_id,
+                        "condition": br.condition,
+                        "consequence": br.consequence
+                    } for br in sim.branches
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            summary = nb.NarrativeBranchingSimulator.export_summary(audit, list(sim.beats.values()))
+            print("\n" + summary)
+
+        if args.canvas:
+            canvas_data = sim.export_canvas()
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                json.dump(canvas_data, f, indent=2)
+            print(f"\n[DxSkills] Narrative plot mesh .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = sim.export_svg()
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Narrative timeline SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
