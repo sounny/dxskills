@@ -1,0 +1,16 @@
+{
+  "name": "dxskills",
+  "version": "0.1.0",
+  "description": "Universal cognitive scaffolding for non-linear and spatial thinkers.",
+  "repository": "https://github.com/sounny/dxskills",
+  "download_url": "https://github.com/sounny/dxskills/raw/main/dist/dxskills-v0.1.0.zip",
+  "bundle_file": "dxskills-v0.1.0.zip",
+  "active_skills": [
+    "dx-dump",
+    "dx-read",
+    "dx-write",
+    "dx-interview",
+    "dx-map",
+    "dx-voice"
+  ]
+}

@@ -1,0 +1,10 @@
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Initialize State
+    Idle --> Ingestion: Raw Brain Dump Received
+    Ingestion --> Compilation: Phonetic Shorthand Parsed
+    Compilation --> VisualFormatting: Structural Topology Extracted
+    VisualFormatting --> Review: BLUF & Table Rendered
+    Review --> Idle: Approved / Delivered
+    Review --> Compilation: Quick Revision Requested
+```

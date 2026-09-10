@@ -12,6 +12,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
+  <!-- Mermaid.js for Spatial Diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -108,13 +111,14 @@
       </a>
 
       <!-- Nav Links -->
-      <div class="hidden md:flex items-center gap-8 text-xs font-mono text-mono-600 dark:text-mono-400">
+      <div class="hidden md:flex items-center gap-7 text-xs font-mono text-mono-600 dark:text-mono-400">
         <a href="#philosophy" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Philosophy</a>
         <a href="#skills" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Skills Suite</a>
         <a href="#simulator" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Live Demo</a>
-        <a href="#d-mode" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Universal Prompt</a>
+        <a href="#d-mode" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Presets</a>
         <a href="#install" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Install & Sync</a>
-        <a href="#architecture" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Architecture</a>
+        <a href="https://github.com/sounny/dxskills/blob/main/RESEARCH.md" target="_blank" class="hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center gap-1">Science <i data-lucide="external-link" class="w-3 h-3"></i></a>
+        <a href="https://github.com/sounny/dxskills/raw/main/dist/dxskills-v0.1.0.zip" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center gap-1 font-bold">Bundle (.zip) <i data-lucide="download" class="w-3 h-3"></i></a>
       </div>
 
       <!-- Actions (Theme Toggle + Copy Button) -->
@@ -518,20 +522,21 @@
           </div>
         </div>
 
-        <!-- Skill 6: In Dev -->
-        <div class="p-6 rounded-2xl bg-mono-100/50 dark:bg-mono-900/20 border border-dashed border-mono-300 dark:border-mono-800 flex flex-col justify-between space-y-6 text-mono-400 dark:text-mono-500">
+        <!-- Skill 6: dx-voice (Speech-to-Architecture) -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-mono-900/40 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex flex-col justify-between space-y-6 shadow-sm">
           <div class="space-y-3">
             <div class="flex items-center justify-between">
-              <span class="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-400">dx-voice</span>
-              <span class="text-[10px] font-mono">In Dev</span>
+              <span class="font-mono text-xs font-bold text-mono-900 dark:text-mono-100 px-2.5 py-1 rounded-md bg-mono-100 dark:bg-mono-800 border border-mono-200 dark:border-mono-700">dx-voice</span>
+              <span class="text-[10px] font-mono text-mono-500">Audio Ingestion</span>
             </div>
-            <h3 class="text-lg font-bold text-mono-600 dark:text-mono-400">Speech-to-Architecture</h3>
-            <p class="text-xs leading-relaxed">
-              Direct integration with local Whisper transcribers to convert continuous speech dictation directly into clean Markdown deliverables.
+            <h3 class="text-lg font-bold text-mono-950 dark:text-mono-100">Speech-to-Architecture</h3>
+            <p class="text-xs text-mono-600 dark:text-mono-400 leading-relaxed">
+              Direct integration with local Whisper transcribers to convert continuous speech dictation, audio memos, and meetings directly into clean Markdown deliverables.
             </p>
           </div>
-          <div class="pt-4 border-t border-mono-200 dark:border-mono-800/50 text-xs font-mono">
-            <span>Roadmap v0.3</span>
+          <div class="pt-4 border-t border-mono-100 dark:border-mono-800/80 flex items-center justify-between text-xs font-mono text-mono-500 dark:text-mono-400">
+            <span>Command: <code class="text-mono-950 dark:text-mono-200 font-bold">/dx voice</code></span>
+            <a href="https://github.com/sounny/dxskills/blob/main/skills/dx-voice/SKILL.md" target="_blank" class="hover:text-mono-950 dark:hover:text-mono-100 transition"><i data-lucide="arrow-up-right" class="w-4 h-4"></i></a>
           </div>
         </div>
 
@@ -554,6 +559,15 @@
         </p>
       </div>
 
+      <!-- Platform Selector Tabs -->
+      <div class="flex flex-wrap items-center justify-center gap-2 mb-6 text-xs font-mono">
+        <button id="tab-plat-universal" onclick="switchPlatform('universal')" class="px-3.5 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition shadow-sm">Universal Prompt</button>
+        <button id="tab-plat-cursor" onclick="switchPlatform('cursor')" class="px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition">Cursor (.cursorrules)</button>
+        <button id="tab-plat-claude" onclick="switchPlatform('claude')" class="px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition">Claude Projects</button>
+        <button id="tab-plat-chatgpt" onclick="switchPlatform('chatgpt')" class="px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition">ChatGPT</button>
+        <button id="tab-plat-gemini" onclick="switchPlatform('gemini')" class="px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition">Gemini Gem</button>
+      </div>
+
       <!-- Code Card (Always sleek dark container for readability) -->
       <div class="rounded-2xl bg-mono-950 border border-mono-800 overflow-hidden shadow-2xl">
         
@@ -562,7 +576,7 @@
             <span class="w-3 h-3 rounded-full bg-mono-700"></span>
             <span class="w-3 h-3 rounded-full bg-mono-800"></span>
             <span class="w-3 h-3 rounded-full bg-mono-800"></span>
-            <span class="ml-2 font-mono text-xs text-mono-300 font-medium">prompts/d-mode.md</span>
+            <span id="prompt-file-label" class="ml-2 font-mono text-xs text-mono-300 font-medium">prompts/d-mode.md</span>
           </div>
           
           <button id="copy-btn" onclick="copyPromptCard()" class="px-3.5 py-1.5 rounded-lg bg-white hover:bg-mono-100 text-mono-950 text-xs font-mono font-bold transition flex items-center gap-1.5 shadow-sm">
@@ -769,6 +783,99 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
     </div>
   </section>
 
+  <!-- SPATIAL DIAGRAMS SHOWCASE (MERMAID.JS) -->
+  <section id="diagrams" class="py-16 md:py-24 border-b border-mono-200 dark:border-mono-800/80 bg-white dark:bg-mono-900/40 transition-colors duration-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 block mb-1">Spatial Systems</span>
+          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-mono-950 dark:text-mono-100">
+            Native visual diagrams with Mermaid.js.
+          </h2>
+          <p class="text-sm text-mono-600 dark:text-mono-400 mt-2 max-w-xl">
+            Non-linear minds think in topological networks and flows. With <code class="text-mono-950 dark:text-white font-bold">dx-map</code>, your AI communicates visually first.
+          </p>
+        </div>
+        
+        <div class="flex items-center gap-2 text-xs font-mono text-mono-600 dark:text-mono-400">
+          <span class="px-2.5 py-1 rounded-md bg-mono-100 dark:bg-mono-800 border border-mono-200 dark:border-mono-700">5 Template Blueprints</span>
+        </div>
+      </div>
+
+      <!-- Diagram Tabs & Display Container -->
+      <div class="rounded-2xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 overflow-hidden shadow-sm">
+        
+        <!-- Tab Bar -->
+        <div class="px-4 py-3 bg-white dark:bg-mono-900 border-b border-mono-200 dark:border-mono-800 flex flex-wrap items-center gap-2 text-xs font-mono">
+          <button id="tab-diag-arch" onclick="switchDiagram('arch')" class="px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition">System Architecture</button>
+          <button id="tab-diag-flywheel" onclick="switchDiagram('flywheel')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Cognitive Flywheel</button>
+          <button id="tab-diag-curriculum" onclick="switchDiagram('curriculum')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Curriculum Map</button>
+          <button id="tab-diag-decision" onclick="switchDiagram('decision')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Decision Tree</button>
+        </div>
+
+        <!-- Render View -->
+        <div class="p-6 sm:p-10 flex items-center justify-center min-h-[340px] overflow-x-auto">
+          
+          <div id="diag-view-arch" class="w-full flex justify-center">
+            <pre class="mermaid">
+graph TD
+    Client["Client / IDE / CLI"] --> Edge["Cloudflare Edge Cache"]
+    Edge --> Gateway["Ingress API Gateway"]
+    Gateway --> Service["Task Engine & Auth"]
+    Service --> Workers["Background Worker Pool"]
+    Service --> DB[("PostgreSQL Master")]
+    Workers --> S3[("Object Storage")]
+    Workers --> DB
+            </pre>
+          </div>
+
+          <div id="diag-view-flywheel" class="w-full justify-center hidden">
+            <pre class="mermaid">
+graph TD
+    A["Rapid Input: Zero Typing Friction"] --> B["High-Signal Synthesis: Visual Scaffolding"]
+    B --> C["Accelerated Delivery: Polished Output"]
+    C --> D["User Feedback & Real-World Validation"]
+    D --> E["Expanded Knowledge & Trust"]
+    E --> A
+            </pre>
+          </div>
+
+          <div id="diag-view-curriculum" class="w-full justify-center hidden">
+            <pre class="mermaid">
+graph LR
+    subgraph P1 ["Phase 1: Foundations"]
+        A1["Mental Models"] --> A2["Tooling & Setup"]
+    end
+    subgraph P2 ["Phase 2: Applied Workflows"]
+        B1["Hands-On Labs"] --> B2["Integration Pipelines"]
+    end
+    subgraph P3 ["Phase 3: Synthesis"]
+        C1["Autonomous Architecture"] --> C2["Peer Defense"]
+    end
+    A2 --> B1
+    B2 --> C1
+            </pre>
+          </div>
+
+          <div id="diag-view-decision" class="w-full justify-center hidden">
+            <pre class="mermaid">
+graph TD
+    Q1["Problem: Architecture Design"] --> Q2{"High Concurrency?"}
+    Q2 -- "Yes" --> Q3{"Complex Joins?"}
+    Q2 -- "No" --> R1["Monolith (Fastest Delivery)"]
+    Q3 -- "Yes" --> R2["Event-Driven Microservices"]
+    Q3 -- "No" --> R3["Serverless Edge Functions"]
+            </pre>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer class="py-12 border-t border-mono-200 dark:border-mono-800/80 bg-white dark:bg-mono-950 text-xs font-mono text-mono-500 transition-colors duration-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -845,6 +952,151 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
       }
     }
 
+    // Platform Presets Dictionary
+    const platformPresets = {
+      universal: {
+        file: "prompts/d-mode.md",
+        code: `# Role & Cognitive Mode: D-Mode Active
+You are acting as a dedicated cognitive scaffold for a non-linear, spatial thinker. Always calibrate your interaction according to these core principles:
+
+1. ZERO-FRICTION INPUT:
+- Accept rapid brain dumps, sentence fragments, rough voice-to-text dictations, and phonetic spelling without comment or pedantry.
+- Never ask the user to fix spelling, grammar, or phrasing. Infer the underlying intent, spatial logic, and core meaning immediately.
+
+2. ANTI-WALL-OF-TEXT (VISUAL SCAFFOLDING):
+- Never output dense, uniform, unbroken paragraphs of text.
+- Lead with a 1-2 sentence "Bottom Line Up Front" (BLUF).
+- Maximize visual hierarchy: use bold topic signposts, clean bulleted lists, generous white space, and side-by-side comparison tables.
+
+3. SILENT MECHANICAL POLISH:
+- Quietly correct spelling, homophones, typos, and grammatical mechanics in all generated drafts.
+- Do not mention or highlight what was corrected. Just provide the polished output.
+
+4. VOICE & AUTHENTICITY PRESERVATION:
+- Match the user's authentic human voice: direct, grounded, warm, and collegial.
+- Strictly eliminate AI filler, corporate cheerleading, hollow platitudes (e.g., "I hope this finds you well", "delve", "testament"), and all em dashes.
+
+5. SPATIAL & SYSTEMS-FIRST PRESENTATION:
+- Whenever explaining processes, workflows, or comparisons, use structured tables, decision trees, or Mermaid.js flowcharts instead of long narrative descriptions.
+
+6. SOCRATIC SCAFFOLDING (BLANK-PAGE RELIEF):
+- When the user needs to create a complex document or proposal from scratch, do not demand a linear outline. Instead, interview them with 2-3 focused, high-leverage questions or multiple-choice paths to draw out their spoken ideas.`
+      },
+      cursor: {
+        file: ".cursorrules",
+        code: `# Cursor AI Configuration (.cursorrules)
+# Role & Cognitive Calibration: D-Mode (Cognitive Scaffolding)
+You are pair programming with a non-linear, spatial engineer.
+
+1. Zero-Friction Input Tolerance:
+- Accept messy terminal dumps, fragmented thoughts, and phonetic spelling without comment.
+- Infer technical intent immediately without lecturing about syntax or typos.
+
+2. Anti-Wall-of-Text:
+- Lead every major explanation with a 1-sentence Bottom Line Up Front (BLUF).
+- Prioritize high-signal code blocks and diffs over narrative prose.
+- Keep prose commentary under 3 sentences per block.
+
+3. Spatial & Systems Presentation:
+- Map complex architectures and data flows with Mermaid.js or ASCII diagrams before prose.
+- Use structured comparison tables for dependencies and tradeoffs.
+
+4. Silent Mechanical Polish:
+- Quietly correct typos and identifier misspellings in generated code and comments.
+
+5. Direct Voice:
+- Direct, grounded, and collegial tone. Zero corporate filler.
+- Zero Em Dashes: Never use em dashes anywhere. Use commas, hyphens, or parentheses instead.`
+      },
+      claude: {
+        file: "prompts/claude-project.md",
+        code: `# Claude Project System Instructions
+# Role: D-Mode Cognitive Scaffolding
+
+1. Zero Input Friction:
+- Ingest raw voice transcripts, sentence fragments, and phonetic shorthand without pedantry.
+- Extract underlying conceptual models, data structures, and goals immediately.
+
+2. Visual Scaffolding:
+- Never output dense, uniform paragraphs.
+- Lead with a 1-2 sentence Bottom Line Up Front (BLUF).
+- Use bold section headers, clean bullet hierarchies, and Markdown comparison tables.
+
+3. Artifacts First:
+- For long documents, design specifications, or code files, always generate them inside Claude Artifacts.
+- Keep chat text concise (under 3 sentences) pointing directly to the artifact.
+
+4. Systems Thinking:
+- Use Mermaid.js flowcharts to visually display processes and multi-tier relationships.
+
+5. Silent Polish & Tone:
+- Quietly fix spelling, typos, and homophones in the background without annotations.
+- Match authentic conversational warmth and directness. Eliminate corporate cheerleading.
+- Strictly NO em dashes: Never output em dashes. Use hyphens, commas, or parentheses instead.`
+      },
+      chatgpt: {
+        file: "chatgpt-custom-instructions.txt",
+        code: `# ChatGPT Custom Instructions (How would you like ChatGPT to respond?)
+
+Operate in D-Mode (Cognitive Scaffolding):
+
+1. Zero-Friction Input: Accept my rough notes, bullet fragments, voice transcripts, and typos without comment. Infer my intent and core ideas immediately.
+2. Anti-Wall-of-Text: Never output dense, uniform paragraphs. Always lead with a 1-2 sentence Bottom Line Up Front (BLUF). Use bold signposts, bullet hierarchies, tables, and white space.
+3. Silent Mechanical Polish: Quietly fix spelling, homophones, and grammar in your outputs. Never lecture or call out my typos.
+4. Voice & Tone: Keep your tone authentic, direct, warm, and grounded. Eliminate all generic AI filler, corporate cheerleading, and hollow platitudes.
+5. Systems Presentation: Use Markdown tables and Mermaid.js diagrams for workflows and processes instead of long text explanations.
+6. Strict Rule: Never use em dashes anywhere. Use commas, hyphens, or parentheses instead.`
+      },
+      gemini: {
+        file: "gemini-gem-instructions.txt",
+        code: `# Google Gemini Gem: D-Mode Scaffolding
+
+You are D-Mode, an advanced cognitive compiler designed for non-linear, spatial thinkers, researchers, and creators.
+
+Core Operational Rules:
+
+1. Zero-Friction Input:
+- Ingest rapid bullet fragments, raw voice dictations, and phonetic spelling without comment.
+- Immediately distill the underlying ideas, spatial logic, and goals.
+
+2. Visual Anti-Wall-of-Text:
+- Never generate long, unbroken walls of text.
+- Start with a 1-2 sentence Bottom Line Up Front (BLUF).
+- Use clear visual hierarchies: bold thematic signposts, clean bullet tiers, and Markdown tables.
+
+3. Silent Mechanical Polish:
+- Quietly correct spelling, homophones, and grammatical mechanics in all deliverables.
+- Do not list or highlight what was corrected.
+
+4. Authentic Voice:
+- Match the user's authentic conversational warmth, directness, and momentum.
+- Avoid robotic AI clichés ("delve", "testament", "beacon", "I hope this finds you well").
+- Zero Em Dashes: Never use em dashes anywhere. Use commas, hyphens, or parentheses instead.
+
+5. Spatial Systems:
+- Prioritize structured tables, process maps, and Mermaid diagrams over linear narrative prose.`
+      }
+    };
+
+    function switchPlatform(platform) {
+      const preset = platformPresets[platform];
+      if (!preset) return;
+
+      document.getElementById('prompt-code').innerText = preset.code;
+      document.getElementById('prompt-file-label').innerText = preset.file;
+
+      const platforms = ['universal', 'cursor', 'claude', 'chatgpt', 'gemini'];
+      platforms.forEach(p => {
+        const btn = document.getElementById('tab-plat-' + p);
+        if (!btn) return;
+        if (p === platform) {
+          btn.className = 'px-3.5 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition shadow-sm';
+        } else {
+          btn.className = 'px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition';
+        }
+      });
+    }
+
     // Copy Prompt Card
     function copyPromptCard() {
       const code = document.getElementById('prompt-code').innerText;
@@ -866,6 +1118,33 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
         setTimeout(() => {
           btn.innerText = 'Copy Agent Instruction';
         }, 2000);
+      });
+    }
+
+    // Diagram Switcher
+    function switchDiagram(diag) {
+      const diagrams = ['arch', 'flywheel', 'curriculum', 'decision'];
+      diagrams.forEach(d => {
+        const view = document.getElementById('diag-view-' + d);
+        const tab = document.getElementById('tab-diag-' + d);
+        if (d === diag) {
+          view.classList.remove('hidden');
+          view.classList.add('flex');
+          tab.className = 'px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition';
+        } else {
+          view.classList.add('hidden');
+          view.classList.remove('flex');
+          tab.className = 'px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition';
+        }
+      });
+    }
+
+    // Initialize Mermaid Diagrams
+    if (window.mermaid) {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'neutral',
+        securityLevel: 'loose'
       });
     }
 

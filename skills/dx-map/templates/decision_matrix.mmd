@@ -1,0 +1,8 @@
+```mermaid
+graph TD
+    A["Problem: Select Architecture"] --> B{"High Real-Time Concurrency?"}
+    B -- "Yes" --> C{"Complex Relational Queries?"}
+    B -- "No" --> D["Standard Monolith (Fastest Delivery)"]
+    C -- "Yes" --> E["Event-Driven Microservices with Postgres & Kafka"]
+    C -- "No" --> F["Serverless Edge Functions with Document Store"]
+```

@@ -20,36 +20,42 @@
 - [x] **Task 2.2:** Create `CITATION.cff` (formal citation metadata for academic and institutional references).
 
 ### Phase 3: Modular Skill Expansion & Templates
-- [ ] **Task 3.1:** Build `skills/dx-map/templates/` containing 5 plug-and-play Mermaid templates:
+- [x] **Task 3.1:** Build `skills/dx-map/templates/` containing 5 plug-and-play Mermaid templates:
   - `system_architecture.mmd`
   - `curriculum_map.mmd`
   - `strategy_flywheel.mmd`
   - `state_machine.mmd`
   - `decision_matrix.mmd`
-- [ ] **Task 3.2:** Build `skills/dx-interview/templates/` containing high-leverage question trees:
+- [x] **Task 3.2:** Build `skills/dx-interview/templates/` containing high-leverage question trees:
   - `grant_proposal_interview.md`
   - `technical_design_interview.md`
   - `course_syllabus_interview.md`
   - `executive_briefing_interview.md`
-- [ ] **Task 3.3:** Build `skills/dx-read/templates/` containing cognitive intake templates:
+- [x] **Task 3.3:** Build `skills/dx-read/templates/` containing cognitive intake templates:
   - `academic_paper_distill.md`
   - `meeting_transcript_digest.md`
   - `policy_memo_reframe.md`
-- [ ] **Task 3.4:** Create `skills/dx-voice/SKILL.md` (Speech-to-Architecture skill integrating with local Whisper transcriber).
+- [x] **Task 3.4:** Create `skills/dx-voice/SKILL.md` (Speech-to-Architecture skill integrating with local Whisper transcriber).
 
 ### Phase 4: CLI Tooling & Automation
-- [ ] **Task 4.1:** Build `scripts/dx_cli.py` (standalone Python CLI tool to compile brain dumps, run anti-wall-of-text transformations, and check updates locally).
-- [ ] **Task 4.2:** Build `scripts/bundle_skills.py` (packaging script to generate single-click zip archives and distribution bundles).
+- [x] **Task 4.1:** Build `scripts/dx_cli.py` (standalone Python CLI tool to compile brain dumps, run anti-wall-of-text transformations, and check updates locally).
+- [x] **Task 4.2:** Build `scripts/bundle_skills.py` (packaging script to generate single-click zip archives and distribution bundles).
 
 ### Phase 5: Landing Page & Web Experience
-- [ ] **Task 5.1:** Enhance `index.html` with direct modal tabs or copy blocks for Cursor, Claude, ChatGPT, and Gemini presets.
-- [ ] **Task 5.2:** Add a visual diagram gallery showcase to `index.html` displaying live rendered Mermaid examples.
-- [ ] **Task 5.3:** Add downloadable `.zip` / JSON skill manifest links to the web navigation.
+- [x] **Task 5.1:** Enhance `index.html` with direct modal tabs or copy blocks for Cursor, Claude, ChatGPT, and Gemini presets.
+- [x] **Task 5.2:** Add a visual diagram gallery showcase to `index.html` displaying live rendered Mermaid examples.
+- [x] **Task 5.3:** Add downloadable `.zip` / JSON skill manifest links to the web navigation.
 
 ### Phase 6: Sync & Quality Assurance
 - [x] **Task 6.1:** Verify zero em dashes across all files.
-- [ ] **Task 6.2:** Sync updates from `g:\My Drive\dxskills\` to `g:\My Drive\skills\dxskills` and `C:\Users\sounn\.gemini\config\skills\dxskills`.
-- [ ] **Task 6.3:** Commit and push all additions to GitHub repository (`origin/main`).
+- [x] **Task 6.2:** Sync updates from `g:\My Drive\dxskills\` to `g:\My Drive\skills\dxskills` and `C:\Users\sounn\.gemini\config\skills\dxskills`.
+- [x] **Task 6.3:** Commit and push all additions to GitHub repository (`origin/main`).
+
+### Phase 7: Advanced Workflows & Testing Harness (Upcoming Cycles)
+- [ ] **Task 7.1:** Build automated regression test suite `tests/test_skills.py` verifying YAML frontmatter, schema validity, and zero em dashes across all templates.
+- [ ] **Task 7.2:** Create Obsidian Vault Community Plugin integration guide and template cards (`prompts/obsidian-d-mode.md`).
+- [ ] **Task 7.3:** Create raycast/alfred quick-capture snippets for macOS/Windows clipboard compilation.
+- [ ] **Task 7.4:** Add interactive copy buttons for individual Mermaid templates in `index.html`.
 
 ---
 
@@ -59,3 +65,4 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **Initial** | 2026-09-10 19:04 | Core Suite v0.1.0 Released | `SKILL.md`, `skills/*`, `scripts/*` | `8ffce8e` |
 | **Cycle 1** | 2026-09-10 19:10 | Platform Presets & Research Basis | `prompts/*`, `RESEARCH.md`, `CITATION.cff` | `6ecc498` |
+| **Cycle 2** | 2026-09-10 19:20 | Modular Templates, CLI & Diagram Showcase | `skills/*`, `scripts/*`, `index.html` | `pending` |

@@ -1,0 +1,35 @@
+```mermaid
+graph TD
+    subgraph ClientLayer ["Client & Interface Layer"]
+        A["Web Browser / Mobile App"]
+        B["CLI / Developer Tools"]
+    end
+
+    subgraph GatewayLayer ["API & Ingress Gateway"]
+        C["Cloudflare / CDN Edge"]
+        D["API Gateway & Rate Limiter"]
+    end
+
+    subgraph ServiceLayer ["Core Service Mesh"]
+        E["Auth & Session Service"]
+        F["Task Processing Engine"]
+        G["Background Worker Pool"]
+    end
+
+    subgraph DataLayer ["State & Storage Layer"]
+        H[("PostgreSQL Master DB")]
+        I[("Redis Cache & PubSub")]
+        J[("Object Storage / S3")]
+    end
+
+    A --> C
+    B --> D
+    C --> D
+    D --> E
+    D --> F
+    F --> G
+    E --> I
+    F --> H
+    G --> J
+    G --> H
+```
