@@ -468,6 +468,14 @@ def main():
     p_compress.add_argument("--svg", "-s", default="", help="Output working memory buffer telemetry SVG filepath")
     p_compress.add_argument("--slots", type=int, default=4, help="Maximum working memory active slot limit (default: 4)")
     p_compress.add_argument("--json", "-j", action="store_true", help="Output raw JSON chunk compression telemetry")
+
+    # morph
+    p_morph = subparsers.add_parser("morph", help="Autonomous cognitive spatial schema morphing and cross-domain associative bridge weaver")
+    p_morph.add_argument("concept", nargs="?", default="", help="Target concept name or architecture dynamic")
+    p_morph.add_argument("--role", "-r", default="buffer", choices=["buffer", "governor", "failsafe", "distributor", "filter", "resonator"], help="System archetype role (default: buffer)")
+    p_morph.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_morph.add_argument("--svg", "-s", default="", help="Output cross-domain schema isomorphism SVG filepath")
+    p_morph.add_argument("--json", "-j", action="store_true", help="Output raw JSON schema morphing telemetry")
     
     args = parser.parse_args()
     
@@ -1667,6 +1675,50 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Working Memory Telemetry SVG exported to: {args.svg}")
+    elif args.command == "morph":
+        import scripts.schema_morpher as sm
+        morpher = sm.SpatialSchemaMorpher()
+        if args.concept:
+            schema = morpher.morph_concept(args.concept, role=args.role)
+            schemas = [schema]
+        else:
+            schemas = list(morpher.library.values())
+
+        if args.json:
+            out = {
+                "schemas_count": len(schemas),
+                "schemas": [
+                    {
+                        "id": s.schema_id,
+                        "title": s.title,
+                        "primary_role": s.primary_role,
+                        "cognitive_takeaway": s.cognitive_takeaway,
+                        "domains": {
+                            "computational": s.computational.name,
+                            "mechanical": s.mechanical.name,
+                            "biological": s.biological.name,
+                            "spatial": s.spatial.name
+                        },
+                        "bridges_count": len(s.bridges)
+                    }
+                    for s in schemas
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            print("\n" + morpher.export_summary_markdown(schemas))
+
+        if args.canvas:
+            canvas_data = morpher.export_canvas(schemas)
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                json.dump(canvas_data, f, indent=2)
+            print(f"\n[DxSkills] Cross-Domain Schema .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = morpher.export_svg_morph(schemas[0])
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Schema Isomorphism SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
