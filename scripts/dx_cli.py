@@ -291,6 +291,15 @@ def main():
     p_dec.add_argument("--markdown", "-m", default="", help="Output markdown summary filepath")
     p_dec.add_argument("--json", "-j", action="store_true", help="Output raw JSON topology")
     
+    # geomap
+    p_geomap = subparsers.add_parser("geomap", help="Project geospatial features into multi-projection SVG and Obsidian Canvas")
+    p_geomap.add_argument("input", nargs="?", default="", help="GeoJSON file, coordinate list, or geographic note markdown")
+    p_geomap.add_argument("--projection", "-p", choices=["winkel", "mercator", "equirectangular", "orthographic"], default="winkel", help="Map projection (default: winkel)")
+    p_geomap.add_argument("--title", "-t", default="", help="Map title")
+    p_geomap.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_geomap.add_argument("--svg", "-s", default="", help="Output vector .svg filepath")
+    p_geomap.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -537,6 +546,38 @@ def main():
                 print(f"  - SVG: {args.svg}")
             if args.markdown:
                 print(f"  - Markdown: {args.markdown}")
+    elif args.command == "geomap":
+        import scripts.geospatial_map as gm
+        text = read_input(args.input) if args.input else (
+            "# Global Academic and Spatial Research Nodes\n"
+            "- Strasbourg: European space research and ISU headquarters\n"
+            "- Austin: Texas State University geography campus\n"
+            "- Madison: UW-Madison GISPP cartography laboratory\n"
+            "- Paris: French research archives and national library\n"
+            "- Riyadh: Saudi Executive Space Course\n"
+        )
+        parsed, canvas_data, svg_code = gm.run_geospatial_mapping(
+            text,
+            projection=args.projection,
+            title=args.title or None,
+            output_canvas=args.canvas or None,
+            output_svg=args.svg or None
+        )
+        if args.json:
+            print(json.dumps({
+                "projection": args.projection,
+                "points_count": len(parsed.get("points", [])),
+                "points": parsed.get("points", []),
+                "canvas": canvas_data
+            }, indent=2))
+        elif not (args.canvas or args.svg):
+            print(svg_code)
+        else:
+            print(f"\n[DxSkills] Projected {len(parsed['points'])} geospatial landmarks using {args.projection.upper()} projection.")
+            if args.canvas:
+                print(f"  - Canvas: {args.canvas}")
+            if args.svg:
+                print(f"  - SVG: {args.svg}")
     else:
         parser.print_help()
 
