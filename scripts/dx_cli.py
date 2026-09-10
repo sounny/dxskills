@@ -367,6 +367,16 @@ def main():
     p_code.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_code.add_argument("--svg", "-s", default="", help="Output vector SVG circuit filepath")
     p_code.add_argument("--json", "-j", action="store_true", help="Output raw JSON AST telemetry")
+
+    # vault-search
+    p_vsearch = subparsers.add_parser("vault-search", help="Autonomous cognitive multi-vault semantic vector search and spatial similarity mesh")
+    p_vsearch.add_argument("query", nargs="?", default="", help="Search query string or conceptual topic")
+    p_vsearch.add_argument("--vaults", "-v", nargs="+", required=True, help="One or more vaults in format name:path (e.g. VaultA:/path/to/vault)")
+    p_vsearch.add_argument("--top-k", "-k", type=int, default=8, help="Number of top results to return (default: 8)")
+    p_vsearch.add_argument("--min-sim", type=float, default=0.02, help="Minimum cosine similarity threshold (default: 0.02)")
+    p_vsearch.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_vsearch.add_argument("--svg", "-s", default="", help="Output vector SVG constellation filepath")
+    p_vsearch.add_argument("--json", "-j", action="store_true", help="Output raw JSON search results")
     
     args = parser.parse_args()
     
@@ -901,6 +911,67 @@ def main():
                 print(f"  - Canvas: {args.canvas}")
             if args.svg:
                 print(f"  - SVG Circuit: {args.svg}")
+    elif args.command == "vault-search":
+        import scripts.vault_search as vs
+        if not args.query:
+            print("[DxSkills] Error: Query string required.")
+            sys.exit(1)
+        searcher = vs.MultiVaultVectorSearch()
+        total_indexed = 0
+        for v_spec in args.vaults:
+            if ":" in v_spec:
+                parts = v_spec.split(":", 1)
+                v_name, v_path = parts[0], parts[1]
+            else:
+                v_name = os.path.basename(os.path.abspath(v_spec))
+                v_path = v_spec
+            count = searcher.register_vault(v_name, os.path.abspath(v_path))
+            total_indexed += count
+        searcher.build_index()
+        results = searcher.search(args.query, top_k=args.top_k, min_similarity=args.min_sim)
+        bridges = searcher.compute_cross_vault_bridges(results)
+
+        if args.json:
+            out = {
+                "query": args.query,
+                "total_docs_indexed": total_indexed,
+                "results": [
+                    {
+                        "doc_id": r.doc_id,
+                        "vault_name": r.vault_name,
+                        "title": r.title,
+                        "similarity": r.similarity,
+                        "shared_keywords": r.shared_keywords,
+                        "excerpt": r.excerpt
+                    } for r in results
+                ],
+                "bridges": [
+                    {
+                        "vault_a": b.doc_a_vault,
+                        "title_a": b.doc_a_title,
+                        "vault_b": b.doc_b_vault,
+                        "title_b": b.doc_b_title,
+                        "similarity": b.similarity,
+                        "shared_keywords": b.shared_keywords
+                    } for b in bridges
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            summary = vs.VaultSearchCanvasExporter.export_summary(args.query, results, bridges)
+            print("\n" + summary)
+
+        if args.canvas:
+            canvas_data = vs.VaultSearchCanvasExporter.export_canvas(args.query, results, bridges)
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                json.dump(canvas_data, f, indent=2)
+            print(f"\n[DxSkills] Obsidian .canvas constellation exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = vs.VaultSearchCanvasExporter.export_svg(args.query, results)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Vector SVG constellation exported to: {args.svg}")
     else:
         parser.print_help()
 
