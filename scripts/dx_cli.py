@@ -325,6 +325,14 @@ def main():
     p_diff.add_argument("--svg", "-s", default="", help="Output vector SVG differential dashboard filepath")
     p_diff.add_argument("--json", "-j", action="store_true", help="Output raw JSON diff telemetry")
     
+    # audit
+    p_audit = subparsers.add_parser("audit", help="Autonomous cognitive metacognition and synthesis audit suite")
+    p_audit.add_argument("input", nargs="?", default="", help="Input text, markdown note, or document file")
+    p_audit.add_argument("--title", "-t", default="", help="Audit report title")
+    p_audit.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas scorecard filepath")
+    p_audit.add_argument("--svg", "-s", default="", help="Output vector SVG dashboard filepath")
+    p_audit.add_argument("--json", "-j", action="store_true", help="Output raw JSON audit telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -684,6 +692,42 @@ def main():
                 print(f"  - Differential Canvas: {args.canvas}")
             if args.svg:
                 print(f"  - SVG Diff Dashboard: {args.svg}")
+    elif args.command == "audit":
+        import scripts.metacognition_audit as ma
+        text = read_input(args.input) if args.input else (
+            "# Strategic Spatial Deliverable\n"
+            "> **BLUF:** Decouple phonological working memory from spatial reasoning models.\n\n"
+            "## Architectural Vectors\n"
+            "- 1. High-contrast spatial canvas topology.\n"
+            "- 2. Automated cross-vault synchronization without manual ID linking.\n"
+            "- 3. Lossless multi-modal audio-spatial flashcards.\n\n"
+            "| Pillar | Latency | Status |\n"
+            "| :--- | :--- | :--- |\n"
+            "| Canvas | 0ms | Active |\n"
+            "| Audio | 12ms | Verified |\n"
+        )
+        audit_data, canvas_data, svg_code = ma.run_audit(
+            text,
+            title=args.title or None,
+            output_canvas=args.canvas or None,
+            output_svg=args.svg or None
+        )
+        if args.json:
+            print(json.dumps(audit_data, indent=2))
+        elif not (args.canvas or args.svg):
+            m = audit_data["metrics"]
+            print(f"\n=== [DxSkills: Metacognitive Synthesis Audit ({m['cognitive_leverage_score']}/100)] ===")
+            print(f"Phonological Friction: {m['phonological_friction']}% | Spatial Leverage: {m['spatial_leverage']}%")
+            print(f"Working Memory Tax: {m['working_memory_tax']}% | Connectivity: {m['connectivity_score']}%")
+            print("\nPrimary Directives:")
+            for r in audit_data["recommendations"]:
+                print(f"  - {r}")
+        else:
+            print(f"\n[DxSkills] Completed audit (Cognitive Leverage: {audit_data['metrics']['cognitive_leverage_score']}/100).")
+            if args.canvas:
+                print(f"  - Scorecard Canvas: {args.canvas}")
+            if args.svg:
+                print(f"  - SVG Dashboard: {args.svg}")
     else:
         parser.print_help()
 
