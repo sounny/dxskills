@@ -807,11 +807,17 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
       <div class="rounded-2xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 overflow-hidden shadow-sm">
         
         <!-- Tab Bar -->
-        <div class="px-4 py-3 bg-white dark:bg-mono-900 border-b border-mono-200 dark:border-mono-800 flex flex-wrap items-center gap-2 text-xs font-mono">
-          <button id="tab-diag-arch" onclick="switchDiagram('arch')" class="px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition">System Architecture</button>
-          <button id="tab-diag-flywheel" onclick="switchDiagram('flywheel')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Cognitive Flywheel</button>
-          <button id="tab-diag-curriculum" onclick="switchDiagram('curriculum')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Curriculum Map</button>
-          <button id="tab-diag-decision" onclick="switchDiagram('decision')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Decision Tree</button>
+        <div class="px-4 py-3 bg-white dark:bg-mono-900 border-b border-mono-200 dark:border-mono-800 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="tab-diag-arch" onclick="switchDiagram('arch')" class="px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition">System Architecture</button>
+            <button id="tab-diag-flywheel" onclick="switchDiagram('flywheel')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Cognitive Flywheel</button>
+            <button id="tab-diag-curriculum" onclick="switchDiagram('curriculum')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Curriculum Map</button>
+            <button id="tab-diag-decision" onclick="switchDiagram('decision')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Decision Tree</button>
+          </div>
+          <button id="copy-diag-btn" onclick="copyActiveDiagram()" class="px-3 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 hover:bg-mono-200 dark:hover:bg-mono-700 text-mono-900 dark:text-mono-100 transition flex items-center gap-1.5 font-bold shadow-sm">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copy-diag-text">Copy Mermaid Code</span>
+          </button>
         </div>
 
         <!-- Render View -->
@@ -1121,8 +1127,45 @@ Core Operational Rules:
       });
     }
 
-    // Diagram Switcher
+    // Diagram Switcher & Raw Sources
+    let currentDiagram = 'arch';
+    const diagramSources = {
+      arch: `graph TD
+    Client["Client / IDE / CLI"] --> Edge["Cloudflare Edge Cache"]
+    Edge --> Gateway["Ingress API Gateway"]
+    Gateway --> Service["Task Engine & Auth"]
+    Service --> Workers["Background Worker Pool"]
+    Service --> DB[("PostgreSQL Master")]
+    Workers --> S3[("Object Storage")]
+    Workers --> DB`,
+      flywheel: `graph TD
+    A["Rapid Input: Zero Typing Friction"] --> B["High-Signal Synthesis: Visual Scaffolding"]
+    B --> C["Accelerated Delivery: Polished Output"]
+    C --> D["User Feedback & Real-World Validation"]
+    D --> E["Expanded Knowledge & Trust"]
+    E --> A`,
+      curriculum: `graph LR
+    subgraph P1 ["Phase 1: Foundations"]
+        A1["Mental Models"] --> A2["Tooling & Setup"]
+    end
+    subgraph P2 ["Phase 2: Applied Workflows"]
+        B1["Hands-On Labs"] --> B2["Integration Pipelines"]
+    end
+    subgraph P3 ["Phase 3: Synthesis"]
+        C1["Autonomous Architecture"] --> C2["Peer Defense"]
+    end
+    A2 --> B1
+    B2 --> C1`,
+      decision: `graph TD
+    Q1["Problem: Architecture Design"] --> Q2{"High Concurrency?"}
+    Q2 -- "Yes" --> Q3{"Complex Joins?"}
+    Q2 -- "No" --> R1["Monolith (Fastest Delivery)"]
+    Q3 -- "Yes" --> R2["Event-Driven Microservices"]
+    Q3 -- "No" --> R3["Serverless Edge Functions"]`
+    };
+
     function switchDiagram(diag) {
+      currentDiagram = diag;
       const diagrams = ['arch', 'flywheel', 'curriculum', 'decision'];
       diagrams.forEach(d => {
         const view = document.getElementById('diag-view-' + d);
@@ -1136,6 +1179,18 @@ Core Operational Rules:
           view.classList.remove('flex');
           tab.className = 'px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition';
         }
+      });
+    }
+
+    function copyActiveDiagram() {
+      const src = diagramSources[currentDiagram];
+      if (!src) return;
+      navigator.clipboard.writeText(src).then(() => {
+        const btnText = document.getElementById('copy-diag-text');
+        btnText.innerText = 'Copied!';
+        setTimeout(() => {
+          btnText.innerText = 'Copy Mermaid Code';
+        }, 2000);
       });
     }
 

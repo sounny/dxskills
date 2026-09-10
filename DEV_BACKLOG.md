@@ -51,11 +51,17 @@
 - [x] **Task 6.2:** Sync updates from `g:\My Drive\dxskills\` to `g:\My Drive\skills\dxskills` and `C:\Users\sounn\.gemini\config\skills\dxskills`.
 - [x] **Task 6.3:** Commit and push all additions to GitHub repository (`origin/main`).
 
-### Phase 7: Advanced Workflows & Testing Harness (Upcoming Cycles)
-- [ ] **Task 7.1:** Build automated regression test suite `tests/test_skills.py` verifying YAML frontmatter, schema validity, and zero em dashes across all templates.
-- [ ] **Task 7.2:** Create Obsidian Vault Community Plugin integration guide and template cards (`prompts/obsidian-d-mode.md`).
-- [ ] **Task 7.3:** Create raycast/alfred quick-capture snippets for macOS/Windows clipboard compilation.
-- [ ] **Task 7.4:** Add interactive copy buttons for individual Mermaid templates in `index.html`.
+### Phase 7: Advanced Workflows & Testing Harness
+- [x] **Task 7.1:** Build automated regression test suite `tests/test_skills.py` verifying YAML frontmatter, schema validity, and zero em dashes across all templates.
+- [x] **Task 7.2:** Create Obsidian Vault Community Plugin integration guide and template cards (`prompts/obsidian-d-mode.md`).
+- [x] **Task 7.3:** Create raycast/alfred quick-capture snippets for macOS/Windows clipboard compilation (`scripts/quick_capture.py` and `prompts/quick-capture.md`).
+- [x] **Task 7.4:** Add interactive copy buttons for individual Mermaid templates in `index.html`.
+
+### Phase 8: Open-Source Community & Governance (Upcoming Cycles)
+- [ ] **Task 8.1:** Create `CONTRIBUTING.md` with guidelines for contributing new cognitive templates and prompts.
+- [ ] **Task 8.2:** Create `CODE_OF_CONDUCT.md` establishing a welcoming, neurodivergent-friendly standard.
+- [ ] **Task 8.3:** Create GitHub issue templates for bug reports and new skill proposals (`.github/ISSUE_TEMPLATE/`).
+- [ ] **Task 8.4:** Build an automated GitHub Action workflow (`.github/workflows/test.yml`) running `tests/test_skills.py` on push and pull requests.
 
 ---
 
@@ -66,3 +72,4 @@
 | **Initial** | 2026-09-10 19:04 | Core Suite v0.1.0 Released | `SKILL.md`, `skills/*`, `scripts/*` | `8ffce8e` |
 | **Cycle 1** | 2026-09-10 19:10 | Platform Presets & Research Basis | `prompts/*`, `RESEARCH.md`, `CITATION.cff` | `6ecc498` |
 | **Cycle 2** | 2026-09-10 19:20 | Modular Templates, CLI & Diagram Showcase | `skills/*`, `scripts/*`, `index.html` | `772b22c` |
+| **Cycle 3** | 2026-09-10 19:30 | Test Suite, Obsidian Scaffolding & Quick-Capture | `tests/*`, `scripts/quick_capture.py`, `prompts/*` | `pending` |
