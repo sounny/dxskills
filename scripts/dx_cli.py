@@ -387,6 +387,14 @@ def main():
     p_saccade.add_argument("--output-canvas", "-c", default="", help="Output optimized Obsidian .canvas filepath")
     p_saccade.add_argument("--svg", "-s", default="", help="Output ocular scanpath SVG filepath")
     p_saccade.add_argument("--json", "-j", action="store_true", help="Output raw JSON saccadic metrics")
+
+    # glare-opt
+    p_glare = subparsers.add_parser("glare-opt", help="Autonomous cognitive visual attention heatmap and dyslexia glare optimizer")
+    p_glare.add_argument("canvas", help="Target Obsidian .canvas filepath to evaluate for optical glare and crowding")
+    p_glare.add_argument("--palette", "-p", choices=["warm_paper", "soft_slate", "solarized_dark"], default="soft_slate", help="Target dyslexia-friendly palette (default: soft_slate)")
+    p_glare.add_argument("--output-canvas", "-c", default="", help="Output optimized Obsidian .canvas filepath")
+    p_glare.add_argument("--svg", "-s", default="", help="Output visual attention heatmap SVG filepath")
+    p_glare.add_argument("--json", "-j", action="store_true", help="Output raw JSON optical audit telemetry")
     
     args = parser.parse_args()
     
@@ -1022,6 +1030,53 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Visual scanpath SVG exported to: {args.svg}")
+    elif args.command == "glare-opt":
+        import scripts.glare_optimizer as go
+        canvas_path = os.path.abspath(args.canvas)
+        if not os.path.isfile(canvas_path):
+            print(f"[DxSkills] Error: Canvas file not found: {canvas_path}")
+            sys.exit(1)
+        with open(canvas_path, "r", encoding="utf-8") as f:
+            canvas_data = json.load(f)
+
+        optimizer = go.DyslexiaGlareOptimizer()
+        optimizer.load_canvas(canvas_data)
+        audit = optimizer.audit_optical_comfort()
+
+        if args.json:
+            out = {
+                "canvas": canvas_path,
+                "optical_comfort_score": audit.optical_comfort_score,
+                "average_contrast_ratio": audit.average_contrast_ratio,
+                "stark_contrast_violations": audit.stark_contrast_violations,
+                "low_contrast_violations": audit.low_contrast_violations,
+                "high_crowding_nodes": audit.high_crowding_nodes,
+                "palette_recommendation": audit.palette_recommendation,
+                "nodes": [
+                    {
+                        "id": p.node_id,
+                        "contrast_ratio": p.contrast_ratio,
+                        "glare_risk": p.glare_risk,
+                        "crowding_factor": p.crowding_factor
+                    } for p in audit.node_profiles
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            report = go.DyslexiaGlareOptimizer.export_audit_markdown(audit)
+            print("\n" + report)
+
+        if args.output_canvas:
+            opt_canvas = optimizer.optimize_canvas(target_palette=args.palette)
+            with open(args.output_canvas, "w", encoding="utf-8") as f:
+                json.dump(opt_canvas, f, indent=2)
+            print(f"\n[DxSkills] Glare-optimized .canvas exported to: {args.output_canvas}")
+
+        if args.svg:
+            svg_code = optimizer.export_heatmap_svg(audit)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Visual attention heatmap SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
