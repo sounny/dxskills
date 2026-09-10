@@ -269,6 +269,13 @@ def main():
     p_cluster.add_argument("--output", "-o", default="", help="Output clustered Obsidian Canvas (.canvas) filepath")
     p_cluster.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     
+    # debate
+    p_debate = subparsers.add_parser("debate", help="Autonomous Socratic debate and adversarial thesis stress-testing simulator")
+    p_debate.add_argument("input", nargs="?", default="", help="Input text, proposal markdown file, or raw claim")
+    p_debate.add_argument("--topic", "-t", default="", help="Explicit topic title for the debate")
+    p_debate.add_argument("--format", "-f", choices=["markdown", "html", "canvas", "json"], default="markdown", help="Output format (default: markdown)")
+    p_debate.add_argument("--output", "-o", default="", help="Output filepath")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -450,6 +457,23 @@ def main():
             }, indent=2))
         else:
             print(sc.format_cluster_terminal_report(res))
+    elif args.command == "debate":
+        import scripts.socratic_debate as sd
+        text = read_input(args.input) if args.input else (
+            "Our spatial canvas architecture effortlessly eliminates all cognitive friction for non-linear thinkers. "
+            "Because users navigate ideas spatially, traditional linear hierarchies will become completely obsolete. "
+            "The engine automatically syncs high-dimensional vector graphs without any configuration overhead."
+        )
+        debate_data, formatted = sd.run_socratic_debate(
+            text,
+            topic=args.topic or None,
+            output_format=args.format,
+            output_file=args.output or None
+        )
+        if not args.output:
+            print(formatted)
+        else:
+            print(f"\n[DxSkills] Debate output written to: {args.output} (Score: {debate_data['thesis_readiness_score']}/100)")
     else:
         parser.print_help()
 
