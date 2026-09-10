@@ -262,6 +262,13 @@ def main():
     p_stream.add_argument("--svg", "-s", default="", help="Output vector .svg file path")
     p_stream.add_argument("--export", "-e", default="", help="Base filepath prefix to export .canvas, .svg, and .md")
     
+    # cluster
+    p_cluster = subparsers.add_parser("cluster", help="Cluster spatial nodes into constellation groups and discover cross-links")
+    p_cluster.add_argument("input", nargs="?", default="", help="Input .canvas file, markdown file, or text list (defaults to sample nodes)")
+    p_cluster.add_argument("--threshold", "-t", type=float, default=0.15, help="Similarity threshold (default: 0.15)")
+    p_cluster.add_argument("--output", "-o", default="", help="Output clustered Obsidian Canvas (.canvas) filepath")
+    p_cluster.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -400,6 +407,49 @@ def main():
         else:
             print("\n--- Finalized D-Mode Markdown Summary ---")
             print(streamer.get_markdown_summary())
+    elif args.command == "cluster":
+        import json
+        import scripts.spatial_cluster as sc
+        raw_nodes = []
+        if args.input and os.path.isfile(args.input):
+            if args.input.endswith(".canvas"):
+                with open(args.input, "r", encoding="utf-8") as f:
+                    c_data = json.load(f)
+                    raw_nodes = c_data.get("nodes", [])
+            else:
+                with open(args.input, "r", encoding="utf-8") as f:
+                    lines = [l.strip() for l in f.readlines() if l.strip()]
+                    for idx, line in enumerate(lines, 1):
+                        raw_nodes.append({"id": f"node-{idx}", "text": line})
+        elif args.input:
+            lines = [l.strip() for l in args.input.splitlines() if l.strip()]
+            for idx, line in enumerate(lines, 1):
+                raw_nodes.append({"id": f"node-{idx}", "text": line})
+        else:
+            raw_nodes = [
+                {"id": "node-1", "text": "Deploying Kubernetes cluster with worker replicas and load balancing."},
+                {"id": "node-2", "text": "Venture pitch deck financial projections and SaaS recurring revenue."},
+                {"id": "node-3", "text": "Container orchestration, Docker worker pods, and cluster autoscaling."},
+                {"id": "node-4", "text": "Customer acquisition cost, sales pipeline, and seed round pitch."},
+                {"id": "node-5", "text": "Database indexing, query optimization, and connection pooling."}
+            ]
+
+        clusterer = sc.SpatialGraphClusterer(similarity_threshold=args.threshold)
+        res = clusterer.generate_clustered_canvas(raw_nodes)
+
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as f:
+                f.write(res["canvas_json"])
+            print(f"\n[DxSkills] Exported clustered Canvas to: {args.output}")
+        elif args.json:
+            print(json.dumps({
+                "clusters_count": res["clusters_count"],
+                "cross_links_count": res["cross_links_count"],
+                "clusters": res["clusters"],
+                "cross_links": res["cross_links"]
+            }, indent=2))
+        else:
+            print(sc.format_cluster_terminal_report(res))
     else:
         parser.print_help()
 
