@@ -57,9 +57,14 @@ class TestDesktopCompanion(unittest.TestCase):
         self.assertNotIn(chr(8212), res["markdown"])
 
     def test_daemon_loop_bounded_iteration(self):
-        # Verify daemon loop starts, iterates once, and terminates cleanly
-        self.companion.run_daemon_loop(poll_interval=0.01, max_iterations=1)
-        self.assertFalse(self.companion.running)
+        # Mock get_system_clipboard so subprocess powershell is not spawned in unit tests
+        orig_get = dc.get_system_clipboard
+        try:
+            dc.get_system_clipboard = lambda: ""
+            self.companion.run_daemon_loop(poll_interval=0.001, max_iterations=1)
+            self.assertFalse(self.companion.running)
+        finally:
+            dc.get_system_clipboard = orig_get
 
 if __name__ == "__main__":
     unittest.main()
