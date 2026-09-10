@@ -103,13 +103,17 @@
 - [x] **Task 17.1:** Create Dockerfile and `docker-compose.yml` for self-hosted D-Mode gateway with local Whisper and Ollama.
 - [x] **Task 17.2:** Add health check endpoints, compilation API, and latency telemetry dashboard (`server/gateway.py`).
 
-### Phase 18: VS Code Native Extension & Editor Scaffolding (Next Cycles)
-- [ ] **Task 18.1:** Scaffold `extensions/vscode-dxskills/` with status bar quick-capture command.
-- [ ] **Task 18.2:** Add automatic typo auto-fixer that operates quietly without red squiggly anxiety.
+### Phase 18: VS Code Native Extension & Editor Scaffolding
+- [x] **Task 18.1:** Scaffold `extensions/vscode-dxskills/` with status bar quick-capture command.
+- [x] **Task 18.2:** Add automatic typo auto-fixer that operates quietly without red squiggly anxiety.
 
-### Phase 19: Cognitive Load Analytics & Productivity Telemetry
+### Phase 19: Cognitive Load Analytics & Productivity Telemetry (Next Cycles)
 - [ ] **Task 19.1:** Add cognitive load reduction estimator calculating phonological working memory cycles saved per compiled deliverable.
 - [ ] **Task 19.2:** Add real-time telemetry badge in web interface.
+
+### Phase 20: Automated PDF & Typography Exporter
+- [ ] **Task 20.1:** Create Typst and Pandoc executive briefing templates (`templates/executive_briefing.typ`).
+- [ ] **Task 20.2:** CLI command `dx_cli.py export --format pdf` for 1-click Swiss-style PDF export.
 
 ---
 
@@ -131,6 +135,7 @@
 | **Cycle 11** | 2026-09-10 20:42 | Whisper Audio Pipeline & Browser Web Audio Dictation | `skills/dx-voice/*`, `index.html` | `9af66e7` |
 | **Cycle 12** | 2026-09-10 20:52 | Multilingual Scaffolding: French D-Mode & Navbar Language Toggle | `prompts/d-mode-fr.md`, `index.html` | `450f965` |
 | **Cycle 13** | 2026-09-10 21:02 | Self-Hosted Container Gateway & Docker Compose Stack | `server/gateway.py`, `Dockerfile`, `docker-compose.yml` | `79a2115` |
+| **Cycle 14** | 2026-09-10 21:22 | VS Code Native Extension & Quiet Typo Stabilizer | `extensions/vscode-dxskills/*`, `index.html` | `423de01` |
 
 
 

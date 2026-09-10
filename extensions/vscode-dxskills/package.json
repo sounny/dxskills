@@ -1,0 +1,88 @@
+{
+  "name": "dxskills-vscode",
+  "displayName": "DxSkills: Speed-of-Thought Scaffolding",
+  "description": "Cognitive scaffolding, anti-wall-of-text compiler, and quiet typo stabilizer for spatial and non-linear thinkers.",
+  "version": "0.1.0",
+  "publisher": "sounny",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sounny/dxskills.git"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Formatters",
+    "Snippets"
+  ],
+  "keywords": [
+    "dyslexia",
+    "cognitive-scaffolding",
+    "mermaid",
+    "anti-wall-of-text",
+    "productivity"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "dxskills.compileSelection",
+        "title": "DxSkills: Compile Selection to D-Mode Structure",
+        "category": "DxSkills"
+      },
+      {
+        "command": "dxskills.insertDiagram",
+        "title": "DxSkills: Insert Architecture / Mindmap Diagram",
+        "category": "DxSkills"
+      },
+      {
+        "command": "dxskills.quietFix",
+        "title": "DxSkills: Quietly Normalize Inversions and Typos",
+        "category": "DxSkills"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "dxskills.compileSelection",
+        "key": "ctrl+alt+d",
+        "mac": "cmd+alt+d",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "dxskills.quietFix",
+        "key": "ctrl+alt+f",
+        "mac": "cmd+alt+f",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "DxSkills",
+      "properties": {
+        "dxskills.gatewayUrl": {
+          "type": "string",
+          "default": "http://localhost:8080/compile",
+          "description": "Optional self-hosted DxSkills Gateway URL for AI-powered structuring."
+        },
+        "dxskills.quietFixOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Quietly fix common letter inversions on save without showing red squiggles."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.3.0"
+  }
+}
