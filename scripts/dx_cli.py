@@ -436,6 +436,15 @@ def main():
     p_zoom.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_zoom.add_argument("--svg", "-s", default="", help="Output multi-scale semantic zoom SVG filepath")
     p_zoom.add_argument("--json", "-j", action="store_true", help="Output raw JSON semantic zoom telemetry")
+
+    # rhythm-pacer
+    p_rhythm = subparsers.add_parser("rhythm-pacer", help="Autonomous cognitive spatial working memory saccadic pacing and rhythm metronome")
+    p_rhythm.add_argument("input", nargs="?", help="Target text to pace")
+    p_rhythm.add_argument("--wpm", "-w", type=int, default=160, help="Target WPM (default: 160)")
+    p_rhythm.add_argument("--chunk", "-k", type=int, default=2, help="Words per fixation beat (default: 2)")
+    p_rhythm.add_argument("--output-wav", "-a", default="", help="Output acoustic metronome WAV filepath")
+    p_rhythm.add_argument("--svg", "-s", default="", help="Output visual metronome SVG filepath")
+    p_rhythm.add_argument("--json", "-j", action="store_true", help="Output raw JSON rhythm telemetry")
     
     args = parser.parse_args()
     
@@ -1425,6 +1434,50 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Semantic zoom SVG exported to: {args.svg}")
+    elif args.command == "rhythm-pacer":
+        import scripts.rhythm_pacer as rp
+        pacer = rp.SaccadicRhythmPacer()
+        if args.input:
+            raw_text = read_input(args.input)
+        else:
+            raw_text = (
+                "Spatial cognition and visual memory offload phonological decoding stress. "
+                "Rhythmic saccadic pacing stabilizes ocular fixation jumps across sentences, "
+                "reducing regression rates and eliminating visual fatigue."
+            )
+
+        cadence = pacer.calculate_cadence(raw_text, target_wpm=args.wpm, words_per_fixation=args.chunk)
+        audit = pacer.audit_cadence(cadence)
+        timeline = pacer.generate_pacing_timeline(raw_text, target_wpm=args.wpm, words_per_fixation=args.chunk)
+
+        if args.json:
+            out = {
+                "wpm": cadence.wpm,
+                "words_per_fixation": cadence.words_per_fixation,
+                "fixation_interval_ms": cadence.fixation_interval_ms,
+                "beats_per_minute": cadence.beats_per_minute,
+                "total_words": cadence.total_words,
+                "estimated_duration_sec": cadence.estimated_duration_sec,
+                "cadence_profile": audit.cadence_profile,
+                "regression_risk_reduction_pct": audit.regression_risk_reduction_pct,
+                "fixation_consistency_score": audit.fixation_consistency_score,
+                "soundtrack_frequency_hz": audit.soundtrack_frequency_hz,
+                "timeline": timeline[:20]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            summary = rp.SaccadicRhythmPacer.export_summary(cadence, audit, timeline)
+            print("\n" + summary)
+
+        if args.output_wav:
+            pacer.write_audio_metronome(cadence, args.output_wav, frequency_hz=audit.soundtrack_frequency_hz, max_duration_sec=8.0)
+            print(f"\n[DxSkills] Synthesized acoustic metronome WAV: {args.output_wav}")
+
+        if args.svg:
+            svg_code = pacer.export_svg_pacer(timeline, cadence, audit)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Visual metronome SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
