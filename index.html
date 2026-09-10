@@ -223,153 +223,276 @@
     </div>
   </section>
 
-  <!-- INTERACTIVE SIMULATOR (BEFORE & AFTER) -->
+  <!-- INTERACTIVE SIMULATOR & PLAYGROUND -->
   <section id="simulator" class="py-16 md:py-24 border-b border-mono-200 dark:border-mono-800/80 bg-mono-100/50 dark:bg-mono-950 transition-colors duration-200">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
         <div>
-          <span class="text-xs font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 block mb-1">Live Comparison</span>
+          <span class="text-xs font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 block mb-1">Live Cognitive Scaffolding</span>
           <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-mono-950 dark:text-mono-100">See D-Mode in action.</h2>
-          <p class="text-sm text-mono-600 dark:text-mono-400 mt-1 max-w-xl">Compare how standard AI responds to a fast dyslexic brain dump versus how DxSkills formats it.</p>
+          <p class="text-sm text-mono-600 dark:text-mono-400 mt-1 max-w-xl">Compare how standard AI responds to a fast dyslexic brain dump versus how DxSkills compiles it into visual architecture.</p>
         </div>
         
-        <!-- Toggle Mode -->
+        <!-- Top Mode Switcher: Comparison vs Interactive Playground -->
         <div class="flex items-center p-1 rounded-xl bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-xs font-mono self-start md:self-auto shadow-sm">
-          <button id="tab-dx" onclick="switchDemo('dx')" class="px-4 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5">
-            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
-            <span>DxSkills (D-Mode)</span>
+          <button id="sim-tab-compare" onclick="switchSimulatorView('compare')" class="px-4 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5">
+            <i data-lucide="split" class="w-3.5 h-3.5"></i>
+            <span>Side-by-Side Example</span>
           </button>
-          <button id="tab-standard" onclick="switchDemo('standard')" class="px-4 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5">
-            <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
-            <span>Standard AI</span>
+          <button id="sim-tab-play" onclick="switchSimulatorView('play')" class="px-4 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5">
+            <i data-lucide="play" class="w-3.5 h-3.5"></i>
+            <span>Live Playground</span>
           </button>
         </div>
       </div>
 
-      <!-- Comparison Shell -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- User Input Panel (Left) -->
-        <div class="lg:col-span-5 rounded-2xl bg-white dark:bg-mono-900/50 border border-mono-200 dark:border-mono-800 p-6 flex flex-col justify-between shadow-sm">
-          <div>
-            <div class="flex items-center justify-between pb-4 mb-4 border-b border-mono-100 dark:border-mono-800/80">
-              <span class="text-xs font-mono text-mono-600 dark:text-mono-400 flex items-center gap-2">
-                <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
-                <span>Raw User Brain Dump (Speed-of-Thought)</span>
-              </span>
-              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-400">Fast Typing</span>
-            </div>
-            
-            <div class="font-mono text-xs text-mono-800 dark:text-mono-300 leading-relaxed bg-mono-50 dark:bg-mono-950/60 p-4 rounded-xl border border-mono-200 dark:border-mono-800/60 space-y-2">
-              <p class="text-mono-600 dark:text-mono-400 italic">"hey need to update client and dev team on the spatial analytics release. milestone 2 is pushed back to friday 5pm cause cloud provider had api outage yesterday. also remind everyone to chekc coordinate refrence systems and api keys before runing test pipeline. team sync is wednesday 2pm to 3:30pm and if anyone is blocked sooner just ping or call me directly"</p>
-            </div>
-
-            <div class="mt-4 text-[11px] font-mono text-mono-500 space-y-1">
-              <div class="flex items-center gap-1.5">
-                <i data-lucide="check" class="w-3 h-3 text-mono-600 dark:text-mono-400"></i>
-                <span>Typos present ("refrence", "chekc", "runing")</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <i data-lucide="check" class="w-3 h-3 text-mono-600 dark:text-mono-400"></i>
-                <span>Unstructured stream of operational facts</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-6 mt-6 border-t border-mono-100 dark:border-mono-800 text-xs font-mono text-mono-600 dark:text-mono-400 flex items-center justify-between">
-            <span>Cognitive State: Non-Linear Flow</span>
-            <span class="text-mono-950 dark:text-mono-200 font-bold">100% Retained</span>
+      <!-- VIEW 1: SIDE-BY-SIDE COMPARISON -->
+      <div id="sim-view-compare" class="space-y-6">
+        <div class="flex justify-end mb-2">
+          <div class="flex items-center p-1 rounded-xl bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-xs font-mono shadow-sm">
+            <button id="tab-dx" onclick="switchDemo('dx')" class="px-4 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5">
+              <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+              <span>DxSkills (D-Mode)</span>
+            </button>
+            <button id="tab-standard" onclick="switchDemo('standard')" class="px-4 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5">
+              <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+              <span>Standard AI</span>
+            </button>
           </div>
         </div>
 
-        <!-- AI Output Panel (Right) -->
-        <div class="lg:col-span-7 rounded-2xl bg-white dark:bg-mono-900 border border-mono-300 dark:border-mono-700 p-6 shadow-md dark:shadow-2xl">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          <!-- State 1: D-Mode (Default) -->
-          <div id="view-dx" class="space-y-4">
+          <!-- User Input Panel (Left) -->
+          <div class="lg:col-span-5 rounded-2xl bg-white dark:bg-mono-900/50 border border-mono-200 dark:border-mono-800 p-6 flex flex-col justify-between shadow-sm">
+            <div>
+              <div class="flex items-center justify-between pb-4 mb-4 border-b border-mono-100 dark:border-mono-800/80">
+                <span class="text-xs font-mono text-mono-600 dark:text-mono-400 flex items-center gap-2">
+                  <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+                  <span>Raw User Brain Dump (Speed-of-Thought)</span>
+                </span>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-400">Fast Typing</span>
+              </div>
+              
+              <div class="font-mono text-xs text-mono-800 dark:text-mono-300 leading-relaxed bg-mono-50 dark:bg-mono-950/60 p-4 rounded-xl border border-mono-200 dark:border-mono-800/60 space-y-2">
+                <p class="text-mono-600 dark:text-mono-400 italic">"hey need to update client and dev team on the spatial analytics release. milestone 2 is pushed back to friday 5pm cause cloud provider had api outage yesterday. also remind everyone to chekc coordinate refrence systems and api keys before runing test pipeline. team sync is wednesday 2pm to 3:30pm and if anyone is blocked sooner just ping or call me directly"</p>
+              </div>
+
+              <div class="mt-4 text-[11px] font-mono text-mono-500 space-y-1">
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="check" class="w-3 h-3 text-mono-600 dark:text-mono-400"></i>
+                  <span>Typos present ("refrence", "chekc", "runing")</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="check" class="w-3 h-3 text-mono-600 dark:text-mono-400"></i>
+                  <span>Unstructured stream of operational facts</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-6 mt-6 border-t border-mono-100 dark:border-mono-800 text-xs font-mono text-mono-600 dark:text-mono-400 flex items-center justify-between">
+              <span>Cognitive State: Non-Linear Flow</span>
+              <span class="text-mono-950 dark:text-mono-200 font-bold">100% Retained</span>
+            </div>
+          </div>
+
+          <!-- AI Output Panel (Right) -->
+          <div class="lg:col-span-7 rounded-2xl bg-white dark:bg-mono-900 border border-mono-300 dark:border-mono-700 p-6 shadow-md dark:shadow-2xl">
+            
+            <!-- State 1: D-Mode (Default) -->
+            <div id="view-dx" class="space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-mono-100 dark:border-mono-800">
+                <span class="text-xs font-mono text-mono-900 dark:text-mono-200 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-mono-950 dark:bg-mono-100"></span>
+                  <strong class="text-mono-950 dark:text-white">D-Mode Output</strong>: High-Signal Visual Hierarchy
+                </span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold">Zero Fluff</span>
+              </div>
+
+              <div class="p-4 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-sans text-xs sm:text-sm text-mono-800 dark:text-mono-200 space-y-3">
+                <!-- BLUF -->
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-900/80 border border-mono-200 dark:border-mono-700/60 shadow-sm">
+                  <span class="text-[10px] font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 font-bold block mb-1">Bottom Line Up Front:</span>
+                  <p class="font-medium text-mono-950 dark:text-white">Milestone 2 is extended to <strong>Friday at 5:00 PM</strong> due to yesterday's cloud provider outage. Team sync remains Wednesday from 2:00 PM to 3:30 PM.</p>
+                </div>
+
+                <!-- Structured Schedule Table -->
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs font-mono border-collapse">
+                    <thead>
+                      <tr class="border-b border-mono-200 dark:border-mono-800 text-mono-500 dark:text-mono-400">
+                        <th class="py-1.5">Deliverable</th>
+                        <th class="py-1.5">New Timeline</th>
+                        <th class="py-1.5">Action Item</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-mono-200 dark:divide-mono-800/60 text-mono-700 dark:text-mono-300">
+                      <tr>
+                        <td class="py-2 text-mono-950 dark:text-white font-medium">Milestone 2 Release</td>
+                        <td class="py-2">Friday, 5:00 PM</td>
+                        <td class="py-2 text-mono-500 dark:text-mono-400">Verify coordinate reference systems (CRS) & API keys</td>
+                      </tr>
+                      <tr>
+                        <td class="py-2 text-mono-950 dark:text-white font-medium">Team Sync Call</td>
+                        <td class="py-2">Wednesday, 2:00 to 3:30 PM</td>
+                        <td class="py-2 text-mono-500 dark:text-mono-400">Review integration pipeline blockers</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Draft for Team -->
+                <div class="pt-2 border-t border-mono-200 dark:border-mono-800 space-y-2">
+                  <span class="text-[10px] font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 font-bold block">Ready Project Brief:</span>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-900/40 border border-mono-200 dark:border-mono-800 text-xs leading-relaxed text-mono-800 dark:text-mono-300 space-y-2 font-mono">
+                    <p>Hi everyone,</p>
+                    <p>Given the cloud API outage yesterday, Milestone 2 is now adjusted to this <strong>Friday at 5:00 PM</strong>. Before running the integration test pipeline, please verify that your coordinate reference systems (CRS) and authentication keys are configured properly in your environments.</p>
+                    <p>We will review architecture and blockers during our sync on Wednesday from 2:00 PM to 3:30 PM. If you run into blockers before then, reach out directly on Slack or call.</p>
+                    <p>Best regards,<br>Project Lead</p>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] font-mono text-mono-500 dark:text-mono-400 pt-1">
+                <span>Spelling silently corrected: 3 items</span>
+                <span class="text-mono-950 dark:text-mono-200 font-medium">Em dashes: 0 • Generic cheerleading: 0</span>
+              </div>
+            </div>
+
+            <!-- State 2: Standard AI (Hidden by default) -->
+            <div id="view-standard" class="hidden space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-mono-200 dark:border-mono-800">
+                <span class="text-xs font-mono text-mono-500 dark:text-mono-400 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-mono-400 dark:bg-mono-600"></span>
+                  <span>Standard AI Response: Dense Wall of Text</span>
+                </span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-mono-200 dark:bg-mono-800 text-mono-600 dark:text-mono-400">High Fatigue</span>
+              </div>
+
+              <div class="p-4 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-sans text-xs sm:text-sm text-mono-600 dark:text-mono-400 space-y-3 leading-relaxed">
+                <p>I would be delighted to help you compose this project briefing! Here is an expanded draft for your consideration. I also noticed a few typographical errors in your notes such as "chekc" and "runing", which I have taken the liberty of correcting for you.</p>
+                
+                <p><em>"Dear Esteemed Colleagues and Valued Stakeholders, I hope this communication finds each and every one of you in exceptionally high spirits as we navigate through this intensive development cycle! It is with great enthusiasm that I step in to provide clarity regarding our ongoing architectural trajectory. In light of the unforeseen technological difficulties experienced with our cloud provider infrastructure yesterday, I have resolved to graciously extend the milestone delivery window until this Friday at precisely 5:00 PM CST, giving you the optimal window to shine..."</em></p>
+
+                <div class="p-3 rounded bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-[11px] text-red-700 dark:text-red-300 font-mono">
+                  ❌ 3 dense paragraphs • Generic corporate cheerleading • Em dashes present • Patronizing spelling callout
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VIEW 2: LIVE INTERACTIVE PLAYGROUND -->
+      <div id="sim-view-playground" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Playground Input Panel (Left) -->
+          <div class="lg:col-span-5 rounded-2xl bg-white dark:bg-mono-900/50 border border-mono-200 dark:border-mono-800 p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-mono-100 dark:border-mono-800">
+                <span class="text-xs font-mono text-mono-700 dark:text-mono-300 flex items-center gap-2">
+                  <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                  <span class="font-bold">Your Speed-of-Thought Dump</span>
+                </span>
+                <span class="text-[11px] font-mono text-mono-500">In-Browser Compiler</span>
+              </div>
+
+              <!-- Quick Presets -->
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-[10px] font-mono text-mono-500 uppercase tracking-wider">Presets:</span>
+                <button onclick="loadPlaygroundSample('outage')" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">Outage Brief</button>
+                <button onclick="loadPlaygroundSample('pitch')" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">Venture Pitch</button>
+                <button onclick="loadPlaygroundSample('grant')" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">Grant Proposal</button>
+              </div>
+
+              <!-- Textarea -->
+              <textarea id="playground-input" rows="7" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-900 dark:text-mono-100 placeholder-mono-400 focus:outline-none focus:border-mono-400 dark:focus:border-mono-600 transition resize-none" placeholder="Paste or type any disordered brain dump, quick fragments, or rough notes here..."></textarea>
+
+              <button onclick="compilePlayground()" class="w-full py-3 rounded-xl bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold text-xs font-mono hover:bg-black dark:hover:bg-white transition flex items-center justify-center gap-2 shadow-sm">
+                <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                <span>Compile with D-Mode (Zero Latency)</span>
+              </button>
+            </div>
+
+            <div class="pt-4 border-t border-mono-100 dark:border-mono-800 text-[11px] font-mono text-mono-500 flex items-center justify-between">
+              <span>Runs 100% locally in browser</span>
+              <span>Zero data transmission</span>
+            </div>
+          </div>
+
+          <!-- Playground Output Panel (Right) -->
+          <div class="lg:col-span-7 rounded-2xl bg-white dark:bg-mono-900 border border-mono-300 dark:border-mono-700 p-6 shadow-md dark:shadow-2xl space-y-4">
+            
             <div class="flex items-center justify-between pb-3 border-b border-mono-100 dark:border-mono-800">
               <span class="text-xs font-mono text-mono-900 dark:text-mono-200 flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-mono-950 dark:bg-mono-100"></span>
-                <strong class="text-mono-950 dark:text-white">D-Mode Output</strong>: High-Signal Visual Hierarchy
+                <strong class="text-mono-950 dark:text-white">Compiled Visual Architecture</strong>
               </span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold">Zero Fluff</span>
+              <button onclick="copyPlaygroundMarkdown()" class="text-xs font-mono text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white flex items-center gap-1">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+                <span id="copy-play-text">Copy Markdown</span>
+              </button>
             </div>
 
-            <div class="p-4 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-sans text-xs sm:text-sm text-mono-800 dark:text-mono-200 space-y-3">
-              <!-- BLUF -->
+            <div id="playground-output-container" class="p-4 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-sans text-xs sm:text-sm text-mono-800 dark:text-mono-200 space-y-3">
+              
+              <!-- Dynamic BLUF Card -->
               <div class="p-3 rounded-lg bg-white dark:bg-mono-900/80 border border-mono-200 dark:border-mono-700/60 shadow-sm">
                 <span class="text-[10px] font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 font-bold block mb-1">Bottom Line Up Front:</span>
-                <p class="font-medium text-mono-950 dark:text-white">Milestone 2 is extended to <strong>Friday at 5:00 PM</strong> due to yesterday's cloud provider outage. Team sync remains Wednesday from 2:00 PM to 3:30 PM.</p>
+                <p id="play-bluf-text" class="font-medium text-mono-950 dark:text-white">Milestone 2 is extended to Friday at 5:00 PM due to cloud provider outage. Team sync remains Wednesday 2:00 PM.</p>
               </div>
 
-              <!-- Structured Schedule Table -->
+              <!-- Dynamic Schedule / Execution Table -->
               <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono border-collapse">
                   <thead>
                     <tr class="border-b border-mono-200 dark:border-mono-800 text-mono-500 dark:text-mono-400">
                       <th class="py-1.5">Deliverable</th>
-                      <th class="py-1.5">New Timeline</th>
+                      <th class="py-1.5">Timeline / Status</th>
                       <th class="py-1.5">Action Item</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-mono-200 dark:divide-mono-800/60 text-mono-700 dark:text-mono-300">
+                  <tbody id="play-table-body" class="divide-y divide-mono-200 dark:divide-mono-800/60 text-mono-700 dark:text-mono-300">
                     <tr>
-                      <td class="py-2 text-mono-950 dark:text-white font-medium">Milestone 2 Release</td>
+                      <td class="py-2 text-mono-950 dark:text-white font-medium">Milestone 2 Delivery</td>
                       <td class="py-2">Friday, 5:00 PM</td>
-                      <td class="py-2 text-mono-500 dark:text-mono-400">Verify coordinate reference systems (CRS) & API keys</td>
+                      <td class="py-2 text-mono-500 dark:text-mono-400">Verify CRS coordinates & API authentication</td>
                     </tr>
                     <tr>
                       <td class="py-2 text-mono-950 dark:text-white font-medium">Team Sync Call</td>
                       <td class="py-2">Wednesday, 2:00 to 3:30 PM</td>
-                      <td class="py-2 text-mono-500 dark:text-mono-400">Review integration pipeline blockers</td>
+                      <td class="py-2 text-mono-500 dark:text-mono-400">Review deployment blockers</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              <!-- Draft for Team -->
+              <!-- Dynamic Clean Action Draft -->
               <div class="pt-2 border-t border-mono-200 dark:border-mono-800 space-y-2">
-                <span class="text-[10px] font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 font-bold block">Ready Project Brief:</span>
-                <div class="p-3 rounded-lg bg-white dark:bg-mono-900/40 border border-mono-200 dark:border-mono-800 text-xs leading-relaxed text-mono-800 dark:text-mono-300 space-y-2 font-mono">
+                <span class="text-[10px] font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 font-bold block">Refined Action Draft:</span>
+                <div id="play-draft-text" class="p-3 rounded-lg bg-white dark:bg-mono-900/40 border border-mono-200 dark:border-mono-800 text-xs leading-relaxed text-mono-800 dark:text-mono-300 space-y-2 font-mono">
                   <p>Hi everyone,</p>
-                  <p>Given the cloud API outage yesterday, Milestone 2 is now adjusted to this <strong>Friday at 5:00 PM</strong>. Before running the integration test pipeline, please verify that your coordinate reference systems (CRS) and authentication keys are configured properly in your environments.</p>
-                  <p>We will review architecture and blockers during our sync on Wednesday from 2:00 PM to 3:30 PM. If you run into blockers before then, reach out directly on Slack or call.</p>
-                  <p>Best regards,<br>Project Lead</p>
+                  <p>Milestone 2 is adjusted to this Friday at 5:00 PM following yesterday's cloud API disruption. Before triggering test pipelines, please verify coordinate reference systems (CRS) and authentication keys.</p>
+                  <p>We will align during our Wednesday sync from 2:00 PM to 3:30 PM. Let me know if you are blocked sooner.</p>
                 </div>
               </div>
 
             </div>
 
+            <!-- Metrics bar -->
             <div class="flex items-center justify-between text-[11px] font-mono text-mono-500 dark:text-mono-400 pt-1">
-              <span>Spelling silently corrected: 3 items</span>
-              <span class="text-mono-950 dark:text-mono-200 font-medium">Em dashes: 0 • Generic cheerleading: 0</span>
-            </div>
-          </div>
-
-          <!-- State 2: Standard AI (Hidden by default) -->
-          <div id="view-standard" class="hidden space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-mono-200 dark:border-mono-800">
-              <span class="text-xs font-mono text-mono-500 dark:text-mono-400 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-mono-400 dark:bg-mono-600"></span>
-                <span>Standard AI Response: Dense Wall of Text</span>
-              </span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-mono-200 dark:bg-mono-800 text-mono-600 dark:text-mono-400">High Fatigue</span>
+              <span id="play-typos-stat">Silently corrected: 3 typos</span>
+              <span class="text-mono-950 dark:text-mono-200 font-medium">Em dashes: 0 • Corporate cheerleading: 0%</span>
             </div>
 
-            <div class="p-4 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-sans text-xs sm:text-sm text-mono-600 dark:text-mono-400 space-y-3 leading-relaxed">
-              <p>I would be delighted to help you compose this project briefing! Here is an expanded draft for your consideration. I also noticed a few typographical errors in your notes such as "chekc" and "runing", which I have taken the liberty of correcting for you.</p>
-              
-              <p><em>"Dear Esteemed Colleagues and Valued Stakeholders, I hope this communication finds each and every one of you in exceptionally high spirits as we navigate through this intensive development cycle! It is with great enthusiasm that I step in to provide clarity regarding our ongoing architectural trajectory. In light of the unforeseen technological difficulties experienced with our cloud provider infrastructure yesterday, I have resolved to graciously extend the milestone delivery window until this Friday at precisely 5:00 PM CST, giving you the optimal window to shine..."</em></p>
-
-              <div class="p-3 rounded bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-[11px] text-red-700 dark:text-red-300 font-mono">
-                ❌ 3 dense paragraphs • Generic corporate cheerleading • Em dashes present • Patronizing spelling callout
-              </div>
-            </div>
           </div>
 
         </div>
-
       </div>
 
     </div>
@@ -1125,6 +1248,180 @@ Core Operational Rules:
         copyText.innerText = 'Copied to Clipboard!';
         setTimeout(() => {
           copyText.innerText = 'Copy Prompt Card';
+        }, 2000);
+      });
+    }
+
+    // Simulator & Playground Controllers
+    function switchSimulatorView(view) {
+      const compareView = document.getElementById('sim-view-compare');
+      const playView = document.getElementById('sim-view-playground');
+      const tabCompare = document.getElementById('sim-tab-compare');
+      const tabPlay = document.getElementById('sim-tab-play');
+
+      if (view === 'play') {
+        compareView.classList.add('hidden');
+        playView.classList.remove('hidden');
+        tabPlay.className = 'px-4 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5';
+        tabCompare.className = 'px-4 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5';
+        const input = document.getElementById('playground-input');
+        if (!input.value.trim()) {
+          loadPlaygroundSample('outage');
+        }
+      } else {
+        playView.classList.add('hidden');
+        compareView.classList.remove('hidden');
+        tabCompare.className = 'px-4 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5';
+        tabPlay.className = 'px-4 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5';
+      }
+    }
+
+    function switchDemo(mode) {
+      const viewDx = document.getElementById('view-dx');
+      const viewStd = document.getElementById('view-standard');
+      const tabDx = document.getElementById('tab-dx');
+      const tabStd = document.getElementById('tab-standard');
+
+      if (mode === 'dx') {
+        viewDx.classList.remove('hidden');
+        viewStd.classList.add('hidden');
+        tabDx.className = 'px-4 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5';
+        tabStd.className = 'px-4 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5';
+      } else {
+        viewDx.classList.add('hidden');
+        viewStd.classList.remove('hidden');
+        tabStd.className = 'px-4 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5';
+        tabDx.className = 'px-4 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5';
+      }
+    }
+
+    const playgroundSamples = {
+      outage: "hey team cloud db went down yesterday for 4 hours so sprint milestone 2 is delayed to friday 5pm. we still have our weekly sync on wednesday from 2 to 330pm. make sure everyone checks their crs coordinates and api keys before running the new pipeline.",
+      pitch: "our startup builds developer cognitive tools for spatial thinkers. problem is linear keyboards bottleneck parallel spatial ideation. solution is d-mode cognitive compiler. raising 1.5m preseed for 18mo runway. target is 100k arr by month 12.",
+      grant: "drafting horizon europe terra wp6 summary. satellite eo data is fragmented for local co-ops. novel arch uses agentic transformers to blend sar and optical imagery. 3 work packages data ingest model training field pilots. deadline next month 15th."
+    };
+
+    function loadPlaygroundSample(preset) {
+      const sample = playgroundSamples[preset];
+      if (!sample) return;
+      const input = document.getElementById('playground-input');
+      input.value = sample;
+      compilePlayground();
+    }
+
+    const TYPO_DICT = {
+      "yestreday": "yesterday",
+      "chekc": "check",
+      "runing": "running",
+      "refrence": "reference",
+      "shure": "sure",
+      "pct": "%",
+      "wont": "won't",
+      "reimbused": "reimbursed",
+      "architechture": "architecture",
+      "delievry": "delivery",
+      "milstone": "milestone"
+    };
+
+    let lastCompiledMarkdown = "";
+
+    function compilePlayground() {
+      const raw = document.getElementById('playground-input').value.trim();
+      if (!raw) return;
+
+      let typoCount = 0;
+      let words = raw.split(/\\s+/);
+      let correctedWords = words.map(w => {
+        let clean = w.toLowerCase().replace(/[.,!?:;()]/g, '');
+        if (TYPO_DICT[clean]) {
+          typoCount++;
+          let fixed = TYPO_DICT[clean];
+          return w.toLowerCase().replace(clean, fixed);
+        }
+        return w;
+      });
+
+      let cleanText = correctedWords.join(' ').replace(/\\u2014/g, ' - ');
+      
+      let sentences = cleanText.split(/(?<=[.?!])\\s+/).filter(s => s.trim().length > 0);
+      if (sentences.length === 0) sentences = [cleanText];
+
+      let blufSentence = sentences[0];
+      if (!blufSentence.endsWith('.')) blufSentence += '.';
+      blufSentence = blufSentence.charAt(0).toUpperCase() + blufSentence.slice(1);
+
+      document.getElementById('play-bluf-text').innerHTML = blufSentence;
+
+      let rows = [];
+      let remaining = sentences.slice(1);
+      if (remaining.length === 0) {
+        rows.push({
+          item: "Core Objective",
+          status: "Immediate Focus",
+          action: blufSentence
+        });
+      } else {
+        remaining.forEach((s, idx) => {
+          let item = "Milestone " + (idx + 1);
+          let status = "Active";
+          let action = s;
+          let sLow = s.toLowerCase();
+          if (sLow.includes("deadline") || sLow.includes("friday") || sLow.includes("month") || sLow.includes("sync")) {
+            item = "Timeline / Alignment";
+            status = "Scheduled";
+          } else if (sLow.includes("package") || sLow.includes("runway") || sLow.includes("work")) {
+            item = "Deliverable Scope";
+            status = "In Progress";
+          }
+          rows.push({ item, status, action });
+        });
+      }
+
+      let tableHtml = "";
+      rows.forEach(r => {
+        tableHtml += `<tr>
+          <td class="py-2 text-mono-950 dark:text-white font-medium">${r.item}</td>
+          <td class="py-2">${r.status}</td>
+          <td class="py-2 text-mono-500 dark:text-mono-400">${r.action}</td>
+        </tr>`;
+      });
+      document.getElementById('play-table-body').innerHTML = tableHtml;
+
+      let draftHtml = `<p>Team,</p><p>${blufSentence}</p>`;
+      if (rows.length > 0) {
+        draftHtml += `<p>Key action items:</p><ul class="list-disc pl-4 space-y-1">`;
+        rows.forEach(r => {
+          draftHtml += `<li><strong>${r.item}:</strong> ${r.action}</li>`;
+        });
+        draftHtml += `</ul>`;
+      }
+      draftHtml += `<p>Please follow up if anything is blocked.</p>`;
+      document.getElementById('play-draft-text').innerHTML = draftHtml;
+
+      document.getElementById('play-typos-stat').innerText = `Silently corrected: ${typoCount} typos`;
+
+      let md = `> **BLUF:** ${blufSentence}\\n\\n`;
+      md += `| Deliverable | Timeline / Status | Action Item |\\n`;
+      md += `| :--- | :--- | :--- |\\n`;
+      rows.forEach(r => {
+        md += `| ${r.item} | ${r.status} | ${r.action} |\\n`;
+      });
+      md += `\\n### Refined Draft\\n\\nTeam,\\n\\n${blufSentence}\\n\\n`;
+      rows.forEach(r => {
+        md += `- **${r.item}:** ${r.action}\\n`;
+      });
+      md += `\\nPlease follow up if anything is blocked.\\n`;
+
+      lastCompiledMarkdown = md.replace(/\\u2014/g, ' - ');
+    }
+
+    function copyPlaygroundMarkdown() {
+      if (!lastCompiledMarkdown) compilePlayground();
+      navigator.clipboard.writeText(lastCompiledMarkdown).then(() => {
+        const btn = document.getElementById('copy-play-text');
+        btn.innerText = 'Copied!';
+        setTimeout(() => {
+          btn.innerText = 'Copy Markdown';
         }, 2000);
       });
     }

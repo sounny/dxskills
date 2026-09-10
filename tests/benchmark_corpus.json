@@ -1,0 +1,82 @@
+[
+  {
+    "id": "tc_01_cloud_outage",
+    "category": "engineering",
+    "raw_input": "hey team cloud db went down yestreday for 4 hours so sprint milestone 2 is delayed to friday 5pm. we still have our weekly sync on wednesday from 2 to 330pm. make shure everyone checks their crs coordinates and api keys before running the new pipeline.",
+    "bluf_keywords": ["Milestone 2", "Friday", "5:00 PM", "cloud"],
+    "expected_tables": ["Deliverable", "New Timeline", "Action Item"],
+    "spelling_errors_fixed": ["yestreday", "shure"]
+  },
+  {
+    "id": "tc_02_grant_proposal",
+    "category": "academic",
+    "raw_input": "we need to draft the terra horizon europe wp6 summary. key issue is satellite eo data is to fragmented for local farmers. our novel arch uses agentic transformers to blend sar and optical. need 3 work packages data ingest model training field pilots. deadline is next month 15th.",
+    "bluf_keywords": ["TERRA", "Horizon Europe", "WP6", "satellite"],
+    "expected_tables": ["Work Package", "Title", "Primary Objective"],
+    "spelling_errors_fixed": ["to fragmented"]
+  },
+  {
+    "id": "tc_03_startup_pitch",
+    "category": "startup",
+    "raw_input": "ok so our startup is building developer tools for spatial thinkers. problem is linear keyboards bottleneck rapid parallel ideation. solution is d-mode cognitive compiler. raising 1.5m preseed for 18mo runway. target is 100k arr by month 12.",
+    "bluf_keywords": ["1.5M", "pre-seed", "spatial thinkers", "cognitive compiler"],
+    "expected_tables": ["Slide", "Theme", "Core Message"],
+    "spelling_errors_fixed": []
+  },
+  {
+    "id": "tc_04_policy_update",
+    "category": "executive",
+    "raw_input": "provost sent new travel policy effective nov 1. international travel requires dean signoff 30 days ahead. per diem increased to 75eur for meals in france. hotel cap is 160eur. non compliant receipts wont be reimbused.",
+    "bluf_keywords": ["Travel policy", "November 1", "Dean sign-off"],
+    "expected_tables": ["Permitted", "Prohibited", "Approval"],
+    "spelling_errors_fixed": ["wont", "reimbused"]
+  },
+  {
+    "id": "tc_05_course_syllabus",
+    "category": "academic",
+    "raw_input": "syllabus for geo576 advanced web gis masters level. 15 weeks divided into 3 modules leaflet and openlayers, spatial vector tiles, and cloud geoprocessing. grading is 40pct weekly labs 25pct midterm 35pct final capstone app.",
+    "bluf_keywords": ["GEO 576", "Advanced Web GIS", "Masters"],
+    "expected_tables": ["Module", "Weeks", "Theme", "Deliverable"],
+    "spelling_errors_fixed": []
+  },
+  {
+    "id": "tc_06_arch_refactor",
+    "category": "engineering",
+    "raw_input": "our current microservices architecture has 14 network hops per tile request causing 420ms p99 latency. proposing migration to modular go monolith with embedded duckdb cache. database connection pooling drops from 300 to 24. deploy target is staging next tuesday.",
+    "bluf_keywords": ["Modular monolith", "DuckDB", "latency", "staging"],
+    "expected_tables": ["Component", "Current State", "Proposed State"],
+    "spelling_errors_fixed": []
+  },
+  {
+    "id": "tc_07_conference_panel",
+    "category": "academic",
+    "raw_input": "panel proposal for annual geospatial summit on autonomous earth observation agents. 90 minute session with four panelists covering sensor orchestration, real time edge processing, ethical data governance, and open science standards. need abstracts by october 10.",
+    "bluf_keywords": ["Geospatial Summit", "Autonomous EO", "October 10"],
+    "expected_tables": ["Panelist Role", "Focus Area", "Deliverable"],
+    "spelling_errors_fixed": []
+  },
+  {
+    "id": "tc_08_lab_procurement",
+    "category": "executive",
+    "raw_input": "need approval for lab hardware upgrade before fiscal year end. requisition includes two rtx 4090 workstations for point cloud deep learning, 64tb raid storage array, and 10gbe switch. total cost is 14200eur against remaining equipment budget of 16500eur.",
+    "bluf_keywords": ["Hardware upgrade", "RTX 4090", "14,200 EUR", "procurement"],
+    "expected_tables": ["Item", "Quantity", "Unit Cost", "Total"],
+    "spelling_errors_fixed": []
+  },
+  {
+    "id": "tc_09_product_roadmap",
+    "category": "startup",
+    "raw_input": "q4 roadmap priorities are shipping native raycast extension, integrating local ollama bridge, and releasing zero install browser playground. deprecating legacy rest endpoint v1 on december 1st. all enterprise customers have already been migrated to v2 api keys.",
+    "bluf_keywords": ["Q4 roadmap", "Raycast extension", "Ollama bridge", "December 1"],
+    "expected_tables": ["Feature", "Target Date", "Owner", "Status"],
+    "spelling_errors_fixed": []
+  },
+  {
+    "id": "tc_10_field_expedition",
+    "category": "fieldwork",
+    "raw_input": "field expedition schedule for vosges mountain drone lidar survey. team departs strasbourg campus monday 7am. four flight blocks scheduled between 10am and 4pm depending on cloud ceiling. safety protocol requires two visual observers and battery thermal bags.",
+    "bluf_keywords": ["Vosges mountains", "Drone LiDAR", "Monday 7:00 AM", "safety"],
+    "expected_tables": ["Time Block", "Flight Area", "Protocol"],
+    "spelling_errors_fixed": []
+  }
+]

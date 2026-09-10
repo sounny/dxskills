@@ -69,10 +69,19 @@
 - [x] **Task 9.3:** Add an interactive "Download Skills Bundle" modal and direct install script in `index.html`.
 - [x] **Task 9.4:** Add social share cards and OpenGraph preview optimization in `index.html`.
 
-### Phase 10: Multi-Model Evaluation & Benchmark Corpus (Upcoming Cycles)
-- [ ] **Task 10.1:** Create synthetic benchmark dataset `tests/benchmark_corpus.json` containing 20 disordered brainstorm transcripts with ground-truth architectural outputs.
-- [ ] **Task 10.2:** Build evaluation script `scripts/eval_benchmarks.py` calculating BLUF adherence, table completeness, and zero-em-dash compliance across models.
-- [ ] **Task 10.3:** Add interactive live playground in `index.html` where users can test quick-capture transformation directly in their browser.
+### Phase 10: Multi-Model Evaluation & Benchmark Corpus
+- [x] **Task 10.1:** Create synthetic benchmark dataset `tests/benchmark_corpus.json` containing diverse disordered brainstorm transcripts across engineering, academic, startup, and executive domains.
+- [x] **Task 10.2:** Build evaluation script `scripts/eval_benchmarks.py` calculating BLUF adherence, table completeness, and zero-em-dash compliance across models.
+- [x] **Task 10.3:** Add interactive live playground in `index.html` where users can test quick-capture transformation directly in their browser with instant client-side execution.
+
+### Phase 11: Academic & Research Writing Scaffolding (Next Cycles)
+- [ ] **Task 11.1:** Create `skills/dx-dump/templates/peer_review_rebuttal.md` (distill emotional review feedback into structured point-by-point defense matrix).
+- [ ] **Task 11.2:** Create `skills/dx-dump/templates/journal_cover_letter.md` (high-signal editor pitch highlighting novelty and methodology).
+- [ ] **Task 11.3:** Create `skills/dx-read/templates/literature_matrix_extract.md` (multi-paper synthesis matrix comparing variables, methods, and results).
+
+### Phase 12: Native Raycast Extension & Terminal Utilities
+- [ ] **Task 12.1:** Scaffold `extensions/raycast-dxskills/` manifest and quick-capture action command.
+- [ ] **Task 12.2:** Build local clipboard listener script for automated speed-of-thought capture.
 
 ---
 
@@ -86,3 +95,5 @@
 | **Cycle 3** | 2026-09-10 19:30 | Test Suite, Obsidian Scaffolding & Quick-Capture | `tests/*`, `scripts/quick_capture.py`, `prompts/*` | `b881a82` |
 | **Cycle 4** | 2026-09-10 19:40 | Community Guidelines, CI/CD Actions & Issue Templates | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/*` | `e070e67` |
 | **Cycle 5** | 2026-09-10 19:50 | Venture Pitch Scaffolding, Voice Calibration & Modal Bundle | `skills/dx-dump/*`, `prompts/*`, `index.html` | `6a96c7c` |
+| **Cycle 6** | 2026-09-10 20:02 | Benchmark Evaluation Suite, 10-Corpus Test & Live Browser Playground | `tests/benchmark_corpus.json`, `scripts/eval_benchmarks.py`, `index.html` | `2baa1de` |
+
