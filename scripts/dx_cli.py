@@ -316,6 +316,15 @@ def main():
     p_story.add_argument("--svg", "-s", default="", help="Output vector .svg animatic strip filepath")
     p_story.add_argument("--json", "-j", action="store_true", help="Output raw JSON storyboard telemetry")
     
+    # diff
+    p_diff = subparsers.add_parser("diff", help="Spatial cognitive architecture graph differential and version divergence engine")
+    p_diff.add_argument("canvas_a", help="Base Obsidian .canvas file (Branch A / Snapshot 1)")
+    p_diff.add_argument("canvas_b", help="Target Obsidian .canvas file (Branch B / Snapshot 2)")
+    p_diff.add_argument("--title", "-t", default="", help="Title for the diff report")
+    p_diff.add_argument("--canvas", "-c", default="", help="Output differential Obsidian .canvas filepath")
+    p_diff.add_argument("--svg", "-s", default="", help="Output vector SVG differential dashboard filepath")
+    p_diff.add_argument("--json", "-j", action="store_true", help="Output raw JSON diff telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -648,6 +657,33 @@ def main():
                 print(f"  - Canvas: {args.canvas}")
             if args.svg:
                 print(f"  - SVG: {args.svg}")
+    elif args.command == "diff":
+        import scripts.spatial_diff as sd
+        if not os.path.exists(args.canvas_a) or not os.path.exists(args.canvas_b):
+            print(f"[DxSkills] Error: Specified canvas paths must exist on disk.")
+            sys.exit(1)
+        diff_report, merged_canvas, svg_code = sd.run_spatial_diff(
+            args.canvas_a,
+            args.canvas_b,
+            title=args.title or None,
+            output_canvas=args.canvas or None,
+            output_svg=args.svg or None
+        )
+        if args.json:
+            print(json.dumps(diff_report, indent=2))
+        elif not (args.canvas or args.svg):
+            s = diff_report["summary"]
+            print(f"\n=== [DxSkills: Spatial Graph Differential Report] ===")
+            print(f"Topological Stability Index (TSI): {diff_report['topological_stability_index'] * 100:.1f}%")
+            print(f"Architectural Drift: {diff_report['graph_drift_percentage']}%")
+            print(f"Nodes: +{s['nodes_added']} added, -{s['nodes_removed']} removed, {s['nodes_modified']} modified, {s['nodes_relocated']} relocated")
+            print(f"Edges: +{s['edges_added']} new connections, -{s['edges_removed']} severed links, {s['edges_retained']} preserved")
+        else:
+            print(f"\n[DxSkills] Computed graph differential (Stability: {diff_report['topological_stability_index'] * 100:.1f}%).")
+            if args.canvas:
+                print(f"  - Differential Canvas: {args.canvas}")
+            if args.svg:
+                print(f"  - SVG Diff Dashboard: {args.svg}")
     else:
         parser.print_help()
 
