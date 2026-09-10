@@ -57,11 +57,17 @@
 - [x] **Task 7.3:** Create raycast/alfred quick-capture snippets for macOS/Windows clipboard compilation (`scripts/quick_capture.py` and `prompts/quick-capture.md`).
 - [x] **Task 7.4:** Add interactive copy buttons for individual Mermaid templates in `index.html`.
 
-### Phase 8: Open-Source Community & Governance (Upcoming Cycles)
-- [ ] **Task 8.1:** Create `CONTRIBUTING.md` with guidelines for contributing new cognitive templates and prompts.
-- [ ] **Task 8.2:** Create `CODE_OF_CONDUCT.md` establishing a welcoming, neurodivergent-friendly standard.
-- [ ] **Task 8.3:** Create GitHub issue templates for bug reports and new skill proposals (`.github/ISSUE_TEMPLATE/`).
-- [ ] **Task 8.4:** Build an automated GitHub Action workflow (`.github/workflows/test.yml`) running `tests/test_skills.py` on push and pull requests.
+### Phase 8: Open-Source Community & Governance
+- [x] **Task 8.1:** Create `CONTRIBUTING.md` with guidelines for contributing new cognitive templates and prompts.
+- [x] **Task 8.2:** Create `CODE_OF_CONDUCT.md` establishing a welcoming, neurodivergent-friendly standard.
+- [x] **Task 8.3:** Create GitHub issue templates for bug reports and new skill proposals (`.github/ISSUE_TEMPLATE/`).
+- [x] **Task 8.4:** Build an automated GitHub Action workflow (`.github/workflows/test.yml`) running `tests/test_skills.py` on push and pull requests.
+
+### Phase 9: Specialized Cognitive Templates & Multi-Modal Extensions (Upcoming Cycles)
+- [ ] **Task 9.1:** Create `skills/dx-dump/templates/startup_pitch_compile.md` (Raw brainstorm to 10-slide venture narrative).
+- [ ] **Task 9.2:** Create `prompts/voice-card-calibration.md` (Personal tone and cadence calibration guide).
+- [ ] **Task 9.3:** Add an interactive "Download Skills Bundle" modal and direct install script in `index.html`.
+- [ ] **Task 9.4:** Add social share cards and OpenGraph preview optimization in `index.html`.
 
 ---
 
@@ -73,3 +79,4 @@
 | **Cycle 1** | 2026-09-10 19:10 | Platform Presets & Research Basis | `prompts/*`, `RESEARCH.md`, `CITATION.cff` | `6ecc498` |
 | **Cycle 2** | 2026-09-10 19:20 | Modular Templates, CLI & Diagram Showcase | `skills/*`, `scripts/*`, `index.html` | `772b22c` |
 | **Cycle 3** | 2026-09-10 19:30 | Test Suite, Obsidian Scaffolding & Quick-Capture | `tests/*`, `scripts/quick_capture.py`, `prompts/*` | `b881a82` |
+| **Cycle 4** | 2026-09-10 19:40 | Community Guidelines, CI/CD Actions & Issue Templates | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/*` | `pending` |
