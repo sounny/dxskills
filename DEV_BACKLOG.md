@@ -160,12 +160,16 @@
 - [x] **Task 31.2:** Auto-compile answered branch nodes into a unified project specification block.
 
 ### Phase 32: Cognitive Fatigue Telemetry & Break Prompts
-- [ ] **Task 32.1:** Implement session cognitive load meter tracking input duration and phonological fatigue threshold.
-- [ ] **Task 32.2:** Add non-intrusive spatial reset prompt and stretch reminder in `index.html` and CLI.
+- [x] **Task 32.1:** Implement session cognitive load meter tracking input duration and phonological fatigue threshold.
+- [x] **Task 32.2:** Add non-intrusive spatial reset prompt and stretch reminder in `index.html` and CLI.
 
 ### Phase 33: Direct Obsidian Vault & Notion Database Exporter (Next Cycles)
 - [ ] **Task 33.1:** Add 1-click Markdown export formatted specifically for Obsidian properties and frontmatter tags.
 - [ ] **Task 33.2:** Build webhook dispatcher to auto-append structured specifications into Notion databases.
+
+### Phase 34: Multi-Lingual D-Mode Voice Synthesis & Audio Digest Exporter
+- [ ] **Task 34.1:** Build local TTS synthesizer exporting audio digests of compiled deliverables.
+- [ ] **Task 34.2:** Integrate dual audio playback player in web interface.
 
 ---
 
@@ -201,6 +205,7 @@
 | **Cycle 25** | 2026-09-10 23:12 | OpenDyslexic Font Mode & WCAG 2.1 AAA Accessibility Suite | `index.html`, `tests/test_accessibility.py` | `cde7ab3` |
 | **Cycle 26** | 2026-09-10 23:22 | SounnyForms Multi-Modal Form Ingestion Adapter & Test Suite | `scripts/forms_adapter.py`, `tests/test_forms_adapter.py` | `d506268` |
 | **Cycle 27** | 2026-09-10 23:32 | Multi-Turn Socratic Clarification Tree UI Widget & Test Suite | `index.html`, `tests/test_interview_widget.py`, `dist/*` | `6e527ab` |
+| **Cycle 28** | 2026-09-10 23:42 | Cognitive Fatigue Telemetry, Spatial Reset Modal & Test Suite | `index.html`, `scripts/cognitive_fatigue.py`, `tests/test_cognitive_fatigue.py` | `d3f8ed9` |
 
 
 

@@ -197,6 +197,12 @@
           <span id="font-toggle-label">Aa</span>
         </button>
 
+        <!-- Cognitive Stamina & Spatial Reset Button -->
+        <button id="cognitive-stamina-btn" onclick="openSpatialResetModal()" class="px-2.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1.5 text-xs font-mono font-bold" title="Cognitive Stamina & Spatial Reset">
+          <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-500" id="stamina-icon"></i>
+          <span id="stamina-label" class="hidden md:inline">100% Focus</span>
+        </button>
+
         <a href="#d-mode" class="px-3 py-1.5 text-xs font-mono font-medium rounded-lg bg-mono-100 dark:bg-mono-900 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-900 dark:text-mono-200 border border-mono-300 dark:border-mono-700 transition flex items-center gap-1.5">
           <i data-lucide="copy" class="w-3.5 h-3.5"></i>
           <span>Copy D-Mode</span>
@@ -2813,7 +2819,8 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       { title: "Interactive Terminal TUI", category: "CLI", desc: "Split-pane terminal viewer (dx_cli.py tui)", link: "#install", action: "Jump" },
       { title: "Cognitive Load Benchmarks", category: "CLI", desc: "10-domain empirical telemetry evaluation matrix", link: "#benchmarks", action: "Jump" },
       { title: "Local Ollama Bridge", category: "CLI", desc: "Run D-Mode locally with Llama 3 or Mistral via Ollama", link: "#install", action: "Jump" },
-      { title: "OpenDyslexic Font Mode", category: "Accessibility", desc: "Toggle weighted bottoms and expanded letter spacing for crowding relief", link: "#", action: "Toggle" }
+      { title: "OpenDyslexic Font Mode", category: "Accessibility", desc: "Toggle weighted bottoms and expanded letter spacing for crowding relief", link: "#", action: "Toggle" },
+      { title: "Spatial Cognitive Reset", category: "Interactive", desc: "60-second breathing guide and working memory stamina tracker", link: "#", action: "Reset" }
     ];
 
     let currentSearchCategory = 'All';
@@ -2906,6 +2913,10 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       closeSearchModal();
       if (item.action === 'Toggle') {
         toggleDyslexicFont();
+        return;
+      }
+      if (item.action === 'Reset') {
+        openSpatialResetModal();
         return;
       }
       if (item.link.startsWith('#')) {
@@ -3007,8 +3018,143 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       }
     }
 
+    // Cognitive Fatigue & Spatial Reset Engine
+    // ==========================================
+    let sessionStartTime = Date.now();
+    let lastActiveTimestamp = Date.now();
+    let totalKeystrokes = 0;
+    let staminaSnoozeUntil = 0;
+    let breathingInterval = null;
+    let breathingPhaseIndex = 0;
+
+    const breathingPhases = [
+      { name: "Inhale Slowly", duration: 4, scale: "scale-125", ring: "border-mono-950 dark:border-white" },
+      { name: "Hold Lungs Full", duration: 4, scale: "scale-125", ring: "border-emerald-500" },
+      { name: "Exhale Smoothly", duration: 4, scale: "scale-90", ring: "border-mono-400" },
+      { name: "Hold Lungs Empty", duration: 4, scale: "scale-90", ring: "border-mono-300 dark:border-mono-700" }
+    ];
+
+    function trackUserActivity() {
+      lastActiveTimestamp = Date.now();
+      totalKeystrokes++;
+      updateCognitiveStamina();
+    }
+
+    window.addEventListener('keydown', trackUserActivity);
+    window.addEventListener('click', trackUserActivity);
+
+    function updateCognitiveStamina() {
+      const minutesActive = Math.floor((Date.now() - sessionStartTime) / 60000);
+      const staminaBtn = document.getElementById('cognitive-stamina-btn');
+      const staminaLabel = document.getElementById('stamina-label');
+      const staminaIcon = document.getElementById('stamina-icon');
+      const sessionTimer = document.getElementById('reset-session-timer');
+
+      const durationDrop = Math.min(60, minutesActive * 1.2);
+      const burstDrop = Math.min(25, Math.floor(totalKeystrokes / 120));
+      const stamina = Math.max(10, Math.round(100 - durationDrop - burstDrop));
+
+      if (sessionTimer) {
+        sessionTimer.innerText = `Session Duration: ${minutesActive}m active`;
+      }
+
+      if (staminaLabel && staminaIcon) {
+        if (stamina >= 75) {
+          staminaLabel.innerText = `${stamina}% Focus`;
+          staminaIcon.className = "w-3.5 h-3.5 text-emerald-500";
+        } else if (stamina >= 45) {
+          staminaLabel.innerText = `${stamina}% Load`;
+          staminaIcon.className = "w-3.5 h-3.5 text-amber-500";
+        } else {
+          staminaLabel.innerText = "Reset Due";
+          staminaIcon.className = "w-3.5 h-3.5 text-rose-500 animate-pulse";
+
+          if (Date.now() > staminaSnoozeUntil && minutesActive >= 40) {
+            const modal = document.getElementById('spatial-reset-modal');
+            if (modal && modal.classList.contains('hidden')) {
+              openSpatialResetModal();
+            }
+          }
+        }
+      }
+
+      try {
+        const playInput = document.getElementById('playground-input');
+        if (playInput && playInput.value) {
+          localStorage.setItem('dxskills_playground_autosave', playInput.value);
+        }
+      } catch (e) {}
+    }
+
+    setInterval(updateCognitiveStamina, 30000);
+
+    function openSpatialResetModal() {
+      const modal = document.getElementById('spatial-reset-modal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      startBreathingGuide();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeSpatialResetModal() {
+      const modal = document.getElementById('spatial-reset-modal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      stopBreathingGuide();
+      sessionStartTime = Date.now() - (10 * 60000);
+      updateCognitiveStamina();
+    }
+
+    function snoozeSpatialReset(minutes) {
+      staminaSnoozeUntil = Date.now() + (minutes * 60000);
+      closeSpatialResetModal();
+    }
+
+    function startBreathingGuide() {
+      stopBreathingGuide();
+      breathingPhaseIndex = 0;
+      runBreathingStep();
+      breathingInterval = setInterval(runBreathingStep, 4000);
+    }
+
+    function stopBreathingGuide() {
+      if (breathingInterval) {
+        clearInterval(breathingInterval);
+        breathingInterval = null;
+      }
+    }
+
+    function runBreathingStep() {
+      const phase = breathingPhases[breathingPhaseIndex];
+      const circle = document.getElementById('breathing-circle');
+      const text = document.getElementById('breathing-phase-text');
+      if (circle && text) {
+        text.innerText = phase.name.split(' ')[0];
+        circle.className = `w-16 h-16 rounded-full border-2 transition-all duration-1000 flex items-center justify-center ${phase.scale} ${phase.ring}`;
+      }
+      breathingPhaseIndex = (breathingPhaseIndex + 1) % breathingPhases.length;
+    }
+
+    function switchModeFromReset(target) {
+      closeSpatialResetModal();
+      if (target === 'voice') {
+        switchSimulatorView('play');
+        setTimeout(() => {
+          toggleVoiceDictation();
+        }, 300);
+      } else if (target === 'map') {
+        const diagSec = document.getElementById('diagrams');
+        if (diagSec) {
+          diagSec.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
+
     // Initialize Socratic Clarification Tree state
     initSocraticInterview();
+    updateCognitiveStamina();
   </script>
 
   <!-- DOWNLOAD BUNDLE MODAL -->
@@ -3129,6 +3275,87 @@ This curriculum eliminates passive lecture memorization. Students learn through 
           <span><kbd class="px-1 py-0.5 rounded bg-mono-100 dark:bg-mono-800 border border-mono-200 dark:border-mono-700">↵</kbd> Select</span>
         </div>
         <span><kbd class="px-1 py-0.5 rounded bg-mono-100 dark:bg-mono-800 border border-mono-200 dark:border-mono-700">/</kbd> Quick Search</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SPATIAL RESET & COGNITIVE FATIGUE BREAK MODAL -->
+  <div id="spatial-reset-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+    <div class="bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-mono-100 dark:border-mono-800">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-mono-100 dark:bg-mono-800 flex items-center justify-center text-mono-950 dark:text-white">
+            <i data-lucide="compass" class="w-4 h-4"></i>
+          </span>
+          <div>
+            <h3 class="text-base font-bold text-mono-950 dark:text-white">Spatial Cognitive Reset</h3>
+            <span class="text-xs text-mono-500 font-mono" id="reset-session-timer">Session Duration: 24m active</span>
+          </div>
+        </div>
+        <button onclick="closeSpatialResetModal()" class="text-mono-400 hover:text-mono-950 dark:hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Cognitive Science Callout -->
+      <div class="p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-xs text-mono-700 dark:text-mono-300 space-y-1 font-sans leading-relaxed">
+        <div class="flex items-center gap-1.5 font-bold text-mono-950 dark:text-white">
+          <i data-lucide="brain-circuit" class="w-3.5 h-3.5 text-emerald-500"></i>
+          <span>The 20-Minute Phonological Ceiling</span>
+        </div>
+        <p>
+          Continuous linear typing and text proofreading exhausts phonological working memory. Spatial thinkers recharge fastest by detaching the gaze and switching cognitive channels.
+        </p>
+      </div>
+
+      <!-- Interactive Breathing & Gaze Detachment Animation -->
+      <div class="py-4 px-6 rounded-xl bg-mono-100/50 dark:bg-mono-950/80 border border-mono-200 dark:border-mono-800 flex flex-col items-center justify-center text-center space-y-3">
+        <div class="relative w-20 h-20 flex items-center justify-center">
+          <div id="breathing-circle" class="w-16 h-16 rounded-full border-2 border-mono-950 dark:border-white transition-all duration-1000 flex items-center justify-center">
+            <span id="breathing-phase-text" class="text-[10px] font-mono font-bold uppercase tracking-wider text-mono-950 dark:text-white">Inhale</span>
+          </div>
+        </div>
+        <div class="space-y-1">
+          <span class="text-xs font-mono font-medium text-mono-800 dark:text-mono-200 block" id="breathing-timer-guide">Box Breathing Guide (4s Inhale, 4s Hold, 4s Exhale)</span>
+          <span class="text-[11px] text-mono-500 block">Look at an object at least 20 feet away to relax ocular accommodation.</span>
+        </div>
+      </div>
+
+      <!-- Quick Cognitive Channel Switches -->
+      <div class="space-y-2">
+        <span class="text-xs font-mono text-mono-500 block uppercase tracking-wider">Quick Channel Switch:</span>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="switchModeFromReset('voice')" class="p-2.5 rounded-xl border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 bg-white dark:bg-mono-900 text-left transition space-y-0.5">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-mono-950 dark:text-white">
+              <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+              <span>Speech to Architecture</span>
+            </div>
+            <p class="text-[11px] text-mono-500">Dictate ideas instead of typing</p>
+          </button>
+          <button onclick="switchModeFromReset('map')" class="p-2.5 rounded-xl border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 bg-white dark:bg-mono-900 text-left transition space-y-0.5">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-mono-950 dark:text-white">
+              <i data-lucide="map" class="w-3.5 h-3.5"></i>
+              <span>Visual Concept Map</span>
+            </div>
+            <p class="text-[11px] text-mono-500">View Mermaid diagrams</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="pt-3 border-t border-mono-100 dark:border-mono-800 flex items-center justify-between">
+        <span class="text-[11px] font-mono text-mono-400">Autosaved to localStorage</span>
+        <div class="flex items-center gap-2">
+          <button onclick="snoozeSpatialReset(15)" class="px-3 py-1.5 rounded-lg border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-800 transition">
+            Snooze (+15m)
+          </button>
+          <button onclick="closeSpatialResetModal()" class="px-4 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 text-xs font-mono font-bold hover:opacity-90 transition">
+            Resume Fresh
+          </button>
+        </div>
       </div>
 
     </div>

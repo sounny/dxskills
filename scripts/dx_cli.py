@@ -13,6 +13,8 @@ import subprocess
 import urllib.request
 
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if SKILL_DIR not in sys.path:
+    sys.path.insert(0, SKILL_DIR)
 VERSION_FILE = os.path.join(SKILL_DIR, "VERSION")
 REMOTE_VERSION_URL = "https://raw.githubusercontent.com/sounny/dxskills/main/VERSION"
 
@@ -199,6 +201,15 @@ def main():
 
     # tui
     p_tui = subparsers.add_parser("tui", help="Launch interactive terminal scaffolding interface")
+
+    # stamina
+    p_stamina = subparsers.add_parser("stamina", help="Estimate working memory fatigue and phonological load")
+    p_stamina.add_argument("--minutes", "-m", type=int, default=30, help="Minutes of active drafting (default: 30)")
+    p_stamina.add_argument("--words", "-w", type=int, default=500, help="Words drafted or processed (default: 500)")
+
+    # reset
+    p_reset = subparsers.add_parser("reset", help="Launch 60-second terminal box breathing spatial reset")
+    p_reset.add_argument("--cycles", "-c", type=int, default=3, help="Number of 16-second breathing cycles (default: 3)")
     
     args = parser.parse_args()
     
@@ -213,6 +224,13 @@ def main():
     elif args.command == "tui":
         import scripts.dx_tui as tui_mod
         tui_mod.main_menu()
+    elif args.command == "stamina":
+        import scripts.cognitive_fatigue as cf
+        report = cf.calculate_cognitive_stamina(minutes_active=args.minutes, words_drafted=args.words)
+        cf.print_stamina_report(report)
+    elif args.command == "reset":
+        import scripts.cognitive_fatigue as cf
+        cf.run_terminal_box_breathing(cycles=args.cycles)
     else:
         parser.print_help()
 
