@@ -139,13 +139,17 @@
 - [x] **Task 26.1:** Add interactive comparison matrix in `index.html` visualizing phonetic loop savings across all 10 benchmark corpus types.
 - [x] **Task 26.2:** Add downloadable JSON telemetry reports directly from the benchmark matrix.
 
-### Phase 27: Full-Text Search & Quick-Filter Command Palette (Next Cycles)
-- [ ] **Task 27.1:** Implement keyboard shortcut `/` or `Ctrl+K` search modal in `index.html` to instantly filter all 6 modular skills, 13 templates, and platform presets with zero latency.
-- [ ] **Task 27.2:** Add fuzzy tag filtering for domain-specific categories (executive, academic, engineering, voice, research).
+### Phase 27: Full-Text Search & Quick-Filter Command Palette
+- [x] **Task 27.1:** Implement keyboard shortcut `/` or `Ctrl+K` search modal in `index.html` to instantly filter all 6 modular skills, 13 templates, and platform presets with zero latency.
+- [x] **Task 27.2:** Add fuzzy tag filtering for domain-specific categories (executive, academic, engineering, voice, research).
 
-### Phase 28: Offline Progressive Web Application & Desktop PWA Manifest
+### Phase 28: Offline Progressive Web Application & Desktop PWA Manifest (Next Cycles)
 - [ ] **Task 28.1:** Add `manifest.webmanifest`, service worker offline caching, and desktop PWA installation support.
 - [ ] **Task 28.2:** Add custom monochrome SVG icons for standalone desktop and mobile home screen launching.
+
+### Phase 29: Accessibility Evaluation & High-Contrast OpenDyslexic Mode
+- [ ] **Task 29.1:** Add OpenDyslexic font toggle and enhanced letter-spacing mode in `index.html` for users with visual crowding symptoms.
+- [ ] **Task 29.2:** Add WCAG 2.1 AAA contrast audit and automated accessibility compliance test in `tests/test_accessibility.py`.
 
 ---
 
@@ -175,7 +179,9 @@
 | **Cycle 19** | 2026-09-10 22:12 | Interactive Terminal TUI & CLI Subcommand Integration | `scripts/dx_tui.py`, `scripts/dx_cli.py` | `8e9c97a` |
 | **Cycle 20** | 2026-09-10 22:22 | Real-Time Event Telemetry API & Live Web Gateway Monitor | `server/gateway.py`, `index.html` | `b0176ef` |
 | **Cycle 21** | 2026-09-10 22:32 | Automated Pre-Commit Hook & Git Quality Gatekeeper | `scripts/pre_commit_hook.py`, `scripts/install_git_hook.py` | `3efa129` |
-| **Cycle 22** | 2026-09-10 22:42 | Cognitive Load Reduction Matrix Visualizer & Telemetry JSON Exporter | `index.html`, `dist/*` | `7a3cc1b` |
+| **Cycle 22** | 2026-09-10 22:42 | Cognitive Load Reduction Matrix Visualizer & Telemetry JSON Exporter | `index.html`, `dist/*` | `93e2c75` |
+| **Cycle 23** | 2026-09-10 22:52 | Full-Text Search & Quick-Filter Command Palette | `index.html`, `dist/*` | `de71e9c` |
+
 
 
 
