@@ -15,6 +15,23 @@ services:
       timeout: 5s
       retries: 3
 
+  webhook-receiver:
+    build: .
+    container_name: dxskills-webhook-receiver
+    restart: unless-stopped
+    command: python server/webhook_receiver.py
+    ports:
+      - "8081:8081"
+    environment:
+      - WEBHOOK_PORT=8081
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
   # Optional local on-device LLM runtime
   ollama:
     image: ollama/ollama:latest

@@ -115,9 +115,13 @@
 - [x] **Task 20.1:** Create Typst and Pandoc executive briefing templates (`templates/executive_briefing.typ`).
 - [x] **Task 20.2:** CLI command `dx_cli.py export --format pdf` for 1-click Swiss-style PDF export.
 
-### Phase 21: Autonomous Webhook Receiver for Speed-of-Thought Voice Ingestion (Next Cycles)
-- [ ] **Task 21.1:** Build multi-channel webhook receiver (`server/webhook_receiver.py`) accepting audio recordings from Telegram, Slack, and WhatsApp.
-- [ ] **Task 21.2:** Auto-route received audio to Whisper transcription and D-Mode structured outputs.
+### Phase 21: Autonomous Webhook Receiver for Speed-of-Thought Voice Ingestion
+- [x] **Task 21.1:** Build multi-channel webhook receiver (`server/webhook_receiver.py`) accepting audio recordings from Telegram, Slack, and WhatsApp.
+- [x] **Task 21.2:** Auto-route received audio to Whisper transcription and D-Mode structured outputs.
+
+### Phase 22: Team Collaboration Profiles & Architectural Review Matrix (Next Cycles)
+- [ ] **Task 22.1:** Create role-specific cognitive review lenses (`prompts/team-review-engineering.md`, `prompts/team-review-executive.md`).
+- [ ] **Task 22.2:** Add multi-perspective synthesis template for resolving architectural disagreements without wall-of-text debates.
 
 ---
 
@@ -142,6 +146,7 @@
 | **Cycle 14** | 2026-09-10 21:22 | VS Code Native Extension & Quiet Typo Stabilizer | `extensions/vscode-dxskills/*`, `index.html` | `423de01` |
 | **Cycle 15** | 2026-09-10 21:32 | Cognitive Load Reduction Estimator & Live Telemetry Badges | `scripts/cognitive_load_calc.py`, `index.html` | `ebb0e48` |
 | **Cycle 16** | 2026-09-10 21:42 | Typst & HTML Swiss Executive Briefing Exporter | `templates/executive_briefing.*`, `scripts/dx_cli.py` | `4db9dc7` |
+| **Cycle 17** | 2026-09-10 21:52 | Multi-Channel Webhook Receiver & Docker Compose Service | `server/webhook_receiver.py`, `docker-compose.yml` | `533428f` |
 
 
 
