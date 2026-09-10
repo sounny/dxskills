@@ -360,6 +360,14 @@ def main():
     p_palace.add_argument("--svg", "-s", default="", help="Output vector SVG blueprint floorplan filepath")
     p_palace.add_argument("--json", "-j", action="store_true", help="Output raw JSON palace telemetry")
     
+    # code-arch
+    p_code = subparsers.add_parser("code-arch", help="Autonomous spatial multi-modal code architecture and dependency graph decompiler")
+    p_code.add_argument("target", nargs="?", default=".", help="Target Python source file or directory (default: current dir)")
+    p_code.add_argument("--title", "-t", default="", help="Code architecture title")
+    p_code.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_code.add_argument("--svg", "-s", default="", help="Output vector SVG circuit filepath")
+    p_code.add_argument("--json", "-j", action="store_true", help="Output raw JSON AST telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -861,6 +869,38 @@ def main():
                 print(f"  - Canvas: {args.canvas}")
             if args.svg:
                 print(f"  - Blueprint: {args.svg}")
+    elif args.command == "code-arch":
+        import scripts.code_decompiler as cdec
+        target_path = os.path.abspath(args.target)
+        if not os.path.exists(target_path):
+            print(f"[DxSkills] Error: Target path not found: {target_path}")
+            sys.exit(1)
+        decompiled, canvas_data, svg_code = cdec.run_code_decompiler(
+            target_path,
+            title=args.title or None,
+            output_canvas=args.canvas or None,
+            output_svg=args.svg or None
+        )
+        if args.json:
+            print(json.dumps(decompiled, indent=2))
+        elif not (args.canvas or args.svg):
+            print(f"\n=== [DxSkills: Code Architecture Topology ({decompiled['total_modules']} Modules)] ===")
+            for mod_name, data in decompiled["modules"].items():
+                classes = [c["name"] for c in data.get("classes", [])]
+                funcs = [f["name"] for f in data.get("functions", [])]
+                print(f"- {mod_name}.py: Classes: {classes or 'None'} | Functions: {funcs or 'None'}")
+            if decompiled["circular_cycles"]:
+                print(f"\n⚠️ Identified {len(decompiled['circular_cycles'])} Circular Dependency Loops:")
+                for c in decompiled["circular_cycles"]:
+                    print(f"  * {' -> '.join(c)}")
+            else:
+                print("\nClean architecture: Zero circular import loops detected.")
+        else:
+            print(f"\n[DxSkills] Decompiled {decompiled['total_modules']} modules into spatial architecture.")
+            if args.canvas:
+                print(f"  - Canvas: {args.canvas}")
+            if args.svg:
+                print(f"  - SVG Circuit: {args.svg}")
     else:
         parser.print_help()
 
