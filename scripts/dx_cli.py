@@ -241,6 +241,13 @@ def main():
     p_canvas.add_argument("--format", "-f", default="canvas", choices=["canvas", "svg"], help="Export format (canvas or svg)")
     p_canvas.add_argument("--output", "-o", default="", help="Output filepath")
     
+    # parity
+    p_parity = subparsers.add_parser("parity", help="Verify lossless multi-modal synchronization across visual, audio, and text")
+    p_parity.add_argument("input", nargs="?", default="", help="Raw text or path to file (defaults to benchmark sample)")
+    p_parity.add_argument("--title", "-t", default="", help="Specification title")
+    p_parity.add_argument("--lang", "-l", default="en", choices=["en", "fr"], help="Audio language ('en' or 'fr')")
+    p_parity.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -323,6 +330,26 @@ def main():
             else:
                 print("\n=== [DxSkills: Obsidian Canvas JSON] ===")
                 print(canvas_json)
+    elif args.command == "parity":
+        import json
+        import scripts.multimodal_parity as mp
+        text = read_input(args.input) if args.input else """# Example Strategic Deliverable
+> **BLUF:** Deploying low-latency cognitive offload layer to eliminate phonological friction.
+
+## Core Spatial Architecture
+- High-contrast visual grid with 3:1 spatial margin.
+- Zero linear paragraphs over 3 sentences.
+
+## Execution Milestones
+- [ ] 1. Ship Manifest V3 browser extension and test suite.
+- [ ] 2. Benchmark multi-modal parity across 10 sample corpora.
+- [ ] 3. Verify zero em dash compliance across export pipelines.
+"""
+        res = mp.validate_multimodal_parity(text, title=args.title or None, lang=args.lang)
+        if args.json:
+            print(json.dumps(res, indent=2))
+        else:
+            print(mp.format_terminal_parity_report(res))
     else:
         parser.print_help()
 
