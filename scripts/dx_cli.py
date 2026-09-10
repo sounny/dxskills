@@ -460,6 +460,14 @@ def main():
     p_tradeoff.add_argument("--svg", "-s", default="", help="Output architectural trade-off radar SVG filepath")
     p_tradeoff.add_argument("--json", "-j", action="store_true", help="Output raw JSON Pareto analysis telemetry")
     p_tradeoff.add_argument("--demo", action="store_true", help="Run with demonstration architecture candidates")
+
+    # compress
+    p_compress = subparsers.add_parser("compress", help="Autonomous cognitive spatial working memory anchor stacking and chunk compression")
+    p_compress.add_argument("input", nargs="?", help="Target markdown outline or structured notes")
+    p_compress.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_compress.add_argument("--svg", "-s", default="", help="Output working memory buffer telemetry SVG filepath")
+    p_compress.add_argument("--slots", type=int, default=4, help="Maximum working memory active slot limit (default: 4)")
+    p_compress.add_argument("--json", "-j", action="store_true", help="Output raw JSON chunk compression telemetry")
     
     args = parser.parse_args()
     
@@ -1599,6 +1607,66 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Architectural Trade-Off Radar SVG exported to: {args.svg}")
+    elif args.command == "compress":
+        import scripts.chunk_compressor as cc
+        compressor = cc.WorkingMemoryChunkCompressor(max_working_memory_slots=args.slots)
+        if args.input:
+            content = read_input(args.input)
+            compressor.load_markdown_outline(content)
+        else:
+            sample_outline = """# Distributed Edge Gateway
+- Dynamic route dispatch
+- Rate-limiting token bucket
+- Mutual TLS termination
+
+# In-Memory Cache Mesh
+- Consistent hash ring
+- LRU eviction policy
+- Eviction tombstone replication
+
+# Event Sinks and Storage
+- Parquet columnar batcher
+- S3 object storage sink
+- Audit logging pipeline"""
+            compressor.load_markdown_outline(sample_outline)
+
+        audit = compressor.compress_chunks()
+
+        if args.json:
+            out = {
+                "original_node_count": audit.original_node_count,
+                "compressed_anchor_count": audit.compressed_anchor_count,
+                "original_slots_used": audit.original_slots_used,
+                "compressed_slots_used": audit.compressed_slots_used,
+                "slot_reduction_count": audit.slot_reduction_count,
+                "slot_reduction_percentage": audit.slot_reduction_percentage,
+                "cowan_capacity_respected": audit.cowan_capacity_respected,
+                "anchors": [
+                    {
+                        "id": a.anchor_id,
+                        "label": a.label,
+                        "summary": a.summary,
+                        "child_nodes_count": len(a.child_node_ids),
+                        "compression_ratio": a.compression_ratio
+                    }
+                    for a in audit.anchors
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            print("\n" + compressor.export_summary_markdown(audit))
+
+        if args.canvas:
+            canvas_data = compressor.export_compressed_canvas(audit)
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                json.dump(canvas_data, f, indent=2)
+            print(f"\n[DxSkills] Compressed Anchor .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = compressor.export_svg_telemetry(audit)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Working Memory Telemetry SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
