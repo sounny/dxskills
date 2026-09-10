@@ -91,13 +91,17 @@
 - [x] **Task 14.1:** Build ASCII table and flowchart generator for terminal-only / ssh environments (`scripts/ascii_scaffold.py`).
 - [x] **Task 14.2:** Add interactive mindmap viewer shell in `index.html` featuring Mermaid 10+ syntax.
 
-### Phase 15: Voice Ingestion Real-Time Streaming (Next Cycles)
-- [ ] **Task 15.1:** Integrate faster-whisper real-time streaming audio pipeline into `skills/dx-voice/`.
-- [ ] **Task 15.2:** Add browser Web Audio speech-to-text input button in `index.html` playground.
+### Phase 15: Voice Ingestion Real-Time Streaming
+- [x] **Task 15.1:** Integrate faster-whisper real-time streaming audio pipeline into `skills/dx-voice/scripts/voice_transcribe.py`.
+- [x] **Task 15.2:** Add browser Web Audio speech-to-text input button in `index.html` playground.
 
-### Phase 16: Internationalization & Multilingual Scaffolding
+### Phase 16: Internationalization & Multilingual Scaffolding (Next Cycles)
 - [ ] **Task 16.1:** Add French cognitive prompts (`prompts/d-mode-fr.md`) for francophone spatial researchers.
 - [ ] **Task 16.2:** Add bilingual language toggle in `index.html`.
+
+### Phase 17: Enterprise & Self-Hosted Deployment
+- [ ] **Task 17.1:** Create Dockerfile and `docker-compose.yml` for self-hosted D-Mode gateway with local Whisper and Ollama.
+- [ ] **Task 17.2:** Add health check endpoints and latency telemetry dashboard.
 
 ---
 
@@ -115,7 +119,9 @@
 | **Cycle 7** | 2026-09-10 20:05 | Academic Scaffolding Suite: Peer Review, Cover Letter & Literature Matrix | `skills/dx-dump/*`, `skills/dx-read/*` | `a698472` |
 | **Cycle 8** | 2026-09-10 20:12 | Native Raycast Extension & Background Clipboard Daemon | `extensions/raycast-dxskills/*`, `scripts/clipboard_listener.py` | `8b0bb23` |
 | **Cycle 9** | 2026-09-10 20:22 | Local LLM Suite: Ollama Bridge, Llama 3 & Mistral Modelfiles | `models/*`, `scripts/ollama_bridge.py` | `d3d43ad` |
-| **Cycle 10** | 2026-09-10 20:32 | Terminal ASCII Scaffolding & Live Web Concept Mindmap | `scripts/ascii_scaffold.py`, `index.html` | `3c93484` |
+| **Cycle 10** | 2026-09-10 20:32 | Terminal ASCII Scaffolding & Live Web Concept Mindmap | `scripts/ascii_scaffold.py`, `index.html` | `be7d5c3` |
+| **Cycle 11** | 2026-09-10 20:42 | Whisper Audio Pipeline & Browser Web Audio Dictation | `skills/dx-voice/*`, `index.html` | `1266e2a` |
+
 
 
 
