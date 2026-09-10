@@ -8,6 +8,7 @@ Strict Rule: NO em dashes anywhere (use hyphens, commas, or parentheses).
 
 import os
 import sys
+import json
 import argparse
 import subprocess
 import urllib.request
@@ -411,6 +412,14 @@ def main():
     p_dialectic.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_dialectic.add_argument("--svg", "-s", default="", help="Output vector SVG dialectic matrix filepath")
     p_dialectic.add_argument("--json", "-j", action="store_true", help="Output raw JSON consensus telemetry")
+
+    # typo-balance
+    p_typo = subparsers.add_parser("typo-balance", help="Autonomous cognitive visual typography kerning and lexical anchor balancer")
+    p_typo.add_argument("input", help="Target markdown file or Obsidian .canvas filepath")
+    p_typo.add_argument("--mode", "-m", choices=["bionic_anchor", "syllable_dot", "hybrid_dx"], default="bionic_anchor", help="Balancing mode (default: bionic_anchor)")
+    p_typo.add_argument("--output", "-o", default="", help="Output balanced text/canvas filepath")
+    p_typo.add_argument("--svg", "-s", default="", help="Output comparative typography SVG filepath")
+    p_typo.add_argument("--json", "-j", action="store_true", help="Output raw JSON typography audit telemetry")
     
     args = parser.parse_args()
     
@@ -445,7 +454,6 @@ def main():
             print(res["markdown"])
         print(f"\n[Obsidian URI]: {res['obsidian_uri']}")
     elif args.command == "notion":
-        import json
         import scripts.vault_exporter as ve
         text = read_input(args.input)
         payload = ve.format_notion_payload(text, title=args.title, database_id=args.database)
@@ -495,7 +503,6 @@ def main():
                 print("\n=== [DxSkills: Obsidian Canvas JSON] ===")
                 print(canvas_json)
     elif args.command == "parity":
-        import json
         import scripts.multimodal_parity as mp
         text = read_input(args.input) if args.input else """# Example Strategic Deliverable
 > **BLUF:** Deploying low-latency cognitive offload layer to eliminate phonological friction.
@@ -551,7 +558,6 @@ def main():
             print("\n--- Finalized D-Mode Markdown Summary ---")
             print(streamer.get_markdown_summary())
     elif args.command == "cluster":
-        import json
         import scripts.spatial_cluster as sc
         raw_nodes = []
         if args.input and os.path.isfile(args.input):
@@ -1197,6 +1203,59 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Dialectic matrix SVG diagram exported to: {args.svg}")
+    elif args.command == "typo-balance":
+        import scripts.typography_balancer as tb
+        balancer = tb.VisualTypographyBalancer()
+
+        is_canvas = args.input.endswith(".canvas") and os.path.isfile(args.input)
+        if is_canvas:
+            with open(args.input, "r", encoding="utf-8") as f:
+                canvas_data = json.load(f)
+            all_text = " ".join(n.get("text", "") for n in canvas_data.get("nodes", []) if n.get("type") == "text")
+            audit = balancer.audit_text(all_text)
+            balanced_canvas = balancer.balance_canvas(canvas_data, mode=args.mode)
+            if args.output:
+                with open(args.output, "w", encoding="utf-8") as f:
+                    json.dump(balanced_canvas, f, indent=2)
+                print(f"\n[DxSkills] Balanced .canvas exported to: {args.output}")
+            sample_before = all_text[:200]
+            sample_after = balancer.balance_text(sample_before, mode=args.mode)
+        else:
+            if os.path.isfile(args.input):
+                with open(args.input, "r", encoding="utf-8", errors="ignore") as f:
+                    raw_text = f.read()
+            else:
+                raw_text = args.input
+
+            audit = balancer.audit_text(raw_text)
+            balanced_text = balancer.balance_text(raw_text, mode=args.mode)
+            if args.output:
+                with open(args.output, "w", encoding="utf-8") as f:
+                    f.write(balanced_text)
+                print(f"\n[DxSkills] Balanced text exported to: {args.output}")
+            sample_before = raw_text[:200]
+            sample_after = balanced_text[:200]
+
+        if args.json:
+            out = {
+                "total_words": audit.total_words,
+                "complex_words_count": audit.complex_words_count,
+                "average_word_length": audit.average_word_length,
+                "lexical_friction_index": audit.lexical_friction_index,
+                "estimated_standard_wpm": audit.estimated_standard_wpm,
+                "estimated_anchored_wpm": audit.estimated_anchored_wpm,
+                "wpm_boost_pct": audit.wpm_boost_pct
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            summary = tb.VisualTypographyBalancer.export_summary(audit, sample_before, sample_after)
+            print("\n" + summary)
+
+        if args.svg:
+            svg_code = balancer.export_comparison_svg(sample_before, audit)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Typography comparison SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
