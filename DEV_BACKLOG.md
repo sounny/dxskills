@@ -147,13 +147,17 @@
 - [x] **Task 28.1:** Add `manifest.webmanifest`, service worker offline caching, and desktop PWA installation support.
 - [x] **Task 28.2:** Add custom monochrome SVG icons for standalone desktop and mobile home screen launching.
 
-### Phase 29: Accessibility Evaluation & High-Contrast OpenDyslexic Mode (Next Cycles)
-- [ ] **Task 29.1:** Add OpenDyslexic font toggle and enhanced letter-spacing mode in `index.html` for users with visual crowding symptoms.
-- [ ] **Task 29.2:** Add WCAG 2.1 AAA contrast audit and automated accessibility compliance test in `tests/test_accessibility.py`.
+### Phase 29: Accessibility Evaluation & High-Contrast OpenDyslexic Mode
+- [x] **Task 29.1:** Add OpenDyslexic font toggle and enhanced letter-spacing mode in `index.html` for users with visual crowding symptoms.
+- [x] **Task 29.2:** Add WCAG 2.1 AAA contrast audit and automated accessibility compliance test in `tests/test_accessibility.py`.
 
-### Phase 30: SounnyForms & AI Agent Multi-Modal Form Ingestion Adapter
+### Phase 30: SounnyForms & AI Agent Multi-Modal Form Ingestion Adapter (Next Cycles)
 - [ ] **Task 30.1:** Add schema adapter for bidirectional sync with `SounnyForms` unstructured field parsing.
 - [ ] **Task 30.2:** Create JSON schema mapper (`scripts/forms_adapter.py`) converting voice dumps into validated form payloads.
+
+### Phase 31: Multi-Turn Socratic Clarification Tree UI Widget
+- [ ] **Task 31.1:** Add interactive branching question widget in `index.html` simulating `dx-interview` clarifying dialogue.
+- [ ] **Task 31.2:** Auto-compile answered branch nodes into a unified project specification block.
 
 ---
 
@@ -185,7 +189,9 @@
 | **Cycle 21** | 2026-09-10 22:32 | Automated Pre-Commit Hook & Git Quality Gatekeeper | `scripts/pre_commit_hook.py`, `scripts/install_git_hook.py` | `3efa129` |
 | **Cycle 22** | 2026-09-10 22:42 | Cognitive Load Reduction Matrix Visualizer & Telemetry JSON Exporter | `index.html`, `dist/*` | `93e2c75` |
 | **Cycle 23** | 2026-09-10 22:52 | Full-Text Search & Quick-Filter Command Palette | `index.html`, `dist/*` | `fd6fa88` |
-| **Cycle 24** | 2026-09-10 23:02 | Offline Progressive Web App (PWA) & Service Worker Cache | `manifest.webmanifest`, `sw.js`, `icons/*`, `index.html` | `e19b544` |
+| **Cycle 24** | 2026-09-10 23:02 | Offline Progressive Web App (PWA) & Service Worker Cache | `manifest.webmanifest`, `sw.js`, `icons/*`, `index.html` | `3322d71` |
+| **Cycle 25** | 2026-09-10 23:12 | OpenDyslexic Font Mode & WCAG 2.1 AAA Accessibility Suite | `index.html`, `tests/test_accessibility.py` | `95bb446` |
+
 
 
 

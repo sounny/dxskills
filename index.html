@@ -42,6 +42,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
+  <!-- OpenDyslexic Web Font for Visual Crowding Alleviation -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/open-dyslexic.css">
+  
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -91,6 +94,18 @@
       background-image: 
         linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    }
+
+    /* OpenDyslexic Accessibility Mode for Visual Crowding Alleviation */
+    .opendyslexic-mode {
+      font-family: 'OpenDyslexic', 'Inter', -apple-system, sans-serif !important;
+      letter-spacing: 0.04em !important;
+      word-spacing: 0.08em !important;
+      line-height: 1.8 !important;
+    }
+    .opendyslexic-mode code, .opendyslexic-mode pre, .opendyslexic-mode kbd {
+      font-family: 'JetBrains Mono', monospace !important;
+      letter-spacing: 0.02em !important;
     }
   </style>
 
@@ -175,6 +190,11 @@
         <!-- Language Toggle Button -->
         <button id="lang-toggle-btn" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1 text-xs font-mono font-bold" title="Toggle Language (EN / FR)">
           <span id="lang-label">FR</span>
+        </button>
+
+        <!-- Dyslexic Font Toggle Button -->
+        <button id="font-toggle-btn" onclick="toggleDyslexicFont()" class="px-2.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1 text-xs font-mono font-bold" title="Toggle OpenDyslexic Font and Spacing">
+          <span id="font-toggle-label">Aa</span>
         </button>
 
         <a href="#d-mode" class="px-3 py-1.5 text-xs font-mono font-medium rounded-lg bg-mono-100 dark:bg-mono-900 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-900 dark:text-mono-200 border border-mono-300 dark:border-mono-700 transition flex items-center gap-1.5">
@@ -1313,6 +1333,32 @@ mindmap
       }
     }
 
+    // OpenDyslexic Accessibility Mode Toggle
+    function toggleDyslexicFont() {
+      const isDyslexic = document.body.classList.toggle('opendyslexic-mode');
+      const btn = document.getElementById('font-toggle-btn');
+      if (btn) {
+        if (isDyslexic) {
+          btn.classList.add('bg-mono-950', 'text-white', 'dark:bg-mono-100', 'dark:text-mono-950');
+          btn.classList.remove('bg-mono-100', 'dark:bg-mono-900');
+        } else {
+          btn.classList.remove('bg-mono-950', 'text-white', 'dark:bg-mono-100', 'dark:text-mono-950');
+          btn.classList.add('bg-mono-100', 'dark:bg-mono-900');
+        }
+      }
+      localStorage.setItem('dx-font-mode', isDyslexic ? 'opendyslexic' : 'default');
+    }
+
+    // Restore saved font preference on load
+    if (localStorage.getItem('dx-font-mode') === 'opendyslexic') {
+      document.body.classList.add('opendyslexic-mode');
+      const fontBtn = document.getElementById('font-toggle-btn');
+      if (fontBtn) {
+        fontBtn.classList.add('bg-mono-950', 'text-white', 'dark:bg-mono-100', 'dark:text-mono-950');
+        fontBtn.classList.remove('bg-mono-100', 'dark:bg-mono-900');
+      }
+    }
+
     // Simulator Switch
     function switchDemo(mode) {
       const viewDx = document.getElementById('view-dx');
@@ -2036,7 +2082,8 @@ Directives Operationnelles Majeures:
       { title: "VS Code Extension", category: "Extensions", desc: "Editor quick-capture and quiet typo normalizer", link: "https://github.com/sounny/dxskills/tree/main/extensions/vscode-dxskills", action: "Open" },
       { title: "Interactive Terminal TUI", category: "CLI", desc: "Split-pane terminal viewer (dx_cli.py tui)", link: "#install", action: "Jump" },
       { title: "Cognitive Load Benchmarks", category: "CLI", desc: "10-domain empirical telemetry evaluation matrix", link: "#benchmarks", action: "Jump" },
-      { title: "Local Ollama Bridge", category: "CLI", desc: "Run D-Mode locally with Llama 3 or Mistral via Ollama", link: "#install", action: "Jump" }
+      { title: "Local Ollama Bridge", category: "CLI", desc: "Run D-Mode locally with Llama 3 or Mistral via Ollama", link: "#install", action: "Jump" },
+      { title: "OpenDyslexic Font Mode", category: "Accessibility", desc: "Toggle weighted bottoms and expanded letter spacing for crowding relief", link: "#", action: "Toggle" }
     ];
 
     let currentSearchCategory = 'All';
@@ -2127,6 +2174,10 @@ Directives Operationnelles Majeures:
       const item = filteredResults[idx];
       if (!item) return;
       closeSearchModal();
+      if (item.action === 'Toggle') {
+        toggleDyslexicFont();
+        return;
+      }
       if (item.link.startsWith('#')) {
         const target = document.querySelector(item.link);
         if (target) {
