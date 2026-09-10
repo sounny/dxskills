@@ -282,6 +282,15 @@ def main():
     p_sync.add_argument("--canvas", "-c", default="", help="Output filepath for consolidated federation .canvas")
     p_sync.add_argument("--json", "-j", action="store_true", help="Output raw JSON topology telemetry")
     
+    # decompile
+    p_dec = subparsers.add_parser("decompile", help="Decompile linear slide decks into 2D spatial canvas topologies")
+    p_dec.add_argument("input", nargs="?", default="", help="Input slide deck markdown, HTML, or transcript")
+    p_dec.add_argument("--title", "-t", default="", help="Presentation title")
+    p_dec.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_dec.add_argument("--svg", "-s", default="", help="Output vector .svg filepath")
+    p_dec.add_argument("--markdown", "-m", default="", help="Output markdown summary filepath")
+    p_dec.add_argument("--json", "-j", action="store_true", help="Output raw JSON topology")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -490,6 +499,44 @@ def main():
             print(report)
         if args.canvas:
             print(f"\n[DxSkills] Consolidated federation canvas written to: {args.canvas}")
+    elif args.command == "decompile":
+        import scripts.deck_decompiler as dd
+        text = read_input(args.input) if args.input else (
+            "# Slide 1: Mission Overview\n"
+            "- Goal: Decouple spatial thinking from rigid linear hierarchies.\n"
+            "- Audience: Non-linear and dyslexic spatial architectures.\n\n"
+            "---\n\n"
+            "# Slide 2: Core System Architecture\n"
+            "- Vector embedding cluster engine with Szymkiewicz-Simpson overlap.\n"
+            "- Bi-directional multi-vault synchronizer with real-time file watcher.\n\n"
+            "---\n\n"
+            "# Slide 3: Deep Dive: Cognitive Load Telemetry\n"
+            "- Empirical evaluation across 10 diverse corpus domains.\n"
+            "- Memory buffer stamina tracking and 60-second spatial reset guide.\n\n"
+            "---\n\n"
+            "# Slide 4: Strategic Deployment Roadmap\n"
+            "- Phase 1: Deploy standalone local CLI and Obsidian canvas exporter.\n"
+            "- Phase 2: Launch progressive web app with offline service worker."
+        )
+        slides, canvas_data, md_summary = dd.decompile_deck(
+            text,
+            deck_title=args.title or None,
+            output_canvas=args.canvas or None,
+            output_svg=args.svg or None,
+            output_markdown=args.markdown or None
+        )
+        if args.json:
+            print(json.dumps({"slides_count": len(slides), "canvas": canvas_data}, indent=2))
+        elif not (args.canvas or args.svg or args.markdown):
+            print(md_summary)
+        else:
+            print(f"\n[DxSkills] Decompiled {len(slides)} slides into spatial architecture.")
+            if args.canvas:
+                print(f"  - Canvas: {args.canvas}")
+            if args.svg:
+                print(f"  - SVG: {args.svg}")
+            if args.markdown:
+                print(f"  - Markdown: {args.markdown}")
     else:
         parser.print_help()
 
