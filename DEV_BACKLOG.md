@@ -151,13 +151,17 @@
 - [x] **Task 29.1:** Add OpenDyslexic font toggle and enhanced letter-spacing mode in `index.html` for users with visual crowding symptoms.
 - [x] **Task 29.2:** Add WCAG 2.1 AAA contrast audit and automated accessibility compliance test in `tests/test_accessibility.py`.
 
-### Phase 30: SounnyForms & AI Agent Multi-Modal Form Ingestion Adapter (Next Cycles)
-- [ ] **Task 30.1:** Add schema adapter for bidirectional sync with `SounnyForms` unstructured field parsing.
-- [ ] **Task 30.2:** Create JSON schema mapper (`scripts/forms_adapter.py`) converting voice dumps into validated form payloads.
+### Phase 30: SounnyForms & AI Agent Multi-Modal Form Ingestion Adapter
+- [x] **Task 30.1:** Add schema adapter for bidirectional sync with `SounnyForms` unstructured field parsing.
+- [x] **Task 30.2:** Create JSON schema mapper (`scripts/forms_adapter.py`) converting voice dumps into validated form payloads.
 
-### Phase 31: Multi-Turn Socratic Clarification Tree UI Widget
+### Phase 31: Multi-Turn Socratic Clarification Tree UI Widget (Next Cycles)
 - [ ] **Task 31.1:** Add interactive branching question widget in `index.html` simulating `dx-interview` clarifying dialogue.
 - [ ] **Task 31.2:** Auto-compile answered branch nodes into a unified project specification block.
+
+### Phase 32: Cognitive Fatigue Telemetry & Break Prompts
+- [ ] **Task 32.1:** Implement session cognitive load meter tracking input duration and phonological fatigue threshold.
+- [ ] **Task 32.2:** Add non-intrusive spatial reset prompt and stretch reminder in `index.html` and CLI.
 
 ---
 
@@ -190,7 +194,9 @@
 | **Cycle 22** | 2026-09-10 22:42 | Cognitive Load Reduction Matrix Visualizer & Telemetry JSON Exporter | `index.html`, `dist/*` | `93e2c75` |
 | **Cycle 23** | 2026-09-10 22:52 | Full-Text Search & Quick-Filter Command Palette | `index.html`, `dist/*` | `fd6fa88` |
 | **Cycle 24** | 2026-09-10 23:02 | Offline Progressive Web App (PWA) & Service Worker Cache | `manifest.webmanifest`, `sw.js`, `icons/*`, `index.html` | `3322d71` |
-| **Cycle 25** | 2026-09-10 23:12 | OpenDyslexic Font Mode & WCAG 2.1 AAA Accessibility Suite | `index.html`, `tests/test_accessibility.py` | `95bb446` |
+| **Cycle 25** | 2026-09-10 23:12 | OpenDyslexic Font Mode & WCAG 2.1 AAA Accessibility Suite | `index.html`, `tests/test_accessibility.py` | `cde7ab3` |
+| **Cycle 26** | 2026-09-10 23:22 | SounnyForms Multi-Modal Form Ingestion Adapter & Test Suite | `scripts/forms_adapter.py`, `tests/test_forms_adapter.py` | `d506268` |
+
 
 
 
