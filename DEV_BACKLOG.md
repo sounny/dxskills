@@ -155,13 +155,17 @@
 - [x] **Task 30.1:** Add schema adapter for bidirectional sync with `SounnyForms` unstructured field parsing.
 - [x] **Task 30.2:** Create JSON schema mapper (`scripts/forms_adapter.py`) converting voice dumps into validated form payloads.
 
-### Phase 31: Multi-Turn Socratic Clarification Tree UI Widget (Next Cycles)
-- [ ] **Task 31.1:** Add interactive branching question widget in `index.html` simulating `dx-interview` clarifying dialogue.
-- [ ] **Task 31.2:** Auto-compile answered branch nodes into a unified project specification block.
+### Phase 31: Multi-Turn Socratic Clarification Tree UI Widget
+- [x] **Task 31.1:** Add interactive branching question widget in `index.html` simulating `dx-interview` clarifying dialogue.
+- [x] **Task 31.2:** Auto-compile answered branch nodes into a unified project specification block.
 
 ### Phase 32: Cognitive Fatigue Telemetry & Break Prompts
 - [ ] **Task 32.1:** Implement session cognitive load meter tracking input duration and phonological fatigue threshold.
 - [ ] **Task 32.2:** Add non-intrusive spatial reset prompt and stretch reminder in `index.html` and CLI.
+
+### Phase 33: Direct Obsidian Vault & Notion Database Exporter (Next Cycles)
+- [ ] **Task 33.1:** Add 1-click Markdown export formatted specifically for Obsidian properties and frontmatter tags.
+- [ ] **Task 33.2:** Build webhook dispatcher to auto-append structured specifications into Notion databases.
 
 ---
 
@@ -196,6 +200,7 @@
 | **Cycle 24** | 2026-09-10 23:02 | Offline Progressive Web App (PWA) & Service Worker Cache | `manifest.webmanifest`, `sw.js`, `icons/*`, `index.html` | `3322d71` |
 | **Cycle 25** | 2026-09-10 23:12 | OpenDyslexic Font Mode & WCAG 2.1 AAA Accessibility Suite | `index.html`, `tests/test_accessibility.py` | `cde7ab3` |
 | **Cycle 26** | 2026-09-10 23:22 | SounnyForms Multi-Modal Form Ingestion Adapter & Test Suite | `scripts/forms_adapter.py`, `tests/test_forms_adapter.py` | `d506268` |
+| **Cycle 27** | 2026-09-10 23:32 | Multi-Turn Socratic Clarification Tree UI Widget & Test Suite | `index.html`, `tests/test_interview_widget.py`, `dist/*` | `b634ff9` |
 
 
 

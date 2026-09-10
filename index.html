@@ -281,15 +281,20 @@
           <p class="text-sm text-mono-600 dark:text-mono-400 mt-1 max-w-xl">Compare how standard AI responds to a fast dyslexic brain dump versus how DxSkills compiles it into visual architecture.</p>
         </div>
         
-        <!-- Top Mode Switcher: Comparison vs Interactive Playground -->
-        <div class="flex items-center p-1 rounded-xl bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-xs font-mono self-start md:self-auto shadow-sm">
-          <button id="sim-tab-compare" onclick="switchSimulatorView('compare')" class="px-4 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5">
+        <!-- Top Mode Switcher: Comparison vs Interactive Playground vs Socratic Interview -->
+        <div class="flex flex-wrap items-center p-1 rounded-xl bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-xs font-mono self-start md:self-auto shadow-sm gap-1">
+          <button id="sim-tab-compare" onclick="switchSimulatorView('compare')" class="px-3.5 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5">
             <i data-lucide="split" class="w-3.5 h-3.5"></i>
-            <span>Side-by-Side Example</span>
+            <span>Side-by-Side</span>
           </button>
-          <button id="sim-tab-play" onclick="switchSimulatorView('play')" class="px-4 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5">
+          <button id="sim-tab-play" onclick="switchSimulatorView('play')" class="px-3.5 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5">
             <i data-lucide="play" class="w-3.5 h-3.5"></i>
-            <span>Live Playground</span>
+            <span>Playground</span>
+          </button>
+          <button id="sim-tab-interview" onclick="switchSimulatorView('interview')" class="px-3.5 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5">
+            <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
+            <span>Socratic Interview</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 ml-0.5">dx-ask</span>
           </button>
         </div>
       </div>
@@ -565,6 +570,167 @@
           </div>
 
         </div>
+      </div>
+
+      <!-- VIEW 3: SOCRATIC CLARIFICATION TREE (dx-interview) -->
+      <div id="sim-view-interview" class="hidden space-y-6">
+        
+        <!-- Interview Intro Banner -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-white dark:bg-mono-900/50 border border-mono-200 dark:border-mono-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200">Anti-Blank-Page Engine</span>
+              <h3 class="text-base font-bold text-mono-950 dark:text-white">Multi-Turn Socratic Clarification Tree</h3>
+            </div>
+            <p class="text-xs text-mono-600 dark:text-mono-400 max-w-2xl">
+              Spatial thinkers often freeze when forced to produce a linear outline from scratch. Answer 3 high-impact clarifying questions or pick branch nodes to compile a complete, production-ready specification block.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="resetInterviewTree()" class="px-3 py-1.5 rounded-lg border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-800 transition flex items-center gap-1.5">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+              <span>Reset Tree</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Domain Tracks -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-mono">
+          <span class="text-mono-500 shrink-0 text-[11px] uppercase tracking-wider">Domain Track:</span>
+          <button id="tree-track-executive" onclick="switchInterviewTrack('executive')" class="px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition shrink-0 flex items-center gap-1.5">
+            <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+            <span>Executive Briefing</span>
+          </button>
+          <button id="tree-track-technical" onclick="switchInterviewTrack('technical')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition shrink-0 flex items-center gap-1.5">
+            <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+            <span>Technical Architecture</span>
+          </button>
+          <button id="tree-track-pitch" onclick="switchInterviewTrack('pitch')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition shrink-0 flex items-center gap-1.5">
+            <i data-lucide="rocket" class="w-3.5 h-3.5"></i>
+            <span>Venture & Grant Pitch</span>
+          </button>
+          <button id="tree-track-syllabus" onclick="switchInterviewTrack('syllabus')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition shrink-0 flex items-center gap-1.5">
+            <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+            <span>Course Syllabus</span>
+          </button>
+        </div>
+
+        <!-- 2-Column Main Stage: Interactive Clarification Questions (Left) & Compiled Spec (Right) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Left Column: Interactive Clarifier & Node Tree (col-span-6) -->
+          <div class="lg:col-span-6 space-y-4">
+            
+            <!-- Step Navigation Breadcrumbs & Progress Indicator -->
+            <div class="p-4 rounded-2xl bg-white dark:bg-mono-900/50 border border-mono-200 dark:border-mono-800 shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <span id="interview-step-indicator" class="text-xs font-mono font-bold text-mono-950 dark:text-white">Question 1 of 3</span>
+                <span id="interview-progress-pct" class="text-xs font-mono text-mono-500">33% complete</span>
+              </div>
+              <!-- Progress Bar -->
+              <div class="w-full h-1.5 rounded-full bg-mono-100 dark:bg-mono-800 overflow-hidden">
+                <div id="interview-progress-bar" class="h-full bg-mono-950 dark:bg-mono-100 rounded-full transition-all duration-300" style="width: 33%"></div>
+              </div>
+
+              <!-- Visual Branch Node Breadcrumbs -->
+              <div class="pt-2 flex items-center gap-1.5 overflow-x-auto text-[11px] font-mono" id="interview-breadcrumbs">
+                <!-- Dynamically populated step nodes -->
+              </div>
+            </div>
+
+            <!-- Active Question Card -->
+            <div class="p-5 rounded-2xl bg-white dark:bg-mono-900/50 border border-mono-200 dark:border-mono-800 shadow-sm space-y-4">
+              <div class="space-y-1">
+                <span id="interview-step-phase" class="text-[10px] font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400">Phase 1: Direct Ask</span>
+                <h4 id="interview-question-title" class="text-sm sm:text-base font-bold text-mono-950 dark:text-white leading-snug">
+                  What specific executive decision or sign-off is needed from leadership right now?
+                </h4>
+                <p id="interview-question-desc" class="text-xs text-mono-600 dark:text-mono-400">
+                  Pick a suggested high-leverage branch below or provide your own voice/text fragment.
+                </p>
+              </div>
+
+              <!-- Branch Option Cards (Quick-Picks) -->
+              <div class="space-y-2" id="interview-options-container">
+                <!-- Dynamically populated options -->
+              </div>
+
+              <!-- Speed-of-Thought Custom Input -->
+              <div class="pt-2 border-t border-mono-200 dark:border-mono-800 space-y-2">
+                <div class="flex items-center justify-between text-xs font-mono text-mono-500">
+                  <span>Or enter custom thought fragment:</span>
+                  <span class="text-[10px]">Auto-updates spec</span>
+                </div>
+                <div class="relative">
+                  <textarea id="interview-custom-input" rows="2" oninput="onCustomInterviewInput()" class="w-full p-2.5 text-xs font-mono rounded-lg bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-mono-900 dark:text-mono-100 placeholder-mono-400 focus:outline-none focus:border-mono-400 dark:focus:border-mono-600 transition resize-none" placeholder="Type or dictate a raw thought fragment..."></textarea>
+                </div>
+              </div>
+
+              <!-- Step Action Buttons -->
+              <div class="flex items-center justify-between pt-2">
+                <button id="interview-prev-btn" onclick="prevInterviewStep()" class="px-3.5 py-1.5 rounded-lg border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-800 transition flex items-center gap-1 disabled:opacity-40 disabled:pointer-events-none" disabled>
+                  <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                  <span>Previous</span>
+                </button>
+                <button id="interview-next-btn" onclick="nextInterviewStep()" class="px-4 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 text-xs font-mono font-bold hover:opacity-90 transition flex items-center gap-1.5 shadow-sm">
+                  <span id="interview-next-text">Next Question</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5" id="interview-next-icon"></i>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Right Column: Live Compiled Specification (col-span-6) -->
+          <div class="lg:col-span-6 flex flex-col rounded-2xl bg-white dark:bg-mono-900/50 border border-mono-200 dark:border-mono-800 p-5 shadow-sm space-y-4">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-mono-200 dark:border-mono-800">
+              <div class="flex items-center gap-2">
+                <i data-lucide="file-check-2" class="w-4 h-4 text-mono-950 dark:text-white"></i>
+                <span class="text-xs font-mono font-bold text-mono-950 dark:text-white">Compiled Specification Block</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="copyInterviewSpec()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Copy Markdown to Clipboard">
+                  <i data-lucide="copy" class="w-3 h-3"></i>
+                  <span id="copy-spec-btn-text">Copy Spec</span>
+                </button>
+                <button onclick="sendInterviewToPlayground()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Send to Live Playground">
+                  <i data-lucide="send" class="w-3 h-3"></i>
+                  <span>Playground</span>
+                </button>
+                <button onclick="downloadInterviewSpec()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Download Markdown File">
+                  <i data-lucide="download" class="w-3 h-3"></i>
+                  <span>Download .md</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Compiled Output Box -->
+            <div class="flex-1 min-h-[300px] p-4 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 overflow-y-auto max-h-[460px] text-xs font-mono text-mono-900 dark:text-mono-100 leading-relaxed whitespace-pre-wrap select-text" id="interview-compiled-output">
+              <!-- Dynamically populated markdown spec -->
+            </div>
+
+            <!-- Cognitive Scaffolding Telemetry -->
+            <div class="pt-3 border-t border-mono-200 dark:border-mono-800 grid grid-cols-3 gap-2 text-center">
+              <div class="p-2 rounded-lg bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                <span class="text-[9px] uppercase tracking-wider text-mono-500 block">Working Memory Gain</span>
+                <span class="text-xs font-bold text-mono-950 dark:text-white">+82% capacity</span>
+              </div>
+              <div class="p-2 rounded-lg bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                <span class="text-[9px] uppercase tracking-wider text-mono-500 block">Phonological Loop Saved</span>
+                <span class="text-xs font-bold text-mono-950 dark:text-white">~18.4s</span>
+              </div>
+              <div class="p-2 rounded-lg bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                <span class="text-[9px] uppercase tracking-wider text-mono-500 block">Em Dashes</span>
+                <span class="text-xs font-bold text-mono-950 dark:text-white">0 (Zero)</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
 
     </div>
@@ -1594,24 +1760,587 @@ Directives Operationnelles Majeures:
     function switchSimulatorView(view) {
       const compareView = document.getElementById('sim-view-compare');
       const playView = document.getElementById('sim-view-playground');
+      const interviewView = document.getElementById('sim-view-interview');
       const tabCompare = document.getElementById('sim-tab-compare');
       const tabPlay = document.getElementById('sim-tab-play');
+      const tabInterview = document.getElementById('sim-tab-interview');
+
+      const activeClass = 'px-3.5 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5';
+      const inactiveClass = 'px-3.5 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5';
 
       if (view === 'play') {
         compareView.classList.add('hidden');
+        if (interviewView) interviewView.classList.add('hidden');
         playView.classList.remove('hidden');
-        tabPlay.className = 'px-4 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5';
-        tabCompare.className = 'px-4 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5';
+        tabPlay.className = activeClass;
+        tabCompare.className = inactiveClass;
+        if (tabInterview) tabInterview.className = inactiveClass;
         const input = document.getElementById('playground-input');
         if (!input.value.trim()) {
           loadPlaygroundSample('outage');
         }
+      } else if (view === 'interview') {
+        compareView.classList.add('hidden');
+        playView.classList.add('hidden');
+        if (interviewView) interviewView.classList.remove('hidden');
+        if (tabInterview) tabInterview.className = activeClass;
+        tabCompare.className = inactiveClass;
+        tabPlay.className = inactiveClass;
+        if (!interviewInitialized) {
+          initSocraticInterview();
+        }
+        if (window.lucide) lucide.createIcons();
       } else {
         playView.classList.add('hidden');
+        if (interviewView) interviewView.classList.add('hidden');
         compareView.classList.remove('hidden');
-        tabCompare.className = 'px-4 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5';
-        tabPlay.className = 'px-4 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5';
+        tabCompare.className = activeClass;
+        tabPlay.className = inactiveClass;
+        if (tabInterview) tabInterview.className = inactiveClass;
       }
+    }
+
+    // Socratic Clarification Tree (dx-interview) Engine
+    // ==================================================
+    const socraticInterviewTrees = {
+      executive: {
+        name: "Executive Briefing",
+        icon: "briefcase",
+        steps: [
+          {
+            phase: "Phase 1: The Executive Decision",
+            title: "What specific approval, budget allocation, or policy sign-off is needed right now?",
+            desc: "Identifies the explicit action requested from leadership.",
+            options: [
+              "Authorize $150k capital expenditure for hybrid cloud migration before Q3 deadline.",
+              "Approve company-wide AI developer tooling adoption policy across 4 engineering pods.",
+              "Reallocate 2 senior infrastructure engineers to unblock mission-critical telemetry pipeline."
+            ]
+          },
+          {
+            phase: "Phase 2: Urgency & Stakes",
+            title: "Why must this decision be made today rather than next quarter? What is the cost of delay?",
+            desc: "Establishes quantifiable consequences of inaction.",
+            options: [
+              "Delaying incurs $45k/month in legacy hardware maintenance and stalls sprint velocity.",
+              "Competitor release in November threatens 22% enterprise customer retention.",
+              "Existing database hardware reaches end-of-life in 45 days with zero failover redundancy."
+            ]
+          },
+          {
+            phase: "Phase 3: Core Trade-Offs & Recommendation",
+            title: "What are the competing options and why is your recommended path superior?",
+            desc: "Contrasts options clearly to eliminate endless debate.",
+            options: [
+              "Option A (Recommended): Phased hybrid migration minimizes downtime. Option B: Full rewrite risks 3-month launch slip.",
+              "Option A (Recommended): Self-hosted open models preserve data sovereignty. Option B: Cloud APIs have recurring compliance overhead.",
+              "Option A (Recommended): Internal training program builds retention. Option B: Outsourcing yields zero long-term IP accumulation."
+            ]
+          }
+        ],
+        compile: function(answers) {
+          const a1 = answers[0] || "Authorize $150k capital expenditure for hybrid cloud migration before Q3 deadline.";
+          const a2 = answers[1] || "Delaying incurs $45k/month in legacy hardware maintenance and stalls sprint velocity.";
+          const a3 = answers[2] || "Option A (Recommended): Phased hybrid migration minimizes downtime. Option B: Full rewrite risks 3-month launch slip.";
+
+          const optParts = a3.split('. Option B:');
+          const optA = optParts[0] ? optParts[0].replace('Option A (Recommended):', '').trim() : a3;
+          const optB = optParts[1] ? optParts[1].trim() : 'Maintain existing status quo';
+
+          return `# Executive Briefing: Strategic Infrastructure Sign-Off
+
+> **Decision Requested:** ${a1}
+> **Deadline for Decision:** End of Current Sprint | **Status:** Pending Leadership Review
+
+---
+
+## 1. Bottom Line Up Front (BLUF)
+Leadership sign-off is required immediately to execute our recommended path. ${a2}
+
+## 2. Decision Matrix & Option Comparison
+| Dimension | Recommended Path | Alternative / Status Quo |
+| :--- | :--- | :--- |
+| **Primary Approach** | ${optA} | ${optB} |
+| **Capital Impact** | Predictable, phased budget allocation | Compounding legacy overhead costs |
+| **Operational Risk** | Managed within scheduled maintenance windows | Elevated risk of unplanned cascading downtime |
+| **Recommendation** | **Approve and fund immediately** | Reject |
+
+## 3. Immediate Implementation Roadmap
+1. **Week 1:** Finalize procurement and security clearance with legal.
+2. **Week 2:** Deploy pilot staging cluster and initiate telemetry verification.
+3. **Week 4:** Full production rollout with 24/7 automated monitoring.`;
+        }
+      },
+      technical: {
+        name: "Technical Architecture",
+        icon: "cpu",
+        steps: [
+          {
+            phase: "Phase 1: System Scope & Bottleneck",
+            title: "What is the primary technical bottleneck or scaling constraint today?",
+            desc: "Pins down the architectural problem without abstract fluff.",
+            options: [
+              "Synchronous database queries causing 450ms p99 latency during peak load spikes.",
+              "Monolithic deployment pipeline taking 42 minutes with high blast-radius failures.",
+              "Unbounded memory growth in worker nodes during multi-gigabyte spatial raster processing."
+            ]
+          },
+          {
+            phase: "Phase 2: Architectural Pattern",
+            title: "What architectural pattern or structural paradigm resolves this constraint?",
+            desc: "Selects the verified engineering pattern to deploy.",
+            options: [
+              "Event-driven CQRS architecture with Redis cache and asynchronous Kafka message queue.",
+              "Decoupled micro-services with independent Docker containers and automated canary deploys.",
+              "Streaming chunked chunk-by-chunk raster ingestion using GDAL virtual filesystems."
+            ]
+          },
+          {
+            phase: "Phase 3: Failure Mode & Resilience",
+            title: "How does the system fail safely and recover without data loss?",
+            desc: "Ensures production robustness and zero-downtime recovery.",
+            options: [
+              "Circuit breaker pattern with dead-letter queue and automatic 3-retry exponential backoff.",
+              "Stateless worker pool behind active-passive load balancers with instant autoscaling.",
+              "Immutable append-only audit log with automated point-in-time snapshot recovery."
+            ]
+          }
+        ],
+        compile: function(answers) {
+          const a1 = answers[0] || "Synchronous database queries causing 450ms p99 latency during peak load spikes.";
+          const a2 = answers[1] || "Event-driven CQRS architecture with Redis cache and asynchronous Kafka message queue.";
+          const a3 = answers[2] || "Circuit breaker pattern with dead-letter queue and automatic 3-retry exponential backoff.";
+
+          return `# Technical Architecture Specification: Distributed Performance Upgrade
+
+> **Target Problem:** ${a1}
+> **Pattern Selected:** ${a2}
+> **Target SLA:** p99 latency < 65ms | Availability: 99.95%
+
+---
+
+## 1. System Architecture Overview
+The proposed upgrade decouples ingestion from query processing. By applying ${a2.toLowerCase()}, throughput increases 4x while isolating downstream failure domains.
+
+\`\`\`mermaid
+flowchart LR
+    Client([Client Traffic]) --> Gateway[API Gateway]
+    Gateway --> Cache[(Redis Cache)]
+    Gateway --> Queue[[Kafka Stream]]
+    Queue --> Workers[Worker Pool]
+    Workers --> DB[(Persistent Store)]
+    Workers -.-> DLQ[(Dead Letter Queue)]
+\`\`\`
+
+## 2. Technical Evaluation & Trade-Off Matrix
+| Component | Selected Paradigm | Fallback / Previous Pattern |
+| :--- | :--- | :--- |
+| **Ingestion Pipeline** | Asynchronous Streaming | Direct Synchronous RPC |
+| **Resilience Strategy** | ${a3} | Manual service restarts |
+| **Scalability Limit** | Horizontal scaling via worker pods | Vertical node resizing |
+
+## 3. Engineering Milestones
+1. **Milestone 1 (Days 1-5):** Implement streaming queue and Redis cache prototype.
+2. **Milestone 2 (Days 6-12):** Deploy resilience harness (${a3.split(' with ')[0]}).
+3. **Milestone 3 (Days 13-18):** Load test under 10x traffic and execute canary migration.`;
+        }
+      },
+      pitch: {
+        name: "Venture & Grant Pitch",
+        icon: "rocket",
+        steps: [
+          {
+            phase: "Phase 1: Core Unfair Advantage",
+            title: "What is the unique technological or structural insight that competitors lack?",
+            desc: "Highlights the defensible moat and breakthrough novelty.",
+            options: [
+              "Proprietary cognitive scaffolding compiler that turns non-linear speech into structured code with zero typing friction.",
+              "Multi-modal geospatial neural network fusing synthetic aperture radar (SAR) with optical telemetry at 10x lower cost.",
+              "Autonomous Qualiopi-compliant curriculum engine generating verified corporate training paths in seconds."
+            ]
+          },
+          {
+            phase: "Phase 2: Market Pain & Quantifiable Proof",
+            title: "Who experiences the acute pain point and what measurable cost do they suffer?",
+            desc: "Grounds the pitch in verified economic urgency.",
+            options: [
+              "35% of enterprise software architects are dyslexic or ADHD, losing 12 hours weekly to linear paperwork stalls.",
+              "Agricultural cooperatives lose 180M euros annually from delayed drought forecasting due to fragmented satellite data.",
+              "French vocational training organizations spend 40% of operational revenue on regulatory compliance auditing."
+            ]
+          },
+          {
+            phase: "Phase 3: The Ask & 90-Day Milestone",
+            title: "What capital or partnership is requested, and what tangible milestone will be hit?",
+            desc: "Defines the exact funding amount and execution proof.",
+            options: [
+              "Raising $1.5M pre-seed to expand core engineering and reach $120k ARR within 9 months.",
+              "Securing 750k euros Horizon Europe grant matching funds to conduct 3 commercial regional pilots.",
+              "Seeking 300k euros seed allocation to license enterprise training pilots to 15 accredited institutions."
+            ]
+          }
+        ],
+        compile: function(answers) {
+          const a1 = answers[0] || "Proprietary cognitive scaffolding compiler that turns non-linear speech into structured code with zero typing friction.";
+          const a2 = answers[1] || "35% of enterprise software architects are dyslexic or ADHD, losing 12 hours weekly to linear paperwork stalls.";
+          const a3 = answers[2] || "Raising $1.5M pre-seed to expand core engineering and reach $120k ARR within 9 months.";
+
+          const askTarget = a3.split(' to ')[1] || 'scale commercial ARR';
+
+          return `# Project Prospectus: High-Impact Innovation Initiative
+
+> **Core Value Proposition:** ${a1}
+> **Target Opportunity:** ${a2}
+> **Investment Ask:** ${a3}
+
+---
+
+## 1. Executive Summary & Market Urgency
+Linear tools create massive friction for complex spatial workflows. ${a2}
+Our solution directly solves this: ${a1}
+
+## 2. Competitive Advantage Matrix
+| Feature Dimension | Our Solution | Conventional Alternative |
+| :--- | :--- | :--- |
+| **Cognitive Velocity** | Real-time spatial compilation | Linear, manual documentation |
+| **Data Ingestion** | Multi-modal voice and brain dump | Rigid forms and blank documents |
+| **Time to Value** | Minutes from raw idea to spec | Days of editing friction |
+
+## 3. Capital Allocation & 90-Day Milestones
+- **Month 1:** Deploy public beta with verified telemetry and self-serve onboarding.
+- **Month 2:** Reach 2,500 active weekly practitioners across target enterprise pods.
+- **Month 3:** Complete commercial pilot conversions to achieve key milestone: ${askTarget}.`;
+        }
+      },
+      syllabus: {
+        name: "Course Syllabus",
+        icon: "graduation-cap",
+        steps: [
+          {
+            phase: "Phase 1: Course Objective & Competency",
+            title: "What is the single most important capability students will master by the end?",
+            desc: "Focuses on high-impact learning outcomes rather than passive lecture topics.",
+            options: [
+              "Architect and deploy production-ready spatial AI agents using Python, LangChain, and GeoPandas.",
+              "Design and defend professional architectural portfolios using Swiss typographic grids and 1:20 constructive details.",
+              "Master spatial database engineering and real-time planetary geospatial queries in PostGIS and BigQuery."
+            ]
+          },
+          {
+            phase: "Phase 2: Target Audience & Prerequisites",
+            title: "Who is the ideal participant and what foundational skills do they bring?",
+            desc: "Calibrates instructional pacing and expectations.",
+            options: [
+              "Graduate students and professionals with basic Python literacy seeking spatial AI specialization.",
+              "Early-career architects and designers preparing for high-stakes competition and job placement reviews.",
+              "GIS analysts and software engineers transitioning into cloud-native geospatial data engineering."
+            ]
+          },
+          {
+            phase: "Phase 3: 3-Part Modular Progression",
+            title: "What are the 3 sequential learning modules that build this competency?",
+            desc: "Structures curriculum from foundations to synthesis.",
+            options: [
+              "Module 1: Spatial Foundations. Module 2: Agentic Tooling and Pipelines. Module 3: Capstone Deployment.",
+              "Module 1: Constructive Details and Typology. Module 2: Portfolio Narrative Pacing. Module 3: Jury Defense.",
+              "Module 1: Relational Spatial Indexing. Module 2: Cloud Vector Sharding. Module 3: Planetary BigQuery Pipelines."
+            ]
+          }
+        ],
+        compile: function(answers) {
+          const a1 = answers[0] || "Architect and deploy production-ready spatial AI agents using Python, LangChain, and GeoPandas.";
+          const a2 = answers[1] || "Graduate students and professionals with basic Python literacy seeking spatial AI specialization.";
+          const a3 = answers[2] || "Module 1: Spatial Foundations. Module 2: Agentic Tooling and Pipelines. Module 3: Capstone Deployment.";
+
+          const modules = a3.split('. ');
+
+          return `# Course Syllabus: Advanced Applied Masterclass
+
+> **Primary Learning Competency:** ${a1}
+> **Target Audience:** ${a2}
+> **Instructional Model:** Project-Based Hands-On Studio (Zero Fluff)
+
+---
+
+## 1. Course Description & Learning Philosophy
+This curriculum eliminates passive lecture memorization. Students learn through rapid, tangible building cycles. By conclusion, every participant will successfully ${a1.toLowerCase()}
+
+## 2. Curriculum Architecture
+| Phase | Focus Area | Deliverable / Benchmark |
+| :--- | :--- | :--- |
+| **Phase 1** | ${modules[0] || 'Foundations and Architecture'} | Working prototype with automated unit tests |
+| **Phase 2** | ${modules[1] || 'Pipelines and Integration'} | Scalable pipeline integrated with live telemetry |
+| **Phase 3** | ${modules[2] || 'Capstone Synthesis'} | Public capstone defense and peer critique |
+
+## 3. Evaluation Rubric & Student Success
+- **40% Studio Capstone:** High-impact working implementation meeting industry standards.
+- **30% Laboratory Milestones:** Weekly rapid problem-solving deliverables.
+- **20% Peer Review & Critique:** Socratic architectural defense and feedback.
+- **10% Active Participation:** Hands-on collaboration in group studio sessions.`;
+        }
+      }
+    };
+
+    let interviewInitialized = false;
+    let currentInterviewTrack = 'executive';
+    let currentInterviewStep = 0;
+    let interviewAnswers = {
+      executive: ['', '', ''],
+      technical: ['', '', ''],
+      pitch: ['', '', ''],
+      syllabus: ['', '', '']
+    };
+
+    function initSocraticInterview() {
+      interviewInitialized = true;
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      if (!interviewAnswers[currentInterviewTrack][0]) {
+        interviewAnswers[currentInterviewTrack][0] = track.steps[0].options[0];
+      }
+      renderInterviewStep();
+    }
+
+    function switchInterviewTrack(trackKey) {
+      if (!socraticInterviewTrees[trackKey]) return;
+      currentInterviewTrack = trackKey;
+      currentInterviewStep = 0;
+
+      const tracks = ['executive', 'technical', 'pitch', 'syllabus'];
+      tracks.forEach((t) => {
+        const btn = document.getElementById(`tree-track-${t}`);
+        if (!btn) return;
+        if (t === trackKey) {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition shrink-0 flex items-center gap-1.5';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition shrink-0 flex items-center gap-1.5';
+        }
+      });
+
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      if (!interviewAnswers[currentInterviewTrack][0]) {
+        interviewAnswers[currentInterviewTrack][0] = track.steps[0].options[0];
+      }
+
+      renderInterviewStep();
+    }
+
+    function renderInterviewStep() {
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      const stepData = track.steps[currentInterviewStep];
+      const totalSteps = track.steps.length;
+
+      const indicator = document.getElementById('interview-step-indicator');
+      const progressPct = document.getElementById('interview-progress-pct');
+      const progressBar = document.getElementById('interview-progress-bar');
+      const stepPhase = document.getElementById('interview-step-phase');
+      const qTitle = document.getElementById('interview-question-title');
+      const qDesc = document.getElementById('interview-question-desc');
+      const optionsContainer = document.getElementById('interview-options-container');
+      const customInput = document.getElementById('interview-custom-input');
+      const prevBtn = document.getElementById('interview-prev-btn');
+      const nextBtnText = document.getElementById('interview-next-text');
+      const nextIcon = document.getElementById('interview-next-icon');
+      const breadcrumbs = document.getElementById('interview-breadcrumbs');
+
+      const pct = Math.round(((currentInterviewStep + 1) / totalSteps) * 100);
+      if (indicator) indicator.innerText = `Question ${currentInterviewStep + 1} of ${totalSteps}`;
+      if (progressPct) progressPct.innerText = `${pct}% complete`;
+      if (progressBar) progressBar.style.width = `${pct}%`;
+
+      if (stepPhase) stepPhase.innerText = stepData.phase;
+      if (qTitle) qTitle.innerText = stepData.title;
+      if (qDesc) qDesc.innerText = stepData.desc;
+
+      if (breadcrumbs) {
+        breadcrumbs.innerHTML = '';
+        track.steps.forEach((s, idx) => {
+          const isCurrent = idx === currentInterviewStep;
+          const isAnswered = Boolean(interviewAnswers[currentInterviewTrack][idx]);
+          const nodeBtn = document.createElement('button');
+          nodeBtn.onclick = () => jumpToInterviewStep(idx);
+          nodeBtn.className = `px-2 py-1 rounded-md transition flex items-center gap-1 ${
+            isCurrent
+              ? 'bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold'
+              : isAnswered
+              ? 'bg-mono-200 dark:bg-mono-800 text-mono-900 dark:text-mono-100'
+              : 'bg-mono-100 dark:bg-mono-900 text-mono-400 dark:text-mono-600'
+          }`;
+          nodeBtn.innerHTML = `<span>Q${idx + 1}</span>${isAnswered ? '<i data-lucide="check" class="w-3 h-3"></i>' : ''}`;
+          breadcrumbs.appendChild(nodeBtn);
+        });
+      }
+
+      if (optionsContainer) {
+        optionsContainer.innerHTML = '';
+        const currentAnswer = interviewAnswers[currentInterviewTrack][currentInterviewStep];
+
+        stepData.options.forEach((optText) => {
+          const isSelected = currentAnswer === optText;
+          const optCard = document.createElement('div');
+          optCard.onclick = () => selectInterviewOption(optText);
+          optCard.className = `p-3 rounded-xl border text-xs cursor-pointer transition flex items-start gap-2.5 ${
+            isSelected
+              ? 'bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 border-mono-950 dark:border-white font-medium shadow-sm ring-1 ring-mono-950 dark:ring-white'
+              : 'bg-white dark:bg-mono-900 border-mono-200 dark:border-mono-800 text-mono-800 dark:text-mono-200 hover:border-mono-400 dark:hover:border-mono-600'
+          }`;
+
+          const radioBullet = isSelected
+            ? '<span class="w-4 h-4 rounded-full bg-white dark:bg-mono-950 flex items-center justify-center shrink-0 mt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-mono-950 dark:bg-white"></span></span>'
+            : '<span class="w-4 h-4 rounded-full border border-mono-300 dark:border-mono-700 shrink-0 mt-0.5"></span>';
+
+          optCard.innerHTML = `${radioBullet}<span class="leading-relaxed">${optText}</span>`;
+          optionsContainer.appendChild(optCard);
+        });
+      }
+
+      if (customInput) {
+        customInput.value = interviewAnswers[currentInterviewTrack][currentInterviewStep] || '';
+      }
+
+      if (prevBtn) {
+        prevBtn.disabled = currentInterviewStep === 0;
+      }
+      if (nextBtnText) {
+        if (currentInterviewStep === totalSteps - 1) {
+          nextBtnText.innerText = 'Completed Spec';
+          if (nextIcon) nextIcon.setAttribute('data-lucide', 'check');
+        } else {
+          nextBtnText.innerText = 'Next Question';
+          if (nextIcon) nextIcon.setAttribute('data-lucide', 'arrow-right');
+        }
+      }
+
+      compileInterviewSpec();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function selectInterviewOption(optText) {
+      interviewAnswers[currentInterviewTrack][currentInterviewStep] = optText;
+      const customInput = document.getElementById('interview-custom-input');
+      if (customInput) customInput.value = optText;
+
+      renderInterviewStep();
+
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      if (currentInterviewStep < track.steps.length - 1) {
+        setTimeout(() => {
+          nextInterviewStep();
+        }, 320);
+      }
+    }
+
+    function onCustomInterviewInput() {
+      const customInput = document.getElementById('interview-custom-input');
+      if (!customInput) return;
+      interviewAnswers[currentInterviewTrack][currentInterviewStep] = customInput.value;
+
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      const stepData = track.steps[currentInterviewStep];
+      const optionsContainer = document.getElementById('interview-options-container');
+      if (optionsContainer) {
+        const cards = optionsContainer.children;
+        for (let i = 0; i < cards.length; i++) {
+          const optText = stepData.options[i];
+          const isSelected = customInput.value === optText;
+          cards[i].className = `p-3 rounded-xl border text-xs cursor-pointer transition flex items-start gap-2.5 ${
+            isSelected
+              ? 'bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 border-mono-950 dark:border-white font-medium shadow-sm ring-1 ring-mono-950 dark:ring-white'
+              : 'bg-white dark:bg-mono-900 border-mono-200 dark:border-mono-800 text-mono-800 dark:text-mono-200 hover:border-mono-400 dark:hover:border-mono-600'
+          }`;
+        }
+      }
+
+      compileInterviewSpec();
+    }
+
+    function prevInterviewStep() {
+      if (currentInterviewStep > 0) {
+        currentInterviewStep--;
+        renderInterviewStep();
+      }
+    }
+
+    function nextInterviewStep() {
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      if (currentInterviewStep < track.steps.length - 1) {
+        currentInterviewStep++;
+        if (!interviewAnswers[currentInterviewTrack][currentInterviewStep]) {
+          interviewAnswers[currentInterviewTrack][currentInterviewStep] = track.steps[currentInterviewStep].options[0];
+        }
+        renderInterviewStep();
+      } else {
+        const out = document.getElementById('interview-compiled-output');
+        if (out) {
+          out.classList.add('ring-2', 'ring-mono-950', 'dark:ring-white');
+          setTimeout(() => {
+            out.classList.remove('ring-2', 'ring-mono-950', 'dark:ring-white');
+          }, 1200);
+        }
+      }
+    }
+
+    function jumpToInterviewStep(idx) {
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      if (idx >= 0 && idx < track.steps.length) {
+        currentInterviewStep = idx;
+        renderInterviewStep();
+      }
+    }
+
+    function resetInterviewTree() {
+      interviewAnswers[currentInterviewTrack] = ['', '', ''];
+      currentInterviewStep = 0;
+      initSocraticInterview();
+    }
+
+    function compileInterviewSpec() {
+      const track = socraticInterviewTrees[currentInterviewTrack];
+      const answers = interviewAnswers[currentInterviewTrack];
+      const compiledMarkdown = track.compile(answers);
+
+      const out = document.getElementById('interview-compiled-output');
+      if (out) {
+        out.innerText = compiledMarkdown;
+      }
+      return compiledMarkdown;
+    }
+
+    function copyInterviewSpec() {
+      const out = document.getElementById('interview-compiled-output');
+      if (!out) return;
+      const text = out.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btnText = document.getElementById('copy-spec-btn-text');
+        if (btnText) {
+          btnText.innerText = 'Copied!';
+          setTimeout(() => {
+            btnText.innerText = 'Copy Spec';
+          }, 2000);
+        }
+      });
+    }
+
+    function sendInterviewToPlayground() {
+      const spec = compileInterviewSpec();
+      switchSimulatorView('play');
+      const input = document.getElementById('playground-input');
+      if (input) {
+        input.value = spec;
+        compilePlayground();
+      }
+      const simSec = document.getElementById('simulator');
+      if (simSec) simSec.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function downloadInterviewSpec() {
+      const spec = compileInterviewSpec();
+      const filename = `dx-interview-${currentInterviewTrack}-spec.md`;
+      const blob = new Blob([spec], { type: 'text/markdown;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
     }
 
     function switchDemo(mode) {
@@ -2064,6 +2793,7 @@ Directives Operationnelles Majeures:
       { title: "dx-map", category: "Skills", desc: "Spatial ASCII and Mermaid concept architecture mapper", link: "#skills", action: "Jump" },
       { title: "dx-read", category: "Skills", desc: "BLUF executive summarizer, chunking, and cognitive triage", link: "#skills", action: "Jump" },
       { title: "dx-interview", category: "Skills", desc: "Interactive Socratic clarifying question tree", link: "#skills", action: "Jump" },
+      { title: "Socratic Clarification Tree", category: "Interactive", desc: "Interactive branching question tree to eliminate blank-page stall", link: "#simulator", action: "Jump" },
       { title: "dx-write", category: "Skills", desc: "Direct, grounded prose engine with zero corporate fluff", link: "#skills", action: "Jump" },
       { title: "dx-voice", category: "Skills", desc: "Speed-of-thought Whisper transcription and restructuring pipeline", link: "#skills", action: "Jump" },
       { title: "Universal D-Mode", category: "Prompts", desc: "Copy-paste system prompt for ChatGPT, Claude, and Gemini", link: "#d-mode", action: "Jump" },
@@ -2276,6 +3006,9 @@ Directives Operationnelles Majeures:
         alert('To install DxSkills: open your browser settings or share menu and choose "Add to Home Screen" or "Install App".');
       }
     }
+
+    // Initialize Socratic Clarification Tree state
+    initSocraticInterview();
   </script>
 
   <!-- DOWNLOAD BUNDLE MODAL -->
