@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  gateway:
+    build: .
+    container_name: dxskills-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Optional local on-device LLM runtime
+  ollama:
+    image: ollama/ollama:latest
+    container_name: dxskills-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+
+volumes:
+  ollama_models:
+    name: dxskills_ollama_models

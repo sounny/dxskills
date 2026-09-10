@@ -99,13 +99,17 @@
 - [x] **Task 16.1:** Add French cognitive prompts (`prompts/d-mode-fr.md`) for francophone spatial researchers.
 - [x] **Task 16.2:** Add bilingual language toggle and French prompt tab in `index.html`.
 
-### Phase 17: Enterprise & Self-Hosted Deployment (Next Cycles)
-- [ ] **Task 17.1:** Create Dockerfile and `docker-compose.yml` for self-hosted D-Mode gateway with local Whisper and Ollama.
-- [ ] **Task 17.2:** Add health check endpoints and latency telemetry dashboard.
+### Phase 17: Enterprise & Self-Hosted Deployment
+- [x] **Task 17.1:** Create Dockerfile and `docker-compose.yml` for self-hosted D-Mode gateway with local Whisper and Ollama.
+- [x] **Task 17.2:** Add health check endpoints, compilation API, and latency telemetry dashboard (`server/gateway.py`).
 
-### Phase 18: VS Code Native Extension & Editor Scaffolding
+### Phase 18: VS Code Native Extension & Editor Scaffolding (Next Cycles)
 - [ ] **Task 18.1:** Scaffold `extensions/vscode-dxskills/` with status bar quick-capture command.
 - [ ] **Task 18.2:** Add automatic typo auto-fixer that operates quietly without red squiggly anxiety.
+
+### Phase 19: Cognitive Load Analytics & Productivity Telemetry
+- [ ] **Task 19.1:** Add cognitive load reduction estimator calculating phonological working memory cycles saved per compiled deliverable.
+- [ ] **Task 19.2:** Add real-time telemetry badge in web interface.
 
 ---
 
@@ -125,7 +129,9 @@
 | **Cycle 9** | 2026-09-10 20:22 | Local LLM Suite: Ollama Bridge, Llama 3 & Mistral Modelfiles | `models/*`, `scripts/ollama_bridge.py` | `d3d43ad` |
 | **Cycle 10** | 2026-09-10 20:32 | Terminal ASCII Scaffolding & Live Web Concept Mindmap | `scripts/ascii_scaffold.py`, `index.html` | `be7d5c3` |
 | **Cycle 11** | 2026-09-10 20:42 | Whisper Audio Pipeline & Browser Web Audio Dictation | `skills/dx-voice/*`, `index.html` | `9af66e7` |
-| **Cycle 12** | 2026-09-10 20:52 | Multilingual Scaffolding: French D-Mode & Navbar Language Toggle | `prompts/d-mode-fr.md`, `index.html` | `c8b1ecd` |
+| **Cycle 12** | 2026-09-10 20:52 | Multilingual Scaffolding: French D-Mode & Navbar Language Toggle | `prompts/d-mode-fr.md`, `index.html` | `450f965` |
+| **Cycle 13** | 2026-09-10 21:02 | Self-Hosted Container Gateway & Docker Compose Stack | `server/gateway.py`, `Dockerfile`, `docker-compose.yml` | `79a2115` |
+
 
 
 
