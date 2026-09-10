@@ -495,6 +495,22 @@
 
             </div>
 
+            <!-- Real-time Cognitive Telemetry Badges -->
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-mono-100 dark:border-mono-800 text-center font-mono">
+              <div class="p-2 rounded-lg bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                <span class="text-[9px] uppercase tracking-wider text-mono-500 block">Phonological Loop Saved</span>
+                <span id="telemetry-loop-saved" class="text-xs font-bold text-mono-950 dark:text-white">~10.1s</span>
+              </div>
+              <div class="p-2 rounded-lg bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                <span class="text-[9px] uppercase tracking-wider text-mono-500 block">Extraneous Load Drop</span>
+                <span id="telemetry-load-drop" class="text-xs font-bold text-mono-950 dark:text-white">-74%</span>
+              </div>
+              <div class="p-2 rounded-lg bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                <span class="text-[9px] uppercase tracking-wider text-mono-500 block">Buffer Footprint</span>
+                <span id="telemetry-chunks-opt" class="text-xs font-bold text-mono-950 dark:text-white">3 / 4 (Cowan)</span>
+              </div>
+            </div>
+
             <!-- Metrics bar -->
             <div class="flex items-center justify-between text-[11px] font-mono text-mono-500 dark:text-mono-400 pt-1">
               <span id="play-typos-stat">Silently corrected: 3 typos</span>
@@ -1484,6 +1500,23 @@ Directives Operationnelles Majeures:
       document.getElementById('play-draft-text').innerHTML = draftHtml;
 
       document.getElementById('play-typos-stat').innerText = `Silently corrected: ${typoCount} typos`;
+
+      // Real-time Cognitive Telemetry Computation
+      const wordCount = words.length;
+      const syllablesEst = Math.round(wordCount * 1.5);
+      const subvocalSec = syllablesEst * 0.18;
+      const visualScanSec = (syllablesEst * 0.45 * 0.18) / 3.2;
+      const timeSaved = Math.max(1.2, subvocalSec - visualScanSec).toFixed(1);
+      const dropPct = wordCount > 25 ? 74 : (wordCount > 10 ? 62 : 45);
+      const activeChunks = Math.min(4, Math.max(2, rows.length + 1));
+
+      const loopSavedEl = document.getElementById('telemetry-loop-saved');
+      const loadDropEl = document.getElementById('telemetry-load-drop');
+      const chunksOptEl = document.getElementById('telemetry-chunks-opt');
+
+      if (loopSavedEl) loopSavedEl.innerText = `~${timeSaved}s`;
+      if (loadDropEl) loadDropEl.innerText = `-${dropPct}%`;
+      if (chunksOptEl) chunksOptEl.innerText = `${activeChunks} / 4 (Cowan)`;
 
       let md = `> **BLUF:** ${blufSentence}\\n\\n`;
       md += `| Deliverable | Timeline / Status | Action Item |\\n`;
