@@ -131,9 +131,13 @@
 - [x] **Task 24.1:** Build real-time event log and streaming stats endpoint in `server/gateway.py`.
 - [x] **Task 24.2:** Add live telemetry stream and active server status monitor in web interface (`index.html`).
 
-### Phase 25: Git Pre-Commit Hook & Automated Linter (Next Cycles)
-- [ ] **Task 25.1:** Create `scripts/pre_commit_hook.py` verifying zero em dashes, valid frontmatter, and compilation benchmarks before commit.
-- [ ] **Task 25.2:** Add fast installation script `scripts/install_git_hook.py` to auto-link hook into `.git/hooks/pre-commit`.
+### Phase 25: Git Pre-Commit Hook & Automated Linter
+- [x] **Task 25.1:** Create `scripts/pre_commit_hook.py` verifying zero em dashes, valid frontmatter, and compilation benchmarks before commit.
+- [x] **Task 25.2:** Add fast installation script `scripts/install_git_hook.py` to auto-link hook into `.git/hooks/pre-commit`.
+
+### Phase 26: Cognitive Load Reduction Matrix Visualizer on Web Portal (Next Cycles)
+- [ ] **Task 26.1:** Add interactive comparison matrix in `index.html` visualizing phonetic loop savings across all 10 benchmark corpus types.
+- [ ] **Task 26.2:** Add downloadable JSON telemetry reports directly from the benchmark matrix.
 
 ---
 
@@ -162,6 +166,7 @@
 | **Cycle 18** | 2026-09-10 22:02 | Team Review Lenses & Conflict Resolution Matrix | `prompts/team-review-*`, `skills/dx-read/templates/*` | `cad20e7` |
 | **Cycle 19** | 2026-09-10 22:12 | Interactive Terminal TUI & CLI Subcommand Integration | `scripts/dx_tui.py`, `scripts/dx_cli.py` | `8e9c97a` |
 | **Cycle 20** | 2026-09-10 22:22 | Real-Time Event Telemetry API & Live Web Gateway Monitor | `server/gateway.py`, `index.html` | `b0176ef` |
+| **Cycle 21** | 2026-09-10 22:32 | Automated Pre-Commit Hook & Git Quality Gatekeeper | `scripts/pre_commit_hook.py`, `scripts/install_git_hook.py` | `3efa129` |
 
 
 
