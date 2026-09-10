@@ -513,6 +513,10 @@
                   <i data-lucide="layers" class="w-3 h-3"></i>
                   <span>Notion</span>
                 </button>
+                <button id="play-audio-digest-btn" onclick="openAudioDigestModal('playground')" class="text-xs font-mono text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white flex items-center gap-1" title="Generate Spoken Audio Digest">
+                  <i data-lucide="volume-2" class="w-3 h-3"></i>
+                  <span>Audio Digest</span>
+                </button>
               </div>
             </div>
 
@@ -722,6 +726,10 @@
                 <button onclick="exportInterviewToNotion()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Export as Notion Block Payload">
                   <i data-lucide="layers" class="w-3 h-3"></i>
                   <span>Notion</span>
+                </button>
+                <button id="interview-audio-digest-btn" onclick="openAudioDigestModal('interview')" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Generate Spoken Audio Digest">
+                  <i data-lucide="volume-2" class="w-3 h-3"></i>
+                  <span>Audio Digest</span>
                 </button>
                 <button onclick="downloadInterviewSpec()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition flex items-center gap-1 font-medium shadow-sm" title="Download Markdown File">
                   <i data-lucide="download" class="w-3 h-3"></i>
@@ -2503,6 +2511,210 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       exportToNotionPayload("Playground Synthesis", content);
     }
 
+    let currentAudioLang = 'en';
+    let currentAudioRate = 1.0;
+    let activeUtterance = null;
+    let audioScriptCurrent = '';
+
+    function generateClientAudioScript(markdownText, title = "DxSkills Deliverable", lang = "en") {
+      const lines = markdownText.split('\n').map(l => l.trim()).filter(Boolean);
+      let bluf = "";
+      const headings = [];
+      const actions = [];
+
+      for (const line of lines) {
+        if (line.startsWith('# ') && title === "DxSkills Deliverable") {
+          title = line.replace('# ', '').trim();
+        } else if (line.startsWith('> ') && !bluf) {
+          const cleanQ = line.replace('> ', '').trim();
+          if (cleanQ.includes('BLUF') || cleanQ.includes('Decision Requested') || cleanQ.includes('Core Value') || cleanQ.includes('Summary')) {
+            bluf = cleanQ.replace(/\*\*/g, '').replace(/\*/g, '');
+          }
+        } else if (line.startsWith('## ')) {
+          if (headings.length < 4) headings.push(line.replace('## ', '').trim());
+        } else if (/^\d+\.\s/.test(line) || line.startsWith('- [ ]') || line.startsWith('- ')) {
+          const cleanItem = line.replace(/^\d+\.\s+/, '').replace('- [ ]', '').replace(/^[-*]\s+/, '').trim();
+          if (cleanItem.length > 5 && actions.length < 3) {
+            actions.push(cleanItem);
+          }
+        }
+      }
+
+      if (lang === 'fr') {
+        const parts = [`Synthese audio DxSkills: ${title}.`, "Pause de cadrage."];
+        if (bluf) parts.push(`Point essentiel: ${bluf}.`);
+        if (headings.length > 0) parts.push(`Les themes cles abordes sont: ${headings.join(', ')}.`);
+        if (actions.length > 0) {
+          parts.push("Prochaines etapes prioritaires:");
+          actions.forEach((act, idx) => parts.push(`Numero ${idx + 1}: ${act}.`));
+        }
+        parts.push("Fin de la synthese audio. Vous pouvez consulter les details dans le document complet.");
+        return parts.join('\n\n');
+      } else {
+        const parts = [`DxSkills audio overview: ${title}.`, "Acoustic anchor engaged."];
+        if (bluf) parts.push(`Bottom line up front: ${bluf}.`);
+        if (headings.length > 0) parts.push(`The core areas covered are: ${headings.join(', ')}.`);
+        if (actions.length > 0) {
+          parts.push("Immediate priority actions:");
+          actions.forEach((act, idx) => parts.push(`Step ${idx + 1}: ${act}.`));
+        }
+        parts.push("End of audio overview. Detailed specification is available for visual inspection.");
+        return parts.join('\n\n');
+      }
+    }
+
+    function openAudioDigestModal(source) {
+      let rawText = "";
+      let docTitle = "Specification Overview";
+
+      if (source === 'interview') {
+        const track = socraticInterviewTrees[currentInterviewTrack];
+        rawText = compileInterviewSpec();
+        docTitle = `${track.name} Overview`;
+      } else {
+        const input = document.getElementById('playground-input');
+        const bluf = document.getElementById('play-bluf-text');
+        rawText = input && input.value ? input.value : (bluf ? bluf.innerText : "DxSkills Playground Note");
+        docTitle = "Playground Synthesis";
+      }
+
+      audioScriptCurrent = generateClientAudioScript(rawText, docTitle, currentAudioLang);
+      const scriptBox = document.getElementById('audio-digest-script-container');
+      if (scriptBox) scriptBox.innerText = audioScriptCurrent;
+
+      const titleElem = document.getElementById('audio-digest-modal-title');
+      if (titleElem) titleElem.innerText = `Audio Overview: ${docTitle}`;
+
+      updateAudioStatus('Ready');
+      const modal = document.getElementById('audio-digest-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeAudioDigestModal() {
+      stopAudioDigest();
+      const modal = document.getElementById('audio-digest-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function setAudioDigestLang(lang) {
+      currentAudioLang = lang;
+      stopAudioDigest();
+      const btnEn = document.getElementById('audio-lang-en-btn');
+      const btnFr = document.getElementById('audio-lang-fr-btn');
+      if (btnEn && btnFr) {
+        if (lang === 'fr') {
+          btnFr.className = 'px-2.5 py-1 rounded bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition';
+          btnEn.className = 'px-2.5 py-1 rounded border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition';
+        } else {
+          btnEn.className = 'px-2.5 py-1 rounded bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition';
+          btnFr.className = 'px-2.5 py-1 rounded border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition';
+        }
+      }
+      const titleElem = document.getElementById('audio-digest-modal-title');
+      const title = titleElem ? titleElem.innerText.replace('Audio Overview: ', '') : 'Specification';
+      audioScriptCurrent = generateClientAudioScript(audioScriptCurrent, title, currentAudioLang);
+      const scriptBox = document.getElementById('audio-digest-script-container');
+      if (scriptBox) scriptBox.innerText = audioScriptCurrent;
+    }
+
+    function setAudioDigestRate(rate) {
+      currentAudioRate = rate;
+      ['0.9', '1.0', '1.25'].forEach(r => {
+        const btn = document.getElementById(`audio-rate-${r.replace('.', '')}-btn`);
+        if (btn) {
+          if (parseFloat(r) === rate) {
+            btn.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold';
+          } else {
+            btn.className = 'px-2 py-0.5 rounded text-[11px] font-mono border border-mono-200 dark:border-mono-800 text-mono-600 dark:text-mono-400';
+          }
+        }
+      });
+      if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        playAudioDigest();
+      }
+    }
+
+    function playAudioDigest() {
+      if (!('speechSynthesis' in window)) {
+        alert("Web Speech API is not supported in this browser. You can still copy or download the spoken script below.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(audioScriptCurrent);
+      utterance.rate = currentAudioRate;
+      utterance.lang = currentAudioLang === 'fr' ? 'fr-FR' : 'en-US';
+      utterance.onstart = () => { updateAudioStatus('Playing'); };
+      utterance.onend = () => { updateAudioStatus('Ready'); };
+      utterance.onerror = () => { updateAudioStatus('Ready'); };
+      activeUtterance = utterance;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function pauseAudioDigest() {
+      if (window.speechSynthesis && window.speechSynthesis.speaking) {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+          updateAudioStatus('Playing');
+        } else {
+          window.speechSynthesis.pause();
+          updateAudioStatus('Paused');
+        }
+      }
+    }
+
+    function stopAudioDigest() {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        updateAudioStatus('Ready');
+      }
+    }
+
+    function updateAudioStatus(status) {
+      const badge = document.getElementById('audio-digest-status-badge');
+      const wave = document.getElementById('audio-waveform-indicator');
+      if (badge) {
+        badge.innerText = status;
+        if (status === 'Playing') {
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300';
+          if (wave) wave.classList.remove('hidden');
+        } else if (status === 'Paused') {
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300';
+          if (wave) wave.classList.add('hidden');
+        } else {
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-mono-200 dark:bg-mono-800 text-mono-700 dark:text-mono-300';
+          if (wave) wave.classList.add('hidden');
+        }
+      }
+    }
+
+    function copyAudioDigestScript() {
+      if (!audioScriptCurrent) return;
+      navigator.clipboard.writeText(audioScriptCurrent).then(() => {
+        const btn = document.getElementById('copy-audio-script-text');
+        if (btn) {
+          btn.innerText = 'Copied!';
+          setTimeout(() => { btn.innerText = 'Copy Script'; }, 2000);
+        }
+      });
+    }
+
+    function downloadAudioDigestScript() {
+      if (!audioScriptCurrent) return;
+      const filename = `dxskills-audio-digest-${currentAudioLang}.txt`;
+      const blob = new Blob([audioScriptCurrent], { type: 'text/plain;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
     function switchDemo(mode) {
       const viewDx = document.getElementById('view-dx');
       const viewStd = document.getElementById('view-standard');
@@ -2976,7 +3188,8 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       { title: "OpenDyslexic Font Mode", category: "Accessibility", desc: "Toggle weighted bottoms and expanded letter spacing for crowding relief", link: "#", action: "Toggle" },
       { title: "Spatial Cognitive Reset", category: "Interactive", desc: "60-second breathing guide and working memory stamina tracker", link: "#", action: "Reset" },
       { title: "Export to Obsidian Vault", category: "Interactive", desc: "1-click Obsidian URI export with YAML frontmatter tags and properties", link: "#simulator", action: "Jump" },
-      { title: "Export to Notion Database", category: "Interactive", desc: "Copy structured block payload or webhook payload for Notion databases", link: "#simulator", action: "Jump" }
+      { title: "Export to Notion Database", category: "Interactive", desc: "Copy structured block payload or webhook payload for Notion databases", link: "#simulator", action: "Jump" },
+      { title: "Audio Digest Synthesizer", category: "Interactive", desc: "60-90s spoken audio overview using Web Speech API and acoustic anchors", link: "#simulator", action: "Jump" }
     ];
 
     let currentSearchCategory = 'All';
@@ -3512,6 +3725,92 @@ This curriculum eliminates passive lecture memorization. Students learn through 
             Resume Fresh
           </button>
         </div>
+      </div>
+
+  <!-- AUDIO DIGEST & SPOKEN VOICE OVERVIEW MODAL -->
+  <div id="audio-digest-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm items-center justify-center p-4 sm:p-6">
+    <div class="bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 rounded-2xl max-w-xl w-full p-5 sm:p-6 space-y-4 shadow-2xl relative">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between pb-3 border-b border-mono-100 dark:border-mono-800">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-mono-100 dark:bg-mono-800 flex items-center justify-center text-mono-950 dark:text-white">
+            <i data-lucide="headphones" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-mono-950 dark:text-white" id="audio-digest-modal-title">Audio Overview</h3>
+            <span class="text-xs text-mono-500 font-mono">Acoustic anchor (60 to 90 seconds) via Web Speech API</span>
+          </div>
+        </div>
+        <button onclick="closeAudioDigestModal()" class="text-mono-400 hover:text-mono-950 dark:hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Controls Row (Lang, Rate, Status) -->
+      <div class="flex items-center justify-between flex-wrap gap-2 text-xs font-mono">
+        <div class="flex items-center gap-1.5">
+          <span class="text-mono-500 text-[11px]">Lang:</span>
+          <button id="audio-lang-en-btn" onclick="setAudioDigestLang('en')" class="px-2.5 py-1 rounded bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition">EN</button>
+          <button id="audio-lang-fr-btn" onclick="setAudioDigestLang('fr')" class="px-2.5 py-1 rounded border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition">FR</button>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <span class="text-mono-500 text-[11px]">Speed:</span>
+          <button id="audio-rate-09-btn" onclick="setAudioDigestRate(0.9)" class="px-2 py-0.5 rounded text-[11px] font-mono border border-mono-200 dark:border-mono-800 text-mono-600 dark:text-mono-400">0.9x</button>
+          <button id="audio-rate-10-btn" onclick="setAudioDigestRate(1.0)" class="px-2 py-0.5 rounded text-[11px] font-mono bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold">1.0x</button>
+          <button id="audio-rate-125-btn" onclick="setAudioDigestRate(1.25)" class="px-2 py-0.5 rounded text-[11px] font-mono border border-mono-200 dark:border-mono-800 text-mono-600 dark:text-mono-400">1.25x</button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span id="audio-waveform-indicator" class="hidden text-emerald-500 animate-pulse text-xs font-bold">● ● ●</span>
+          <span id="audio-digest-status-badge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-mono-200 dark:bg-mono-800 text-mono-700 dark:text-mono-300">Ready</span>
+        </div>
+      </div>
+
+      <!-- Playback Actions Bar -->
+      <div class="flex items-center gap-2 p-2.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 justify-between">
+        <div class="flex items-center gap-2">
+          <button onclick="playAudioDigest()" class="px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 text-xs font-mono font-bold hover:opacity-90 transition flex items-center gap-1.5">
+            <i data-lucide="play" class="w-3.5 h-3.5"></i>
+            <span>Play</span>
+          </button>
+          <button onclick="pauseAudioDigest()" class="px-3 py-1.5 rounded-lg border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1.5">
+            <i data-lucide="pause" class="w-3.5 h-3.5"></i>
+            <span>Pause</span>
+          </button>
+          <button onclick="stopAudioDigest()" class="px-3 py-1.5 rounded-lg border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1.5">
+            <i data-lucide="square" class="w-3.5 h-3.5"></i>
+            <span>Stop</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button onclick="copyAudioDigestScript()" class="px-2.5 py-1.5 rounded-lg text-xs font-mono text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-800 transition flex items-center gap-1" title="Copy Script">
+            <i data-lucide="copy" class="w-3 h-3"></i>
+            <span id="copy-audio-script-text">Copy</span>
+          </button>
+          <button onclick="downloadAudioDigestScript()" class="px-2.5 py-1.5 rounded-lg text-xs font-mono text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-800 transition flex items-center gap-1" title="Download Script (.txt)">
+            <i data-lucide="download" class="w-3 h-3"></i>
+            <span>.txt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Spoken Script Content Container -->
+      <div class="space-y-1">
+        <span class="text-[11px] font-mono text-mono-500 uppercase tracking-wider block">Spoken Audio Script:</span>
+        <div id="audio-digest-script-container" class="p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 max-h-48 overflow-y-auto text-xs font-mono text-mono-800 dark:text-mono-200 leading-relaxed whitespace-pre-wrap select-text">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-2 border-t border-mono-100 dark:border-mono-800 flex items-center justify-between text-[11px] font-mono text-mono-400">
+        <span>Web Speech API Synthesis</span>
+        <button onclick="closeAudioDigestModal()" class="px-3 py-1 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">
+          Done
+        </button>
       </div>
 
     </div>

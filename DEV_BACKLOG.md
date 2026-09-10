@@ -168,12 +168,16 @@
 - [x] **Task 33.2:** Build webhook dispatcher to auto-append structured specifications into Notion databases.
 
 ### Phase 34: Multi-Lingual D-Mode Voice Synthesis & Audio Digest Exporter
-- [ ] **Task 34.1:** Build local TTS synthesizer exporting audio digests of compiled deliverables.
-- [ ] **Task 34.2:** Integrate dual audio playback player in web interface.
+- [x] **Task 34.1:** Build local TTS synthesizer exporting audio digests of compiled deliverables.
+- [x] **Task 34.2:** Integrate dual audio playback player in web interface.
 
 ### Phase 35: Spatial Mindmap Live Visualizer & Canvas Flow Editor
 - [ ] **Task 35.1:** Interactive SVG drag-and-drop node graph visualizer for multi-level hierarchical breakdown.
 - [ ] **Task 35.2:** 1-click export of visual node networks to Obsidian Canvas (.canvas) JSON format.
+
+### Phase 36: Cognitive Scaffolding Browser Extension (Chrome & Firefox)
+- [ ] **Task 36.1:** Manifest V3 extension scaffolding for in-browser speed-of-thought capture and BLUF restructuring.
+- [ ] **Task 36.2:** One-click right-click context menu to transform dense articles into D-Mode executive summaries.
 
 ---
 
@@ -211,6 +215,7 @@
 | **Cycle 27** | 2026-09-10 23:32 | Multi-Turn Socratic Clarification Tree UI Widget & Test Suite | `index.html`, `tests/test_interview_widget.py`, `dist/*` | `6e527ab` |
 | **Cycle 28** | 2026-09-10 23:42 | Cognitive Fatigue Telemetry, Spatial Reset Modal & Test Suite | `index.html`, `scripts/cognitive_fatigue.py`, `tests/test_cognitive_fatigue.py` | `db1a225` |
 | **Cycle 29** | 2026-09-10 23:52 | Direct Obsidian Vault & Notion Exporters, CLI commands & Test Suite | `scripts/vault_exporter.py`, `tests/test_vault_exporter.py`, `index.html` | `255d919` |
+| **Cycle 30** | 2026-09-11 00:02 | Multi-Lingual Audio Digest Synthesizer, Web Speech API Modal & CLI Suite | `scripts/audio_digest.py`, `tests/test_audio_digest.py`, `index.html` | pending |
 
 
 

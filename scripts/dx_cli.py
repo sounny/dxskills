@@ -226,6 +226,13 @@ def main():
     p_notion.add_argument("--title", "-t", default="", help="Page title")
     p_notion.add_argument("--webhook", "-w", default="", help="Webhook URL to dispatch payload")
     p_notion.add_argument("--output", "-o", default="", help="Output JSON filepath")
+
+    # audio
+    p_audio = subparsers.add_parser("audio", help="Generate spoken audio digest script or synthesize WAV audio")
+    p_audio.add_argument("input", nargs="?", default="", help="Raw text or path to file")
+    p_audio.add_argument("--title", "-t", default="", help="Title for the audio overview")
+    p_audio.add_argument("--lang", "-l", default="en", choices=["en", "fr"], help="Language ('en' or 'fr')")
+    p_audio.add_argument("--output", "-o", default="", help="Output WAV audio filepath (synthesizes audio if provided)")
     
     args = parser.parse_args()
     
@@ -274,6 +281,20 @@ def main():
         else:
             print("\n=== [DxSkills: Notion Page Payload] ===")
             print(json.dumps(payload, indent=2))
+    elif args.command == "audio":
+        import scripts.audio_digest as ad
+        text = read_input(args.input)
+        script = ad.generate_audio_digest_script(text, title=args.title, lang=args.lang)
+        if args.output:
+            print(f"[DxSkills] Synthesizing audio to: {args.output}...")
+            ok = ad.synthesize_audio_file(script, args.output, lang=args.lang)
+            if ok:
+                print(f"[DxSkills] Successfully generated audio file: {args.output}")
+            else:
+                print("[DxSkills] Audio synthesis failed or unsupported on this platform.")
+        else:
+            print("\n=== [DxSkills: Spoken Audio Digest Script] ===")
+            print(script)
     else:
         parser.print_help()
 
