@@ -352,6 +352,14 @@ def main():
     p_data.add_argument("--validate", "-v", action="store_true", help="Validate and report dataset quality score")
     p_data.add_argument("--json", "-j", action="store_true", help="Output raw JSON preview")
     
+    # palace
+    p_palace = subparsers.add_parser("palace", help="Autonomous cognitive spatial mind palace virtual tour and spatial audio navigator")
+    p_palace.add_argument("input", nargs="?", default="", help="Input markdown note, topic outline, or text file")
+    p_palace.add_argument("--title", "-t", default="", help="Mind Palace title")
+    p_palace.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_palace.add_argument("--svg", "-s", default="", help="Output vector SVG blueprint floorplan filepath")
+    p_palace.add_argument("--json", "-j", action="store_true", help="Output raw JSON palace telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -823,6 +831,36 @@ def main():
             print(f"\n[DxSkills] Compiled {meta['total_pairs']} fine-tuning pairs to: {args.output}")
             print(f"  - Format: {meta['format']}")
             print(f"  - Quality Score: {meta['average_quality_score']}/100")
+    elif args.command == "palace":
+        import scripts.mind_palace as mp_tour
+        text = read_input(args.input) if args.input else (
+            "# Spatial Memory Architecture\n"
+            "- Linear text creates phonological loop bottleneck.\n"
+            "- Method-of-loci memory palaces activate hippocampal spatial navigation.\n"
+            "- Binaural acoustic orientation reinforces episodic memory recall.\n"
+            "- Structured chambers allow non-linear review without cognitive exhaustion."
+        )
+        palace, canvas_data, svg_code = mp_tour.run_mind_palace(
+            text,
+            title=args.title or None,
+            output_canvas=args.canvas or None,
+            output_svg=args.svg or None
+        )
+        if args.json:
+            print(json.dumps(palace, indent=2))
+        elif not (args.canvas or args.svg):
+            print(f"\n=== [DxSkills: Cognitive Mind Palace ({palace['total_chambers']} Chambers | {palace['total_loci']} Loci)] ===")
+            for c in palace["chambers"]:
+                print(f"\n[{c['name']}] - {c['theme']}")
+                for loc in c["loci"]:
+                    sa = loc["spatial_audio"]
+                    print(f"  * {loc['fixture']}: {loc['title']} (Azimuth: {sa['azimuth_degrees']} deg, Pan: {sa['stereo_pan']})")
+        else:
+            print(f"\n[DxSkills] Mind Palace projected: {palace['total_chambers']} Chambers with {palace['total_loci']} Memory Loci.")
+            if args.canvas:
+                print(f"  - Canvas: {args.canvas}")
+            if args.svg:
+                print(f"  - Blueprint: {args.svg}")
     else:
         parser.print_help()
 
