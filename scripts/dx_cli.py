@@ -300,6 +300,14 @@ def main():
     p_geomap.add_argument("--svg", "-s", default="", help="Output vector .svg filepath")
     p_geomap.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     
+    # cards
+    p_cards = subparsers.add_parser("cards", help="Multi-modal audio-spatial flashcards and rapid retrieval engine")
+    p_cards.add_argument("input", nargs="?", default="", help="Input markdown note, Q&A list, or vocabulary file")
+    p_cards.add_argument("--title", "-t", default="", help="Flashcard deck title")
+    p_cards.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_cards.add_argument("--html", default="", help="Output interactive HTML session filepath")
+    p_cards.add_argument("--json", "-j", action="store_true", help="Output raw JSON cards")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -578,6 +586,32 @@ def main():
                 print(f"  - Canvas: {args.canvas}")
             if args.svg:
                 print(f"  - SVG: {args.svg}")
+    elif args.command == "cards":
+        import scripts.spatial_flashcards as sf
+        text = read_input(args.input) if args.input else (
+            "M-Reasoning (Material/Spatial) :: 3D spatial reasoning, mechanics, topology, and physical geometry\n"
+            "I-Reasoning (Interconnected) :: Discovering non-obvious patterns, analogies, and holistic connections\n"
+            "N-Reasoning (Narrative) :: Episodic memory, causal narrative storytelling, and contextual framing\n"
+            "D-Reasoning (Dynamic/Predictive) :: Simulation of future systems, anticipating edge cases, and trend forecasting"
+        )
+        cards, canvas_data, html_code = sf.run_flashcards(
+            text,
+            title=args.title or None,
+            output_canvas=args.canvas or None,
+            output_html=args.html or None
+        )
+        if args.json:
+            print(json.dumps({"deck_title": args.title or "Spatial Retrieval Deck", "cards_count": len(cards), "cards": cards}, indent=2))
+        elif not (args.canvas or args.html):
+            print(f"\n=== [DxSkills: Spatial Flashcard Deck ({len(cards)} Cards)] ===")
+            for c in cards:
+                print(f"[{c['id']}] {c['front']} ({c['sector']}) -> {c['back']}")
+        else:
+            print(f"\n[DxSkills] Generated {len(cards)} spatial flashcards.")
+            if args.canvas:
+                print(f"  - Canvas: {args.canvas}")
+            if args.html:
+                print(f"  - HTML: {args.html}")
     else:
         parser.print_help()
 
