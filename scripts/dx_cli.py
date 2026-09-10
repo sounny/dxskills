@@ -308,6 +308,14 @@ def main():
     p_cards.add_argument("--html", default="", help="Output interactive HTML session filepath")
     p_cards.add_argument("--json", "-j", action="store_true", help="Output raw JSON cards")
     
+    # storyboard
+    p_story = subparsers.add_parser("storyboard", help="Autonomous multi-modal spatial audio-visual storyboarder")
+    p_story.add_argument("input", nargs="?", default="", help="Input narrative script, pitch markdown, or text file")
+    p_story.add_argument("--title", "-t", default="", help="Storyboard title")
+    p_story.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_story.add_argument("--svg", "-s", default="", help="Output vector .svg animatic strip filepath")
+    p_story.add_argument("--json", "-j", action="store_true", help="Output raw JSON storyboard telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -612,6 +620,34 @@ def main():
                 print(f"  - Canvas: {args.canvas}")
             if args.html:
                 print(f"  - HTML: {args.html}")
+    elif args.command == "storyboard":
+        import scripts.spatial_storyboard as ss
+        text = read_input(args.input) if args.input else (
+            "Establish the friction: Linear text walls overload phonological working memory.\n"
+            "Inciting shift: Non-linear thinkers struggle to communicate complex holistic architectures through sequential slides.\n"
+            "Core exploration: The DxSkills cognitive engine decouples spatial mental models from linear output streams.\n"
+            "Technical deep dive: High-dimensional vector similarity clusters ideas into constellation topologies.\n"
+            "Multi-vault bridge: Cross-repository synchronizers identify dangling wikilinks and orphan nodes in real time.\n"
+            "Resolution vista: The user presents a hardened spatial canvas that disarms reductionist critics instantly."
+        )
+        storyboard, canvas_data, svg_code = ss.run_storyboard(
+            text,
+            title=args.title or None,
+            output_canvas=args.canvas or None,
+            output_svg=args.svg or None
+        )
+        if args.json:
+            print(json.dumps(storyboard, indent=2))
+        elif not (args.canvas or args.svg):
+            print(f"\n=== [DxSkills: 3-Act Spatial Storyboard ({storyboard['total_shots']} Shots | {storyboard['total_duration_seconds']}s)] ===")
+            for s in storyboard["shots"]:
+                print(f"[{s['act']}] Shot {s['shot_index']} ({s['framing']}, {s['duration_seconds']}s): {s['action']}")
+        else:
+            print(f"\n[DxSkills] Sequenced {storyboard['total_shots']} shots across 3 acts ({storyboard['total_duration_seconds']}s total).")
+            if args.canvas:
+                print(f"  - Canvas: {args.canvas}")
+            if args.svg:
+                print(f"  - SVG: {args.svg}")
     else:
         parser.print_help()
 
