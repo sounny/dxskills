@@ -333,6 +333,16 @@ def main():
     p_audit.add_argument("--svg", "-s", default="", help="Output vector SVG dashboard filepath")
     p_audit.add_argument("--json", "-j", action="store_true", help="Output raw JSON audit telemetry")
     
+    # buffer
+    p_buf = subparsers.add_parser("buffer", help="Autonomous cognitive spatial working memory buffer monitor")
+    p_buf.add_argument("input", nargs="?", default="", help="Input draft text, transcription, or note file")
+    p_buf.add_argument("--minutes", "-m", type=float, default=15.0, help="Total active session minutes")
+    p_buf.add_argument("--uninterrupted", "-u", type=float, default=15.0, help="Continuous uninterrupted minutes")
+    p_buf.add_argument("--title", "-t", default="", help="Memory buffer HUD title")
+    p_buf.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_buf.add_argument("--svg", "-s", default="", help="Output vector SVG HUD filepath")
+    p_buf.add_argument("--json", "-j", action="store_true", help="Output raw JSON buffer telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -728,6 +738,38 @@ def main():
                 print(f"  - Scorecard Canvas: {args.canvas}")
             if args.svg:
                 print(f"  - SVG Dashboard: {args.svg}")
+    elif args.command == "buffer":
+        import scripts.memory_buffer as mb
+        text = read_input(args.input) if args.input else (
+            "# Cognitive Architecture Working Draft\n"
+            "> **BLUF:** Eliminating phonological working memory bottleneck through spatial anchors.\n\n"
+            "- Spatial Vector 1: High-contrast 2D node map.\n"
+            "- Spatial Vector 2: Dynamic buffer load evaluation.\n"
+            "- Spatial Vector 3: 4-4-4-4 Box Breathing reset triggers.\n\n"
+            "Reviewing technical documentation without visual anchors creates severe phonological loop friction."
+        )
+        telemetry, canvas_data, svg_code = mb.run_buffer_monitor(
+            text,
+            session_minutes=args.minutes,
+            uninterrupted_minutes=args.uninterrupted,
+            title=args.title or None,
+            output_canvas=args.canvas or None,
+            output_svg=args.svg or None
+        )
+        if args.json:
+            print(json.dumps(telemetry, indent=2))
+        elif not (args.canvas or args.svg):
+            m = telemetry["metrics"]
+            print(f"\n=== [DxSkills: Working Memory Buffer HUD ({m['exhaustion_risk'].upper()} RISK)] ===")
+            print(f"Phonological Saturation: {m['phonological_saturation_pct']}% | Visuospatial Utilization: {m['visuospatial_utilization_pct']}%")
+            print(f"Channel Asymmetry Index: {m['channel_asymmetry_index']} | Recommended Reset: {m['recommended_reset_seconds']}s")
+            print(f"\nAction: {telemetry['action_prompt']}")
+        else:
+            print(f"\n[DxSkills] Buffer evaluated: {telemetry['metrics']['exhaustion_risk']} Risk ({telemetry['metrics']['phonological_saturation_pct']}% Phono Load).")
+            if args.canvas:
+                print(f"  - Canvas: {args.canvas}")
+            if args.svg:
+                print(f"  - SVG HUD: {args.svg}")
     else:
         parser.print_help()
 
