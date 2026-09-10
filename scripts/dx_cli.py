@@ -343,6 +343,15 @@ def main():
     p_buf.add_argument("--svg", "-s", default="", help="Output vector SVG HUD filepath")
     p_buf.add_argument("--json", "-j", action="store_true", help="Output raw JSON buffer telemetry")
     
+    # dataset
+    p_data = subparsers.add_parser("dataset", help="Autonomous spatial cognitive model fine-tuning dataset synthesizer")
+    p_data.add_argument("input", nargs="?", default="", help="Input text note, markdown file, or directory")
+    p_data.add_argument("--format", "-f", choices=["alpaca", "sharegpt", "openai"], default="alpaca", help="Dataset format (default: alpaca)")
+    p_data.add_argument("--output", "-o", default="", help="Output JSONL filepath")
+    p_data.add_argument("--title", "-t", default="", help="Document title for single input")
+    p_data.add_argument("--validate", "-v", action="store_true", help="Validate and report dataset quality score")
+    p_data.add_argument("--json", "-j", action="store_true", help="Output raw JSON preview")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -770,6 +779,50 @@ def main():
                 print(f"  - Canvas: {args.canvas}")
             if args.svg:
                 print(f"  - SVG HUD: {args.svg}")
+    elif args.command == "dataset":
+        import scripts.dataset_synthesizer as dsync
+        corpus = []
+        if args.input:
+            if os.path.isdir(args.input):
+                for root, _, files in os.walk(args.input):
+                    for file in files:
+                        if file.endswith((".md", ".txt")):
+                            p = os.path.join(root, file)
+                            with open(p, "r", encoding="utf-8", errors="ignore") as f:
+                                corpus.append((os.path.splitext(file)[0], f.read()))
+            elif os.path.isfile(args.input):
+                with open(args.input, "r", encoding="utf-8", errors="ignore") as f:
+                    corpus.append((args.title or os.path.basename(args.input), f.read()))
+            else:
+                corpus.append((args.title or "Interactive CLI Sample", args.input))
+        else:
+            corpus.append((
+                "Core Spatial Scaffolding",
+                "# Cognitive Spatial Architecture\n"
+                "> **BLUF:** Decouple phonological memory from spatial reasoning models.\n\n"
+                "- Spatial Vector 1: 2D radial coordinate positioning.\n"
+                "- Spatial Vector 2: Multi-vault topology federation without orphan links.\n"
+                "- Spatial Vector 3: Working memory dual-channel stamina balance."
+            ))
+        dataset, meta = dsync.compile_dataset(corpus, output_filepath=args.output or None, fmt=args.format)
+        if args.json:
+            print(json.dumps({"meta": meta, "sample": dataset[0] if dataset else None}, indent=2))
+        elif not args.output:
+            print(f"\n=== [DxSkills: Spatial Model Dataset Synthesizer] ===")
+            print(f"Compiled {meta['total_pairs']} pairs ({meta['valid_pairs']} valid) in `{meta['format']}` format.")
+            print(f"Average Quality Score: {meta['average_quality_score']}/100")
+            if dataset:
+                print(f"\n--- Preview Sample ---")
+                sample = dataset[0]
+                if "instruction" in sample:
+                    print(f"Instruction: {sample['instruction']}")
+                    print(f"Input: {sample['input'][:100]}...")
+                elif "conversations" in sample:
+                    print(f"Human: {sample['conversations'][1]['value'][:100]}...")
+        else:
+            print(f"\n[DxSkills] Compiled {meta['total_pairs']} fine-tuning pairs to: {args.output}")
+            print(f"  - Format: {meta['format']}")
+            print(f"  - Quality Score: {meta['average_quality_score']}/100")
     else:
         parser.print_help()
 
