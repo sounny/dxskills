@@ -83,13 +83,17 @@
 - [x] **Task 12.1:** Scaffold `extensions/raycast-dxskills/` manifest and quick-capture action command (`d-mode-compile`, `d-mode-diagram`).
 - [x] **Task 12.2:** Build local clipboard listener daemon script (`scripts/clipboard_listener.py`) for automated speed-of-thought capture.
 
-### Phase 13: Local LLM Integration (Ollama & LM Studio - Next Cycles)
-- [ ] **Task 13.1:** Create `scripts/ollama_bridge.py` for direct offline local inference.
-- [ ] **Task 13.2:** Add Modelfile configurations for local Mistral / Llama 3 D-Mode agents.
+### Phase 13: Local LLM Integration (Ollama & LM Studio)
+- [x] **Task 13.1:** Create `scripts/ollama_bridge.py` for direct offline local inference supporting both Ollama and LM Studio APIs.
+- [x] **Task 13.2:** Add Modelfile configurations for local Mistral / Llama 3 D-Mode agents (`models/Modelfile.llama3`, `models/Modelfile.mistral`).
 
-### Phase 14: Visual Concept Matrix & Mindmap Exporters
-- [ ] **Task 14.1:** Build ASCII table and flowchart generator for terminal-only / ssh environments.
+### Phase 14: Visual Concept Matrix & Mindmap Exporters (Next Cycles)
+- [ ] **Task 14.1:** Build ASCII table and flowchart generator for terminal-only / ssh environments (`scripts/ascii_scaffold.py`).
 - [ ] **Task 14.2:** Add interactive mindmap viewer shell in `index.html`.
+
+### Phase 15: Voice Ingestion Real-Time Streaming
+- [ ] **Task 15.1:** Integrate faster-whisper real-time streaming audio pipeline into `skills/dx-voice/`.
+- [ ] **Task 15.2:** Add browser Web Audio speech-to-text input button in `index.html` playground.
 
 ---
 
@@ -105,7 +109,9 @@
 | **Cycle 5** | 2026-09-10 19:50 | Venture Pitch Scaffolding, Voice Calibration & Modal Bundle | `skills/dx-dump/*`, `prompts/*`, `index.html` | `6a96c7c` |
 | **Cycle 6** | 2026-09-10 20:02 | Benchmark Evaluation Suite, 10-Corpus Test & Live Browser Playground | `tests/benchmark_corpus.json`, `scripts/eval_benchmarks.py`, `index.html` | `2baa1de` |
 | **Cycle 7** | 2026-09-10 20:05 | Academic Scaffolding Suite: Peer Review, Cover Letter & Literature Matrix | `skills/dx-dump/*`, `skills/dx-read/*` | `a698472` |
-| **Cycle 8** | 2026-09-10 20:12 | Native Raycast Extension & Background Clipboard Daemon | `extensions/raycast-dxskills/*`, `scripts/clipboard_listener.py` | `7f4459b` |
+| **Cycle 8** | 2026-09-10 20:12 | Native Raycast Extension & Background Clipboard Daemon | `extensions/raycast-dxskills/*`, `scripts/clipboard_listener.py` | `8b0bb23` |
+| **Cycle 9** | 2026-09-10 20:22 | Local LLM Suite: Ollama Bridge, Llama 3 & Mistral Modelfiles | `models/*`, `scripts/ollama_bridge.py` | `d3119ba` |
+
 
 
 
