@@ -135,9 +135,17 @@
 - [x] **Task 25.1:** Create `scripts/pre_commit_hook.py` verifying zero em dashes, valid frontmatter, and compilation benchmarks before commit.
 - [x] **Task 25.2:** Add fast installation script `scripts/install_git_hook.py` to auto-link hook into `.git/hooks/pre-commit`.
 
-### Phase 26: Cognitive Load Reduction Matrix Visualizer on Web Portal (Next Cycles)
-- [ ] **Task 26.1:** Add interactive comparison matrix in `index.html` visualizing phonetic loop savings across all 10 benchmark corpus types.
-- [ ] **Task 26.2:** Add downloadable JSON telemetry reports directly from the benchmark matrix.
+### Phase 26: Cognitive Load Reduction Matrix Visualizer on Web Portal
+- [x] **Task 26.1:** Add interactive comparison matrix in `index.html` visualizing phonetic loop savings across all 10 benchmark corpus types.
+- [x] **Task 26.2:** Add downloadable JSON telemetry reports directly from the benchmark matrix.
+
+### Phase 27: Full-Text Search & Quick-Filter Command Palette (Next Cycles)
+- [ ] **Task 27.1:** Implement keyboard shortcut `/` or `Ctrl+K` search modal in `index.html` to instantly filter all 6 modular skills, 13 templates, and platform presets with zero latency.
+- [ ] **Task 27.2:** Add fuzzy tag filtering for domain-specific categories (executive, academic, engineering, voice, research).
+
+### Phase 28: Offline Progressive Web Application & Desktop PWA Manifest
+- [ ] **Task 28.1:** Add `manifest.webmanifest`, service worker offline caching, and desktop PWA installation support.
+- [ ] **Task 28.2:** Add custom monochrome SVG icons for standalone desktop and mobile home screen launching.
 
 ---
 
@@ -167,6 +175,8 @@
 | **Cycle 19** | 2026-09-10 22:12 | Interactive Terminal TUI & CLI Subcommand Integration | `scripts/dx_tui.py`, `scripts/dx_cli.py` | `8e9c97a` |
 | **Cycle 20** | 2026-09-10 22:22 | Real-Time Event Telemetry API & Live Web Gateway Monitor | `server/gateway.py`, `index.html` | `b0176ef` |
 | **Cycle 21** | 2026-09-10 22:32 | Automated Pre-Commit Hook & Git Quality Gatekeeper | `scripts/pre_commit_hook.py`, `scripts/install_git_hook.py` | `3efa129` |
+| **Cycle 22** | 2026-09-10 22:42 | Cognitive Load Reduction Matrix Visualizer & Telemetry JSON Exporter | `index.html`, `dist/*` | `7a3cc1b` |
+
 
 
 
