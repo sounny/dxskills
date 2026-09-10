@@ -302,6 +302,11 @@
             <span>Socratic Interview</span>
             <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 ml-0.5">dx-ask</span>
           </button>
+          <button id="sim-tab-canvas" onclick="switchSimulatorView('canvas')" class="px-3.5 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5">
+            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+            <span>Spatial Canvas</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 ml-0.5">.canvas</span>
+          </button>
         </div>
       </div>
 
@@ -761,6 +766,109 @@
 
           </div>
 
+        </div>
+
+      </div>
+
+      <!-- VIEW 4: SPATIAL CANVAS & INFINITE GRAPH VISUALIZER -->
+      <div id="sim-view-canvas" class="hidden space-y-6">
+        
+        <!-- Header & Controls -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-white dark:bg-mono-900/50 border border-mono-200 dark:border-mono-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200">2D Relational Engine</span>
+              <h3 class="text-base font-bold text-mono-950 dark:text-white">Spatial Canvas & Infinite Relational Visualizer</h3>
+            </div>
+            <p class="text-xs text-mono-600 dark:text-mono-400 max-w-2xl">
+              Deconstructs linear documents into interconnected 2D node graphs. Export natively to Obsidian Canvas (.canvas) or vector SVG to preserve spatial relationships without linear phonological strain.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap shrink-0">
+            <button onclick="downloadObsidianCanvasFile()" class="px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 text-xs font-mono font-bold hover:opacity-90 transition flex items-center gap-1.5 shadow-sm" title="Download official Obsidian Canvas file">
+              <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+              <span>Export .canvas</span>
+            </button>
+            <button onclick="downloadCanvasSvgFile()" class="px-3 py-1.5 rounded-lg border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-800 transition flex items-center gap-1.5" title="Download vector SVG">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>SVG</span>
+            </button>
+            <button onclick="copyCanvasJson()" class="px-2.5 py-1.5 rounded-lg border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-800 transition flex items-center gap-1" title="Copy Canvas JSON">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span id="copy-canvas-btn-text">JSON</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Presets Bar -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-mono">
+          <span class="text-mono-500 shrink-0 text-[11px] uppercase tracking-wider">Canvas Presets:</span>
+          <button id="canvas-preset-tech" onclick="switchCanvasPreset('tech')" class="px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition shrink-0 flex items-center gap-1.5">
+            <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+            <span>Tech Stack</span>
+          </button>
+          <button id="canvas-preset-flywheel" onclick="switchCanvasPreset('flywheel')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition shrink-0 flex items-center gap-1.5">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Strategy Flywheel</span>
+          </button>
+          <button id="canvas-preset-grant" onclick="switchCanvasPreset('grant')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition shrink-0 flex items-center gap-1.5">
+            <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+            <span>Grant Pitch</span>
+          </button>
+          <button id="canvas-preset-syllabus" onclick="switchCanvasPreset('syllabus')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition shrink-0 flex items-center gap-1.5">
+            <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+            <span>Course Architecture</span>
+          </button>
+        </div>
+
+        <!-- Canvas Visualizer Container (Grid / SVG Area) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-8 rounded-2xl bg-mono-950 border border-mono-200 dark:border-mono-800 p-4 shadow-sm overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-mono-800/80 mb-3 text-xs font-mono text-mono-400">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Infinite Canvas Viewport (1200 x 640)</span>
+              </span>
+              <span>Click node to inspect</span>
+            </div>
+            <div id="canvas-svg-container" class="w-full h-[420px] overflow-auto rounded-xl bg-[#09090b] flex items-center justify-center select-none cursor-grab p-2">
+              <!-- SVG dynamically rendered -->
+            </div>
+          </div>
+
+          <!-- Node Inspector Tray (Right) -->
+          <div class="lg:col-span-4 rounded-2xl bg-white dark:bg-mono-900/50 border border-mono-200 dark:border-mono-800 p-6 flex flex-col justify-between shadow-sm space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between pb-3 border-b border-mono-100 dark:border-mono-800">
+                <span class="text-xs font-mono font-bold text-mono-950 dark:text-white flex items-center gap-1.5">
+                  <i data-lucide="info" class="w-3.5 h-3.5 text-mono-500"></i>
+                  <span>Node Inspector</span>
+                </span>
+                <span id="canvas-node-type-badge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300">Root</span>
+              </div>
+              <div class="space-y-1">
+                <span class="text-[10px] uppercase font-mono text-mono-500 tracking-wider">Node ID:</span>
+                <p id="canvas-node-id" class="text-xs font-mono text-mono-900 dark:text-mono-100 font-bold">node-root</p>
+              </div>
+              <div class="space-y-1">
+                <span class="text-[10px] uppercase font-mono text-mono-500 tracking-wider">Node Content:</span>
+                <div id="canvas-node-text" class="p-3 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-800 dark:text-mono-200 leading-relaxed whitespace-pre-wrap">
+                  Click any node on the left canvas to inspect properties.
+                </div>
+              </div>
+              <div class="space-y-1">
+                <span class="text-[10px] uppercase font-mono text-mono-500 tracking-wider">Connected Relational Edges:</span>
+                <p id="canvas-node-edges" class="text-xs font-mono text-mono-600 dark:text-mono-400">4 outgoing branches</p>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-mono-100 dark:border-mono-800 space-y-2">
+              <button onclick="sendCanvasToPlayground()" class="w-full py-2 px-3 rounded-lg border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-800 transition flex items-center justify-center gap-1.5">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span>Load into Playground</span>
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -1793,9 +1901,11 @@ Directives Operationnelles Majeures:
       const compareView = document.getElementById('sim-view-compare');
       const playView = document.getElementById('sim-view-playground');
       const interviewView = document.getElementById('sim-view-interview');
+      const canvasView = document.getElementById('sim-view-canvas');
       const tabCompare = document.getElementById('sim-tab-compare');
       const tabPlay = document.getElementById('sim-tab-play');
       const tabInterview = document.getElementById('sim-tab-interview');
+      const tabCanvas = document.getElementById('sim-tab-canvas');
 
       const activeClass = 'px-3.5 py-2 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition flex items-center gap-1.5';
       const inactiveClass = 'px-3.5 py-2 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-200 transition flex items-center gap-1.5';
@@ -1803,10 +1913,12 @@ Directives Operationnelles Majeures:
       if (view === 'play') {
         compareView.classList.add('hidden');
         if (interviewView) interviewView.classList.add('hidden');
+        if (canvasView) canvasView.classList.add('hidden');
         playView.classList.remove('hidden');
         tabPlay.className = activeClass;
         tabCompare.className = inactiveClass;
         if (tabInterview) tabInterview.className = inactiveClass;
+        if (tabCanvas) tabCanvas.className = inactiveClass;
         const input = document.getElementById('playground-input');
         if (!input.value.trim()) {
           loadPlaygroundSample('outage');
@@ -1814,21 +1926,36 @@ Directives Operationnelles Majeures:
       } else if (view === 'interview') {
         compareView.classList.add('hidden');
         playView.classList.add('hidden');
+        if (canvasView) canvasView.classList.add('hidden');
         if (interviewView) interviewView.classList.remove('hidden');
         if (tabInterview) tabInterview.className = activeClass;
         tabCompare.className = inactiveClass;
         tabPlay.className = inactiveClass;
+        if (tabCanvas) tabCanvas.className = inactiveClass;
         if (!interviewInitialized) {
           initSocraticInterview();
         }
         if (window.lucide) lucide.createIcons();
+      } else if (view === 'canvas') {
+        compareView.classList.add('hidden');
+        playView.classList.add('hidden');
+        if (interviewView) interviewView.classList.add('hidden');
+        if (canvasView) canvasView.classList.remove('hidden');
+        if (tabCanvas) tabCanvas.className = activeClass;
+        tabCompare.className = inactiveClass;
+        tabPlay.className = inactiveClass;
+        if (tabInterview) tabInterview.className = inactiveClass;
+        renderInteractiveCanvas();
+        if (window.lucide) lucide.createIcons();
       } else {
         playView.classList.add('hidden');
         if (interviewView) interviewView.classList.add('hidden');
+        if (canvasView) canvasView.classList.add('hidden');
         compareView.classList.remove('hidden');
         tabCompare.className = activeClass;
         tabPlay.className = inactiveClass;
         if (tabInterview) tabInterview.className = inactiveClass;
+        if (tabCanvas) tabCanvas.className = inactiveClass;
       }
     }
 
@@ -2715,6 +2842,297 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       URL.revokeObjectURL(link.href);
     }
 
+    // Spatial Canvas (.canvas) Engine & Interactive Visualizer
+    // =========================================================
+    let currentCanvasPreset = 'tech';
+    let currentCanvasData = null;
+    let selectedCanvasNodeId = null;
+
+    const spatialCanvasPresets = {
+      tech: {
+        title: "Technical Architecture Stack",
+        root: { title: "API Gateway & Microservices", bluf: "High-throughput edge orchestration with sub-10ms latency." },
+        sections: [
+          { title: "Ingress Layer", items: ["Cloudflare Edge CDN", "Rate limiter & WAF", "JWT mutual TLS auth"] },
+          { title: "Compute Fabric", items: ["Asynchronous worker pool", "Event-driven Redis broker", "Container auto-scaling"] },
+          { title: "Data Tier", items: ["PostgreSQL primary cluster", "S3 multi-region object store", "Read-replica read paths"] }
+        ]
+      },
+      flywheel: {
+        title: "Cognitive Leverage Flywheel",
+        root: { title: "M-I-N-D Spatial Advantage", bluf: "Non-linear spatial speed transformed into structured clarity." },
+        sections: [
+          { title: "Input Acceleration", items: ["Zero typing friction", "Voice audio dictation", "Disordered brain dump"] },
+          { title: "Structural Scaffolding", items: ["BLUF front-loading", "Relational concept maps", "Execution matrix"] },
+          { title: "Delivery Velocity", items: ["1-page executive briefs", "Obsidian Canvas export", "Zero em dash polish"] }
+        ]
+      },
+      grant: {
+        title: "Research Grant Narrative",
+        root: { title: "Cognitive AI in Education", bluf: "Empowering spatial thinkers with real-time neurodivergent scaffolding." },
+        sections: [
+          { title: "Hypothesis & Novelty", items: ["Working memory reduction", "Phonological loop bypass", "Relational learning gains"] },
+          { title: "Methodology", items: ["Double-blind cohort trial", "Standardized spatial tasks", "Eye-tracking telemetry"] },
+          { title: "Impact & Deliverables", items: ["Open-source scaffolding suite", "Peer-reviewed publication", "Classroom pilot rollouts"] }
+        ]
+      },
+      syllabus: {
+        title: "Autonomous Systems Syllabus",
+        root: { title: "Spatial AI & Robotics Course", bluf: "Hands-on project-first curriculum with real-world robot teleoperation." },
+        sections: [
+          { title: "Module 1: Foundations", items: ["Kinematics & Coordinate Frames", "ROS2 nodes & topics", "Sensor calibration"] },
+          { title: "Module 2: Perception", items: ["LiDAR point cloud mapping", "Visual SLAM algorithms", "Object detection neural nets"] },
+          { title: "Module 3: Autonomy", items: ["Path planning & obstacle avoidance", "State machine controllers", "Final arena competition"] }
+        ]
+      }
+    };
+
+    function buildCanvasDataFromPreset(presetKey) {
+      const preset = spatialCanvasPresets[presetKey] || spatialCanvasPresets.tech;
+      const rootId = `node-root-${presetKey}`;
+      const nodes = [];
+      const edges = [];
+
+      nodes.push({
+        id: rootId,
+        type: "text",
+        text: `# ${preset.root.title}\n\n> **BLUF:** ${preset.root.bluf}`,
+        x: 40,
+        y: 120,
+        width: 320,
+        height: 160,
+        color: "1"
+      });
+
+      let childIdx = 1;
+      preset.sections.forEach((sec, secIdx) => {
+        const secId = `node-sec-${secIdx + 1}`;
+        const secY = 30 + (secIdx * 190);
+        nodes.push({
+          id: secId,
+          type: "text",
+          text: `## ${sec.title}`,
+          x: 420,
+          y: secY,
+          width: 280,
+          height: 100,
+          color: "4"
+        });
+
+        edges.push({
+          id: `edge-root-${secIdx + 1}`,
+          fromNode: rootId,
+          fromSide: "right",
+          toNode: secId,
+          toSide: "left",
+          label: "Branch"
+        });
+
+        sec.items.forEach((item, itemIdx) => {
+          const childId = `node-item-${childIdx++}`;
+          const itemY = secY - 15 + (itemIdx * 80);
+          nodes.push({
+            id: childId,
+            type: "text",
+            text: `• ${item}`,
+            x: 770,
+            y: itemY,
+            width: 260,
+            height: 65,
+            color: "6"
+          });
+
+          edges.push({
+            id: `edge-sec-${secIdx + 1}-item-${itemIdx + 1}`,
+            fromNode: secId,
+            fromSide: "right",
+            toNode: childId,
+            toSide: "left"
+          });
+        });
+      });
+
+      return { nodes, edges, title: preset.title };
+    }
+
+    function renderInteractiveCanvas() {
+      const container = document.getElementById('canvas-svg-container');
+      if (!container) return;
+
+      if (!currentCanvasData) {
+        currentCanvasData = buildCanvasDataFromPreset(currentCanvasPreset);
+      }
+
+      const { nodes, edges } = currentCanvasData;
+      const nodeMap = {};
+      nodes.forEach(n => nodeMap[n.id] = n);
+
+      let pathsSvg = '';
+      edges.forEach(edge => {
+        const fn = nodeMap[edge.fromNode];
+        const tn = nodeMap[edge.toNode];
+        if (fn && tn) {
+          const x1 = fn.x + fn.width;
+          const y1 = fn.y + (fn.height / 2);
+          const x2 = tn.x;
+          const y2 = tn.y + (tn.height / 2);
+          const cx1 = x1 + (x2 - x1) * 0.5;
+          const cy1 = y1;
+          const cx2 = x1 + (x2 - x1) * 0.5;
+          const cy2 = y2;
+          pathsSvg += `<path d="M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}" fill="none" stroke="#52525b" stroke-width="2" marker-end="url(#canvas-arrow)" />`;
+        }
+      });
+
+      let nodesSvg = '';
+      nodes.forEach(n => {
+        const isSelected = n.id === selectedCanvasNodeId;
+        const color = n.color || "1";
+        const borderColor = isSelected ? '#ffffff' : (color === '1' ? '#f43f5e' : (color === '4' ? '#38bdf8' : '#c084fc'));
+        const strokeWidth = isSelected ? '3' : '1.5';
+        const lines = n.text.split('\n').filter(Boolean);
+        const header = lines[0].replace(/^#+\s*/, '');
+        const body = lines[1] ? lines[1].replace('> **BLUF:**', 'BLUF:').replace('•', '').trim() : '';
+
+        nodesSvg += `
+          <g id="${n.id}" class="canvas-node-group cursor-pointer transition-all duration-150" onclick="selectCanvasNode('${n.id}')">
+            <rect x="${n.x}" y="${n.y}" width="${n.width}" height="${n.height}" rx="12" fill="#18181b" stroke="${borderColor}" stroke-width="${strokeWidth}" />
+            <text x="${n.x + 14}" y="${n.y + 28}" fill="#f4f4f5" font-size="12" font-weight="bold" font-family="ui-monospace,monospace">${header}</text>
+            ${body ? `<text x="${n.x + 14}" y="${n.y + 54}" fill="#a1a1aa" font-size="10" font-family="ui-monospace,monospace">${body.slice(0, 36)}</text>` : ''}
+          </g>
+        `;
+      });
+
+      container.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 620" width="1080" height="620" class="w-full h-auto max-w-full">
+          <defs>
+            <marker id="canvas-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#71717a" />
+            </marker>
+            <pattern id="canvas-grid-pattern" width="30" height="30" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1" fill="#27272a" />
+            </pattern>
+          </defs>
+          <rect width="1080" height="620" fill="url(#canvas-grid-pattern)" />
+          ${pathsSvg}
+          ${nodesSvg}
+        </svg>
+      `;
+
+      if (!selectedCanvasNodeId && nodes.length > 0) {
+        selectCanvasNode(nodes[0].id);
+      }
+    }
+
+    function switchCanvasPreset(key) {
+      currentCanvasPreset = key;
+      selectedCanvasNodeId = null;
+      currentCanvasData = buildCanvasDataFromPreset(key);
+
+      ['tech', 'flywheel', 'grant', 'syllabus'].forEach(k => {
+        const btn = document.getElementById(`canvas-preset-${k}`);
+        if (btn) {
+          if (k === key) {
+            btn.className = 'px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition shrink-0 flex items-center gap-1.5';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition shrink-0 flex items-center gap-1.5';
+          }
+        }
+      });
+
+      renderInteractiveCanvas();
+    }
+
+    function selectCanvasNode(nodeId) {
+      selectedCanvasNodeId = nodeId;
+      renderInteractiveCanvas();
+
+      if (!currentCanvasData) return;
+      const node = currentCanvasData.nodes.find(n => n.id === nodeId);
+      if (!node) return;
+
+      const badge = document.getElementById('canvas-node-type-badge');
+      const idElem = document.getElementById('canvas-node-id');
+      const textElem = document.getElementById('canvas-node-text');
+      const edgesElem = document.getElementById('canvas-node-edges');
+
+      if (idElem) idElem.innerText = node.id;
+      if (textElem) textElem.innerText = node.text;
+
+      const outEdges = currentCanvasData.edges.filter(e => e.fromNode === nodeId).length;
+      const inEdges = currentCanvasData.edges.filter(e => e.toNode === nodeId).length;
+
+      if (edgesElem) edgesElem.innerText = `${inEdges} incoming, ${outEdges} outgoing branches`;
+
+      if (badge) {
+        if (node.color === '1') {
+          badge.innerText = 'Root Anchor';
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300';
+        } else if (node.color === '4') {
+          badge.innerText = 'Section Branch';
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300';
+        } else {
+          badge.innerText = 'Action Item';
+          badge.className = 'px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300';
+        }
+      }
+    }
+
+    function downloadObsidianCanvasFile() {
+      if (!currentCanvasData) currentCanvasData = buildCanvasDataFromPreset(currentCanvasPreset);
+      const canvasPayload = {
+        nodes: currentCanvasData.nodes,
+        edges: currentCanvasData.edges
+      };
+      const jsonStr = JSON.stringify(canvasPayload, null, 2);
+      const filename = `dxskills-${currentCanvasPreset}.canvas`;
+      const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function downloadCanvasSvgFile() {
+      const container = document.getElementById('canvas-svg-container');
+      if (!container) return;
+      const svgCode = container.innerHTML;
+      const filename = `dxskills-${currentCanvasPreset}-canvas.svg`;
+      const blob = new Blob([svgCode], { type: 'image/svg+xml;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function copyCanvasJson() {
+      if (!currentCanvasData) currentCanvasData = buildCanvasDataFromPreset(currentCanvasPreset);
+      const jsonStr = JSON.stringify({ nodes: currentCanvasData.nodes, edges: currentCanvasData.edges }, null, 2);
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        const btn = document.getElementById('copy-canvas-btn-text');
+        if (btn) {
+          btn.innerText = 'Copied!';
+          setTimeout(() => { btn.innerText = 'JSON'; }, 2000);
+        }
+      });
+    }
+
+    function sendCanvasToPlayground() {
+      if (!currentCanvasData) currentCanvasData = buildCanvasDataFromPreset(currentCanvasPreset);
+      const markdownLines = currentCanvasData.nodes.map(n => n.text);
+      const fullDoc = markdownLines.join('\n\n');
+      switchSimulatorView('play');
+      const input = document.getElementById('playground-input');
+      if (input) {
+        input.value = fullDoc;
+        compilePlayground();
+      }
+      const simSec = document.getElementById('simulator');
+      if (simSec) simSec.scrollIntoView({ behavior: 'smooth' });
+    }
+
     function switchDemo(mode) {
       const viewDx = document.getElementById('view-dx');
       const viewStd = document.getElementById('view-standard');
@@ -3189,7 +3607,8 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       { title: "Spatial Cognitive Reset", category: "Interactive", desc: "60-second breathing guide and working memory stamina tracker", link: "#", action: "Reset" },
       { title: "Export to Obsidian Vault", category: "Interactive", desc: "1-click Obsidian URI export with YAML frontmatter tags and properties", link: "#simulator", action: "Jump" },
       { title: "Export to Notion Database", category: "Interactive", desc: "Copy structured block payload or webhook payload for Notion databases", link: "#simulator", action: "Jump" },
-      { title: "Audio Digest Synthesizer", category: "Interactive", desc: "60-90s spoken audio overview using Web Speech API and acoustic anchors", link: "#simulator", action: "Jump" }
+      { title: "Audio Digest Synthesizer", category: "Interactive", desc: "60-90s spoken audio overview using Web Speech API and acoustic anchors", link: "#simulator", action: "Jump" },
+      { title: "Spatial Canvas Visualizer", category: "Interactive", desc: "2D interactive relational graph visualizer with SVG and Obsidian Canvas export", link: "#simulator", action: "Jump" }
     ];
 
     let currentSearchCategory = 'All';

@@ -233,6 +233,13 @@ def main():
     p_audio.add_argument("--title", "-t", default="", help="Title for the audio overview")
     p_audio.add_argument("--lang", "-l", default="en", choices=["en", "fr"], help="Language ('en' or 'fr')")
     p_audio.add_argument("--output", "-o", default="", help="Output WAV audio filepath (synthesizes audio if provided)")
+
+    # canvas
+    p_canvas = subparsers.add_parser("canvas", help="Export notes to Obsidian Canvas (.canvas) JSON or vector SVG")
+    p_canvas.add_argument("input", nargs="?", default="", help="Raw text or path to file")
+    p_canvas.add_argument("--title", "-t", default="", help="Note title")
+    p_canvas.add_argument("--format", "-f", default="canvas", choices=["canvas", "svg"], help="Export format (canvas or svg)")
+    p_canvas.add_argument("--output", "-o", default="", help="Output filepath")
     
     args = parser.parse_args()
     
@@ -295,6 +302,27 @@ def main():
         else:
             print("\n=== [DxSkills: Spoken Audio Digest Script] ===")
             print(script)
+    elif args.command == "canvas":
+        import scripts.canvas_exporter as ce
+        text = read_input(args.input)
+        if args.format == "svg":
+            graph = ce.parse_markdown_to_spatial_graph(text, title=args.title)
+            svg_content = ce.generate_svg_canvas(graph)
+            if args.output:
+                with open(args.output, "w", encoding="utf-8") as f:
+                    f.write(svg_content)
+                print(f"[DxSkills] Exported Canvas SVG: {args.output}")
+            else:
+                print(svg_content)
+        else:
+            canvas_json = ce.generate_obsidian_canvas(text, title=args.title)
+            if args.output:
+                with open(args.output, "w", encoding="utf-8") as f:
+                    f.write(canvas_json)
+                print(f"[DxSkills] Exported Obsidian Canvas (.canvas): {args.output}")
+            else:
+                print("\n=== [DxSkills: Obsidian Canvas JSON] ===")
+                print(canvas_json)
     else:
         parser.print_help()
 
