@@ -248,6 +248,12 @@ def main():
     p_parity.add_argument("--lang", "-l", default="en", choices=["en", "fr"], help="Audio language ('en' or 'fr')")
     p_parity.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     
+    # companion
+    p_comp = subparsers.add_parser("companion", help="Launch desktop menubar companion floating HUD or background daemon")
+    p_comp.add_argument("--popup", "-p", action="store_true", help="Launch floating HUD window immediately (default)")
+    p_comp.add_argument("--daemon", "-d", action="store_true", help="Run background hotkey and clipboard listener daemon")
+    p_comp.add_argument("--compile", "-c", nargs="?", default="", help="Compile input directly")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -350,6 +356,16 @@ def main():
             print(json.dumps(res, indent=2))
         else:
             print(mp.format_terminal_parity_report(res))
+    elif args.command == "companion":
+        import scripts.desktop_companion as dc
+        companion = dc.DesktopCompanion()
+        if args.compile:
+            res = companion.compile_text(args.compile)
+            print(res["markdown"])
+        elif args.daemon:
+            companion.run_daemon_loop()
+        else:
+            companion.launch_floating_hud()
     else:
         parser.print_help()
 
