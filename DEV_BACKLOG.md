@@ -210,7 +210,7 @@
 | **Cycle 26** | 2026-09-10 23:22 | SounnyForms Multi-Modal Form Ingestion Adapter & Test Suite | `scripts/forms_adapter.py`, `tests/test_forms_adapter.py` | `d506268` |
 | **Cycle 27** | 2026-09-10 23:32 | Multi-Turn Socratic Clarification Tree UI Widget & Test Suite | `index.html`, `tests/test_interview_widget.py`, `dist/*` | `6e527ab` |
 | **Cycle 28** | 2026-09-10 23:42 | Cognitive Fatigue Telemetry, Spatial Reset Modal & Test Suite | `index.html`, `scripts/cognitive_fatigue.py`, `tests/test_cognitive_fatigue.py` | `db1a225` |
-| **Cycle 29** | 2026-09-10 23:52 | Direct Obsidian Vault & Notion Exporters, CLI commands & Test Suite | `scripts/vault_exporter.py`, `tests/test_vault_exporter.py`, `index.html` | pending |
+| **Cycle 29** | 2026-09-10 23:52 | Direct Obsidian Vault & Notion Exporters, CLI commands & Test Suite | `scripts/vault_exporter.py`, `tests/test_vault_exporter.py`, `index.html` | `255d919` |
 
 
 
