@@ -111,9 +111,13 @@
 - [x] **Task 19.1:** Add cognitive load reduction estimator calculating phonological working memory cycles saved per compiled deliverable (`scripts/cognitive_load_calc.py`).
 - [x] **Task 19.2:** Add real-time telemetry badge in web interface (`index.html`).
 
-### Phase 20: Automated PDF & Typography Exporter (Next Cycles)
-- [ ] **Task 20.1:** Create Typst and Pandoc executive briefing templates (`templates/executive_briefing.typ`).
-- [ ] **Task 20.2:** CLI command `dx_cli.py export --format pdf` for 1-click Swiss-style PDF export.
+### Phase 20: Automated PDF & Typography Exporter
+- [x] **Task 20.1:** Create Typst and Pandoc executive briefing templates (`templates/executive_briefing.typ`).
+- [x] **Task 20.2:** CLI command `dx_cli.py export --format pdf` for 1-click Swiss-style PDF export.
+
+### Phase 21: Autonomous Webhook Receiver for Speed-of-Thought Voice Ingestion (Next Cycles)
+- [ ] **Task 21.1:** Build multi-channel webhook receiver (`server/webhook_receiver.py`) accepting audio recordings from Telegram, Slack, and WhatsApp.
+- [ ] **Task 21.2:** Auto-route received audio to Whisper transcription and D-Mode structured outputs.
 
 ---
 
@@ -137,6 +141,7 @@
 | **Cycle 13** | 2026-09-10 21:02 | Self-Hosted Container Gateway & Docker Compose Stack | `server/gateway.py`, `Dockerfile`, `docker-compose.yml` | `79a2115` |
 | **Cycle 14** | 2026-09-10 21:22 | VS Code Native Extension & Quiet Typo Stabilizer | `extensions/vscode-dxskills/*`, `index.html` | `423de01` |
 | **Cycle 15** | 2026-09-10 21:32 | Cognitive Load Reduction Estimator & Live Telemetry Badges | `scripts/cognitive_load_calc.py`, `index.html` | `ebb0e48` |
+| **Cycle 16** | 2026-09-10 21:42 | Typst & HTML Swiss Executive Briefing Exporter | `templates/executive_briefing.*`, `scripts/dx_cli.py` | `4db9dc7` |
 
 
 

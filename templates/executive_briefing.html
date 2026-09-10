@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DxSkills Executive Briefing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm;
+    }
+    @media print {
+      body {
+        margin: 0;
+        background: #fff;
+        color: #000;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .page-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      color: #18181b;
+      background: #f4f4f5;
+      margin: 0;
+      padding: 24px;
+    }
+    .page-card {
+      max-width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #e4e4e7;
+      padding: 24mm 20mm;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-family: monospace;
+      color: #71717a;
+      border-bottom: 1px solid #e4e4e7;
+      padding-bottom: 6px;
+      margin-bottom: 20px;
+    }
+    .title-block h1 {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 0 0 4px 0;
+      color: #09090b;
+      letter-spacing: -0.5px;
+    }
+    .title-block .subtitle {
+      font-size: 14px;
+      color: #52525b;
+      margin-bottom: 12px;
+    }
+    .meta-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #71717a;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #18181b;
+      margin-bottom: 20px;
+    }
+    .bluf-box {
+      background: #f4f4f5;
+      border-left: 5px solid #18181b;
+      border-radius: 0 4px 4px 0;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .bluf-label {
+      font-size: 10px;
+      font-family: monospace;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #71717a;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .bluf-content {
+      font-size: 14px;
+      font-weight: 600;
+      color: #09090b;
+      margin: 0;
+      line-height: 1.4;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #09090b;
+      margin: 20px 0 10px 0;
+      border-bottom: 1px solid #e4e4e7;
+      padding-bottom: 4px;
+    }
+    .takeaway-list {
+      margin: 0 0 20px 0;
+      padding-left: 18px;
+      font-size: 13px;
+      color: #27272a;
+    }
+    .takeaway-list li {
+      margin-bottom: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+    th {
+      background: #18181b;
+      color: #fff;
+      font-weight: 600;
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e4e4e7;
+      color: #27272a;
+    }
+    tr:nth-child(even) td {
+      background: #fafafa;
+    }
+    .footer-bar {
+      border-top: 1px solid #e4e4e7;
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #a1a1aa;
+      font-family: monospace;
+      margin-top: 24px;
+    }
+    .action-controls {
+      max-width: 210mm;
+      margin: 0 auto 16px auto;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .btn {
+      background: #18181b;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: monospace;
+    }
+    .btn:hover {
+      background: #3f3f46;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="action-controls no-print">
+    <button class="btn" onclick="window.print()">Print / Save as PDF (Ctrl+P)</button>
+  </div>
+
+  <div class="page-card">
+    <div>
+      <div class="header-bar">
+        <span>INTERNAL STRATEGY</span>
+        <span>DxSkills Cognitive Standard</span>
+      </div>
+
+      <div class="title-block">
+        <h1 id="doc-title">Executive Strategic Briefing</h1>
+        <div class="subtitle" id="doc-subtitle">Speed-of-Thought Spatial Synthesis</div>
+      </div>
+
+      <div class="meta-line">
+        <span id="doc-author">Author: DxSkills Compiler</span>
+        <span id="doc-date">Date: 2026-09-10</span>
+      </div>
+
+      <div class="bluf-box">
+        <div class="bluf-label">Bottom Line Up Front (BLUF)</div>
+        <p class="bluf-content" id="doc-bluf">
+          Milestone 2 cutover scheduled for Friday at 5:00 PM with zero production downtime expected across secondary clusters.
+        </p>
+      </div>
+
+      <div class="section-title">Key Thematic Takeaways</div>
+      <ul class="takeaway-list" id="doc-takeaways">
+        <li><strong>Redundancy:</strong> Secondary failover clusters verified in Frankfurt and Ireland regions.</li>
+        <li><strong>Performance:</strong> Database synchronization lag sustained below 24 milliseconds.</li>
+        <li><strong>Configuration:</strong> Coordinate reference systems (CRS) updated across geospatial microservices.</li>
+      </ul>
+
+      <div class="section-title">Operational Action Matrix</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 30%;">Deliverable</th>
+            <th style="width: 20%;">Status</th>
+            <th style="width: 50%;">Next Action Item</th>
+          </tr>
+        </thead>
+        <tbody id="doc-matrix">
+          <tr>
+            <td><strong>Failover Healthcheck</strong></td>
+            <td>Passed</td>
+            <td>Trigger final chaos monkey simulation</td>
+          </tr>
+          <tr>
+            <td><strong>DNS Cutover</strong></td>
+            <td>Pending</td>
+            <td>Lower TTL to 60 seconds on Thursday morning</td>
+          </tr>
+          <tr>
+            <td><strong>Engineering Sync</strong></td>
+            <td>Scheduled</td>
+            <td>Wednesday 2:00 PM to 3:30 PM alignment</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer-bar">
+      <span>Single-Page Spatial Briefing</span>
+      <span>Page 1 of 1</span>
+    </div>
+  </div>
+
+</body>
+</html>
