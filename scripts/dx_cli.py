@@ -952,6 +952,15 @@ def main():
     p_drift.add_argument("--json", "-j", action="store_true", help="Output raw JSON drift telemetry")
     p_drift.add_argument("--demo", action="store_true", help="Run with demonstration exploratory path and anchors")
 
+    # phonological-bridge / grapheme-resonator / sub-vocal-pacer / phonetic-friction
+    p_phono = subparsers.add_parser("phonological-bridge", aliases=["grapheme-resonator", "sub-vocal-pacer", "phonetic-friction"], help="Autonomous cognitive spatial multimodal phonological loop bridge and grapheme resonator")
+    p_phono.add_argument("input", nargs="?", default="", help="Target text filepath or raw text string to evaluate")
+    p_phono.add_argument("--threshold", "-t", type=float, default=0.55, help="High friction dissonance threshold (default: 0.55)")
+    p_phono.add_argument("--report", default="", help="Output phonological audit markdown filepath")
+    p_phono.add_argument("--svg", default="", help="Output syllabic resonance SVG map filepath")
+    p_phono.add_argument("--json", "-j", action="store_true", help="Output raw JSON phonological telemetry")
+    p_phono.add_argument("--demo", action="store_true", help="Run with demonstration technical specification text")
+
     args = parser.parse_args()
 
 
@@ -4478,6 +4487,40 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(result.drift_field_svg)
             print(f"[DxSkills] Drift vector field SVG written to: {args.svg}")
+    elif args.command in ["phonological-bridge", "grapheme-resonator", "sub-vocal-pacer", "phonetic-friction"]:
+        import scripts.phonological_bridge as pb_mod
+
+        bridge = pb_mod.PhonologicalLoopBridge(high_friction_threshold=args.threshold)
+
+        input_text = ""
+        if args.input:
+            if os.path.isfile(args.input):
+                with open(args.input, "r", encoding="utf-8") as f:
+                    input_text = f.read()
+            else:
+                input_text = args.input
+        elif args.demo or not args.input:
+            input_text = (
+                "The epistemological structure of algebraic topology presents orthographic friction. "
+                "Complex phonological dissonance stalls ocular saccades during rapid comprehension."
+            )
+
+        result = bridge.evaluate_text(input_text)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print(result.audit_report_md)
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(result.audit_report_md)
+            print(f"[DxSkills] Phonological audit report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(result.resonance_map_svg)
+            print(f"[DxSkills] Syllabic resonance SVG written to: {args.svg}")
     else:
         parser.print_help()
 
