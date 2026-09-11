@@ -14,6 +14,12 @@ import argparse
 import subprocess
 import urllib.request
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if SKILL_DIR not in sys.path:
     sys.path.insert(0, SKILL_DIR)
@@ -915,6 +921,15 @@ def main():
     p_thomotopy.add_argument("--svg", default="", help="Output homotopy diagram SVG filepath")
     p_thomotopy.add_argument("--json", "-j", action="store_true", help="Output raw JSON homotopy telemetry")
     p_thomotopy.add_argument("--demo", action="store_true", help="Run with demonstration triangle cyclic topology")
+
+    # lexical-gist / gist-compressor / dynamic-shorthand / semantic-gist
+    p_gist = subparsers.add_parser("lexical-gist", aliases=["gist-compressor", "dynamic-shorthand", "semantic-gist"], help="Autonomous cognitive spatial dynamic lexical compression and semantic gist synthesizer")
+    p_gist.add_argument("input", nargs="?", default="", help="Target text filepath or raw text string to compress")
+    p_gist.add_argument("--ratio", "-r", type=float, default=0.40, help="Target compression ratio (default: 0.40)")
+    p_gist.add_argument("--report", default="", help="Output gist markdown audit filepath")
+    p_gist.add_argument("--svg", default="", help="Output spatial shorthand SVG diagram filepath")
+    p_gist.add_argument("--json", "-j", action="store_true", help="Output raw JSON gist telemetry")
+    p_gist.add_argument("--demo", action="store_true", help="Run with demonstration cognitive architecture prose")
 
     args = parser.parse_args()
 
@@ -4306,6 +4321,45 @@ def main():
         if args.svg:
             engine.export_svg(result, args.svg)
             print(f"[DxSkills] Homotopy diagram SVG written to: {args.svg}")
+    elif args.command in ["lexical-gist", "gist-compressor", "dynamic-shorthand", "semantic-gist"]:
+        import scripts.lexical_gist_compressor as lgc_mod
+
+        compressor = lgc_mod.LexicalGistCompressor(target_ratio=args.ratio)
+
+        input_text = ""
+        if args.input:
+            if os.path.isfile(args.input):
+                with open(args.input, "r", encoding="utf-8") as f:
+                    input_text = f.read()
+            else:
+                input_text = args.input
+        elif args.demo or not args.input:
+            input_text = (
+                "The spatial knowledge graph transforms unstructured textual notes into topological coordinates. "
+                "Working memory constraints strictly bound the simultaneous activation threshold to four chunks, "
+                "which yields stable cognitive equilibrium and protects executive focus against attentional fatigue."
+            )
+
+        result = compressor.synthesize_gist(input_text)
+
+        if args.json:
+            import dataclasses
+            print(json.dumps({
+                "clauses": [dataclasses.asdict(c) for c in result.clauses],
+                "telemetry": dataclasses.asdict(result.telemetry)
+            }, indent=2))
+        else:
+            print(result.gist_markdown_report)
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(result.gist_markdown_report)
+            print(f"[DxSkills] Gist markdown report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(result.spatial_glyph_diagram)
+            print(f"[DxSkills] Spatial shorthand SVG diagram written to: {args.svg}")
     else:
         parser.print_help()
 
