@@ -1665,6 +1665,15 @@ def main():
     p_nab.add_argument("--svg", default="", help="Output Non-Abelian Chabauty SVG filepath")
     p_nab.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_nab.add_argument("--demo", action="store_true", help="Run with demonstration Selmer varieties, Coleman iterated integrals, and point bounds")
+    # hyodo-kato / log-crystalline / monodromy-filtration / semistable-loom
+    p_hk = subparsers.add_parser("hyodo-kato", aliases=["log-crystalline", "monodromy-filtration", "semistable-loom"], help="Autonomous cognitive spatial Hodge-Tate Spectral Sequences and Hyodo-Kato Cohomology Loom")
+    p_hk.add_argument("--degree", "-m", type=int, default=2, choices=[1, 2, 3, 4], help="Cohomology degree m (default: 2)")
+    p_hk.add_argument("--prime-p", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11], help="Base prime p (default: 5)")
+    p_hk.add_argument("--toric-rank", "-t", type=int, default=2, choices=[1, 2, 3, 4], help="Toric rank t of semistable reduction (default: 2)")
+    p_hk.add_argument("--archetype", default="calabi_yau", choices=["calabi_yau", "normal_crossings", "mumford", "semi_abelian"], help="Semistable reduction archetype (default: calabi_yau)")
+    p_hk.add_argument("--svg", default="", help="Output Hyodo-Kato SVG filepath")
+    p_hk.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_hk.add_argument("--demo", action="store_true", help="Run with demonstration log-crystalline operators, weight filtration, and Hyodo-Kato isomorphism")
     args = parser.parse_args()
 
 
@@ -9496,6 +9505,55 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_chabauty_svg())
             print(f"[DxSkills] Non-Abelian Chabauty SVG written to: {args.svg}")
+    elif args.command in ["hyodo-kato", "log-crystalline", "monodromy-filtration", "semistable-loom"]:
+        from scripts.hyodo_kato_loom import (
+            HyodoKatoCohomologyLoom,
+            SemistableReductionArchetype,
+        )
+        arch_map = {
+            "calabi_yau": SemistableReductionArchetype.CALABI_YAU_DEGENERATION.value,
+            "normal_crossings": SemistableReductionArchetype.STRICT_NORMAL_CROSSINGS.value,
+            "mumford": SemistableReductionArchetype.MUMFORD_UNIFORMIZED_CURVE.value,
+            "semi_abelian": SemistableReductionArchetype.ABELIAN_VARIETY_SEMI_AB.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, SemistableReductionArchetype.CALABI_YAU_DEGENERATION.value)
+
+        loom = HyodoKatoCohomologyLoom(
+            cohomology_degree=args.degree,
+            base_prime_p=args.prime_p,
+            toric_rank=args.toric_rank,
+            default_archetype=chosen_arch,
+        )
+        rec = loom.log_cris_records[0]
+        wf = loom.weight_filtrations[0]
+        comp = loom.compute_hyodo_kato_comparison("HK-CLI-01")
+        mono_eval = loom.evaluate_monodromy_nilpotency(test_step=min(2, rec.cohomology_degree_m))
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Hodge-Tate Spectral Sequences & Hyodo-Kato Cohomology Loom")
+            print("=================================================================")
+            print(f"Cohomology Degree & Prime p:   H_HK^{rec.cohomology_degree_m}(Y) | Prime p = {loom.base_prime_p}")
+            print(f"Semistable Archetype:          {loom.default_archetype}")
+            print(f"K_0 Vector Space Dimension:    dim H_HK = {rec.k0_vector_space_dim} (Hodge Numbers = {rec.hodge_numbers})")
+            print(f"Log-Frobenius Slopes:          {rec.frobenius_slopes} (Invertible Semi-Linear)")
+            print(f"Log-Monodromy Nilpotency:      N^{rec.monodromy_n_nilpotency_order} = 0 (Commutator N phi = p phi N Verified = {rec.n_phi_relation_verified})")
+            print(f"Monodromy Weight Filtration:   {wf.weight_graded_dims}")
+            print(f"Weight-Monodromy Conjecture:   Satisfied = {wf.weight_monodromy_conjecture_satisfied} (Eigenvalues = {wf.p_weight_eigenvalues})")
+            print(f"Hard Lefschetz Isomorphism:    N^k: {mono_eval['source_graded_piece']} -> {mono_eval['target_graded_piece']} (Verified = {mono_eval['hard_lefschetz_isomorphism']})")
+            print(f"Hyodo-Kato Comparison:         {comp.comparison_id} | Uniformizer: {comp.uniformizer_label}")
+            print(f"de Rham Isomorphism:           H_HK tensor K =~ H_dR (dim = {comp.de_rham_dim})")
+            print(f"Hodge-Tate E_1 Degeneration:   Degenerates at E_1 = {comp.hodge_tate_degeneration_e1} (Tsuji C_st Proved)")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_hyodo_kato_svg())
+            print(f"[DxSkills] Hyodo-Kato SVG written to: {args.svg}")
     else:
         parser.print_help()
 
