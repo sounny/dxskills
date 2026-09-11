@@ -493,6 +493,16 @@ def main():
     p_shed.add_argument("--target-cdi", type=float, default=0.55, help="Target Cognitive Degradation Index threshold (default: 0.55)")
     p_shed.add_argument("--json", "-j", action="store_true", help="Output raw JSON load shedding telemetry")
     
+    # resilience / break
+    p_resilience = subparsers.add_parser("resilience", aliases=["break", "fatigue"], help="Autonomous cognitive spatial dynamic micro-break and fatigue resiliency harness")
+    p_resilience.add_argument("--minutes", "-m", type=float, default=25.0, help="Session duration in minutes (default: 25.0)")
+    p_resilience.add_argument("--fixations", "-k", type=int, default=60, help="Simulated or tracked fixation sample count (default: 60)")
+    p_resilience.add_argument("--regression-rate", "-r", type=float, default=0.20, help="Saccadic regression rate 0.0 to 1.0 (default: 0.20)")
+    p_resilience.add_argument("--mean-dwell", "-d", type=float, default=260.0, help="Mean fixation dwell time in ms (default: 260.0)")
+    p_resilience.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_resilience.add_argument("--svg", "-s", default="", help="Output breathing cadence SVG visualizer filepath")
+    p_resilience.add_argument("--json", "-j", action="store_true", help="Output raw JSON fatigue telemetry")
+    
     args = parser.parse_args()
     
     if args.command == "dump":
@@ -1851,8 +1861,43 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Cognitive Stress Gauge SVG exported to: {args.svg}")
+    elif args.command in ["resilience", "break", "fatigue"]:
+        import scripts.fatigue_resilience as fr
+        harness = fr.FatigueResilienceHarness()
+        step_denom = max(1, int(1.0 / max(0.01, args.regression_rate)))
+        samples = [
+            fr.SaccadeSample(
+                timestamp=i * 0.35,
+                fixation_duration_ms=args.mean_dwell,
+                jump_amplitude_deg=2.5,
+                is_regression=(i % step_denom == 0),
+            )
+            for i in range(args.fixations)
+        ]
+        telemetry = harness.analyze_saccade_stream(samples, session_duration_min=args.minutes)
+        protocol = harness.generate_break_protocol(telemetry)
+
+        if args.json:
+            out = {
+                "telemetry": telemetry.to_dict(),
+                "protocol": protocol.to_dict(),
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            print("\n" + harness.generate_markdown_report(telemetry, protocol))
+
+        if args.canvas:
+            harness.export_spatial_canvas(protocol, output_path=args.canvas)
+            print(f"\n[DxSkills] Micro-Break .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = harness.export_svg_breathing_visualizer(protocol)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Breathing Visualizer SVG exported to: {args.svg}")
     else:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()
