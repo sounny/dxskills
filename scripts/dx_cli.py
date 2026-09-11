@@ -796,6 +796,15 @@ def main():
     p_lpacer.add_argument("--json", "-j", action="store_true", help="Output raw JSON pacing telemetry")
     p_lpacer.add_argument("--demo", action="store_true", help="Run with demonstration technical paragraph")
 
+    # galois-lattice / galois-engine / fca-lattice / associative-constellation
+    p_galois = subparsers.add_parser("galois-lattice", aliases=["galois-engine", "fca-lattice", "associative-constellation"], help="Autonomous cognitive spatial cross-scale associative constellation and Galois lattice engine")
+    p_galois.add_argument("input", nargs="?", default="", help="Input Obsidian .canvas filepath or formal entities JSON file")
+    p_galois.add_argument("--threshold", "-t", type=float, default=0.25, help="Minimum resonance score threshold for bridges (default: 0.25)")
+    p_galois.add_argument("--canvas", "-o", default="", help="Output constellation Obsidian .canvas filepath")
+    p_galois.add_argument("--svg", default="", help="Output Galois lattice SVG diagram filepath")
+    p_galois.add_argument("--json", "-j", action="store_true", help="Output raw JSON lattice telemetry")
+    p_galois.add_argument("--demo", action="store_true", help="Run with demonstration 4-entity cross-cluster context")
+
     args = parser.parse_args()
 
 
@@ -3493,6 +3502,57 @@ def main():
         if args.svg:
             pacer.export_svg(result, args.svg)
             print(f"[DxSkills] OVP fixation curve SVG diagram written to: {args.svg}")
+    elif args.command in ["galois-lattice", "galois-engine", "fca-lattice", "associative-constellation"]:
+        import scripts.galois_lattice_engine as glattice
+
+        engine = glattice.GaloisLatticeEngine(min_resonance_threshold=args.threshold)
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            entities_input = raw_data
+        elif args.demo or not args.input:
+            entities_input = [
+                {
+                    "id": "card_01",
+                    "name": "Local Spatial Canvas",
+                    "cluster": "spatial_ui",
+                    "attributes": ["local-first", "crdt", "reactive", "spatial"],
+                },
+                {
+                    "id": "card_02",
+                    "name": "Reactive Event Bus",
+                    "cluster": "spatial_ui",
+                    "attributes": ["reactive", "async", "decoupled"],
+                },
+                {
+                    "id": "card_03",
+                    "name": "Distributed Storage Ledger",
+                    "cluster": "backend_storage",
+                    "attributes": ["crdt", "local-first", "audit", "distributed"],
+                },
+                {
+                    "id": "card_04",
+                    "name": "Audit Log Aggregator",
+                    "cluster": "backend_storage",
+                    "attributes": ["audit", "distributed", "linearizable"],
+                },
+            ]
+
+        result = engine.analyze(entities_input)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + engine.generate_ascii_report(result))
+
+        if args.canvas:
+            engine.export_canvas(result, args.canvas)
+            print(f"[DxSkills] Galois constellation canvas written to: {args.canvas}")
+
+        if args.svg:
+            engine.export_svg(result, args.svg)
+            print(f"[DxSkills] Galois lattice SVG diagram written to: {args.svg}")
     else:
         parser.print_help()
 
