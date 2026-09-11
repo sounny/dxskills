@@ -573,6 +573,16 @@ def main():
     p_fovea.add_argument("--svg", "-s", default="", help="Output attention tunnel radar SVG filepath")
     p_fovea.add_argument("--json", "-j", action="store_true", help="Output raw JSON fovea telemetry")
     p_fovea.add_argument("--demo", action="store_true", help="Run with demonstration spatial canvas layout")
+
+    # consensus / merge / resolve-conflict
+    p_cons = subparsers.add_parser("consensus", aliases=["merge", "resolve-conflict"], help="Autonomous cognitive multi-agent workspace consensus and semantic conflict synthesizer")
+    p_cons.add_argument("--base", "-b", default="", help="Base ancestor Obsidian .canvas filepath")
+    p_cons.add_argument("--branch-a", "-1", default="", help="Branch A Obsidian .canvas filepath")
+    p_cons.add_argument("--branch-b", "-2", default="", help="Branch B Obsidian .canvas filepath")
+    p_cons.add_argument("--output-canvas", "-o", default="", help="Output synthesized merge .canvas filepath")
+    p_cons.add_argument("--svg", "-s", default="", help="Output consensus radar SVG filepath")
+    p_cons.add_argument("--json", "-j", action="store_true", help="Output raw JSON consensus scorecard")
+    p_cons.add_argument("--demo", action="store_true", help="Run with demonstration divergent multi-agent canvases")
     
     args = parser.parse_args()
 
@@ -2265,6 +2275,70 @@ def main():
                 ))
             svg_code = sync.export_svg_tunnel(anchors, telemetry, output_path=args.svg)
             print(f"[DxSkills] Attention tunnel radar SVG exported to: {args.svg}")
+    elif args.command in ["consensus", "merge", "resolve-conflict"]:
+        import scripts.workspace_consensus as wc
+        synthesizer = wc.WorkspaceConsensusSynthesizer()
+        
+        base_canvas = {"nodes": [], "edges": []}
+        canvas_a = {"nodes": [], "edges": []}
+        canvas_b = {"nodes": [], "edges": []}
+        
+        if args.base and os.path.isfile(args.base):
+            with open(args.base, "r", encoding="utf-8") as f:
+                base_canvas = json.load(f)
+        if args.branch_a and os.path.isfile(args.branch_a):
+            with open(args.branch_a, "r", encoding="utf-8") as f:
+                canvas_a = json.load(f)
+        if args.branch_b and os.path.isfile(args.branch_b):
+            with open(args.branch_b, "r", encoding="utf-8") as f:
+                canvas_b = json.load(f)
+                
+        if args.demo or (not args.base and not args.branch_a):
+            base_canvas = {
+                "nodes": [
+                    {"id": "n_core", "x": 0, "y": 0, "text": "### Master Pipeline\nShared deterministic state machine."},
+                    {"id": "n_cache", "x": 200, "y": 0, "text": "### Cache Tier\nLRU policy with 500ms TTL."},
+                ],
+                "edges": [{"id": "e1", "fromNode": "n_core", "toNode": "n_cache"}]
+            }
+            canvas_a = {
+                "nodes": [
+                    {"id": "n_core", "x": 0, "y": 0, "text": "### Master Pipeline\nShared deterministic state machine with Raft consensus."},
+                    {"id": "n_cache", "x": 200, "y": 0, "text": "### Cache Tier\nLRU policy with 500ms TTL."},
+                    {"id": "n_agent_a", "x": 0, "y": 200, "text": "### Telemetry Agent A\nHigh-frequency event emitter."},
+                ],
+                "edges": [
+                    {"id": "e1", "fromNode": "n_core", "toNode": "n_cache"},
+                    {"id": "e2", "fromNode": "n_core", "toNode": "n_agent_a"},
+                ]
+            }
+            canvas_b = {
+                "nodes": [
+                    {"id": "n_core", "x": 0, "y": 0, "text": "### Master Pipeline\nShared deterministic state machine with Paxos leases."},
+                    {"id": "n_cache", "x": 200, "y": 0, "text": "### Cache Tier\nConsistent hashing ring with 2s TTL."},
+                    {"id": "n_agent_b", "x": 200, "y": 200, "text": "### Analytics Agent B\nColumnar Parquet writer."},
+                ],
+                "edges": [
+                    {"id": "e1", "fromNode": "n_core", "toNode": "n_cache"},
+                    {"id": "e3", "fromNode": "n_cache", "toNode": "n_agent_b"},
+                ]
+            }
+
+        merged_canvas, scorecard = synthesizer.synthesize_visual_merge(base_canvas, canvas_a, canvas_b)
+
+        if args.json:
+            print(json.dumps(scorecard.to_dict(), indent=2))
+        else:
+            print("\n" + synthesizer.generate_markdown_report(scorecard))
+
+        if args.output_canvas:
+            with open(args.output_canvas, "w", encoding="utf-8") as f:
+                json.dump(merged_canvas, f, indent=2)
+            print(f"\n[DxSkills] Synthesized merge .canvas exported to: {args.output_canvas}")
+
+        if args.svg:
+            svg_code = synthesizer.export_svg_consensus_radar(scorecard, output_path=args.svg)
+            print(f"[DxSkills] Workspace consensus radar SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
