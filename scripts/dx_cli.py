@@ -1409,6 +1409,16 @@ def main():
     p_perverse.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_perverse.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_perverse.add_argument("--demo", action="store_true", help="Run with demonstration stratified cone space and BBDG decomposition")
+    # motivic-homotopy / voevodsky-slice / a1-homotopy / motivic-loom
+    p_motivic = subparsers.add_parser("motivic-homotopy", aliases=["voevodsky-slice", "a1-homotopy", "motivic-loom"], help="Autonomous cognitive spatial Motivic Homotopy and Voevodsky Slice Filtration Loom")
+    p_motivic.add_argument("input", nargs="?", default="", help="Input motivic scheme configuration JSON filepath")
+    p_motivic.add_argument("--name", default="Cognitive Perspective Scheme X", help="Motivic scheme identifier")
+    p_motivic.add_argument("--max-level", type=int, default=3, help="Maximum slice filtration level")
+    p_motivic.add_argument("--report", default="", help="Output motivic telemetry markdown filepath")
+    p_motivic.add_argument("--svg", default="", help="Output motivic spheres and slice tower SVG filepath")
+    p_motivic.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_motivic.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_motivic.add_argument("--demo", action="store_true", help="Run with demonstration KGL algebraic K-theory spectrum and slice tower")
     args = parser.parse_args()
 
 
@@ -7943,6 +7953,53 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Perverse sheaves interactive HTML written to: {args.html}")
+    elif args.command in ["motivic-homotopy", "voevodsky-slice", "a1-homotopy", "motivic-loom"]:
+        from scripts.motivic_homotopy_loom import (
+            MotivicHomotopyLoom,
+        )
+        loom = MotivicHomotopyLoom(space_name=args.name, max_slice_level=args.max_level)
+        if not (args.demo or not args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loom.space_name = data.get("space_name", args.name)
+            loom.max_slice_level = int(data.get("max_slice_level", args.max_level))
+
+        result = loom.evaluate_motivic_homotopy()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Motivic Homotopy & Voevodsky Slice Filtration Loom")
+            print("=================================================================")
+            print(f"Target Scheme:                 {result.space_name}")
+            print(f"Source Spectrum:               {result.spectral_sequence.source_spectrum}")
+            print(f"Target Cohomology:             {result.spectral_sequence.target_cohomology}")
+            print(f"Nisnevich Topology Descent:    {'YES' if result.locus.has_nisnevich_descent else 'NO'}")
+            print(f"A^1-Homotopy Invariance:       {'YES' if result.locus.has_a1_invariance else 'NO'}")
+            print(f"Voevodsky Slice Theorem:       {'VERIFIED (s_n = Sigma^(2n,n) HZ)' if result.slice_theorem_verified else 'DISCREPANT'}")
+            print("Bi-Graded Motivic Spheres S^(p, q):")
+            for s in result.spheres:
+                print(f"  {s.label}: p={s.topological_p}, q={s.weight_q} (Simplicial Dim={s.simplicial_dim}) - {s.geometric_model}")
+            print("Voevodsky Slice Tower Stages:")
+            for st in result.slice_tower:
+                print(f"  Stage {st.level_n}: {st.spectrum_label} -> Slice {st.associated_slice} (Shift [{st.shift_simplicial},{st.shift_weight}])")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Motivic report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Motivic spheres & slice tower SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Motivic interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
