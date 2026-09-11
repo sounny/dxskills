@@ -508,12 +508,16 @@
 - [x] **Task 118.2:** Adaptive peripheral anchor re-centering loom generating magnetic restorative visual guides across wide spatial canvases.
 
 ### Phase 119: Autonomous Cognitive Spatial Dynamic Attentional Funnel & Saccadic Boundary Gasket
-- [ ] **Task 119.1:** Peripheral distractibility threshold analyzer measuring visual boundary leakage across dense workspace canvases.
-- [ ] **Task 119.2:** Dynamic attentional funnel synthesizer rendering adaptive vignetted foveal conduits in dark titanium SVG.
+- [x] **Task 119.1:** Peripheral distractibility threshold analyzer measuring visual boundary leakage across dense workspace canvases.
+- [x] **Task 119.2:** Dynamic attentional funnel synthesizer rendering adaptive vignetted foveal conduits in dark titanium SVG.
 
 ### Phase 120: Autonomous Cognitive Spatial Semantic Gravity Well & Conceptual Orbit Engine
 - [ ] **Task 120.1:** Conceptual mass attractor calculating gravitational capture radius for core thesis pillars.
 - [ ] **Task 120.2:** Multi-body orbital layout simulator arranging subordinate supporting arguments into stable Keplerian ellipses in dark titanium SVG.
+
+### Phase 121: Autonomous Cognitive Spatial Working Memory Anchor Stacking & Hierarchical Zoom Lens
+- [ ] **Task 121.1:** Semantic level-of-detail (LoD) threshold manager dynamically pruning micro-anchors upon zoom retreat.
+- [ ] **Task 121.2:** Multi-tier semantic zoom lens visualizer rendering nested conceptual hierarchy envelopes in dark titanium SVG.
 
 ---
 
@@ -636,6 +640,7 @@
 | **Cycle 112** | 2026-09-11 13:42 | Autonomous Cognitive Spatial Semantic Entropy Gate & Topological Density Equalizer | `scripts/semantic_entropy_gate.py`, `tests/test_semantic_entropy_gate.py`, `index.html` | `6fedf6d` |
 | **Cycle 113** | 2026-09-11 13:52 | Autonomous Cognitive Spatial Bifurcation Radar & Path-Dependency Loom | `scripts/bifurcation_radar.py`, `tests/test_bifurcation_radar.py`, `index.html` | `a04857d` |
 | **Cycle 114** | 2026-09-11 14:02 | Autonomous Cognitive Spatial Working Memory Saccadic Drift Compensator & Foveal Re-Centering Loom | `scripts/foveal_recentering_loom.py`, `tests/test_foveal_recentering_loom.py`, `index.html` | `4eb58cb` |
+| **Cycle 115** | 2026-09-11 14:12 | Autonomous Cognitive Spatial Dynamic Attentional Funnel & Saccadic Boundary Gasket | `scripts/attentional_funnel_gasket.py`, `tests/test_attentional_funnel_gasket.py`, `scripts/dx_cli.py`, `index.html` | `e990261` |
 
 
 

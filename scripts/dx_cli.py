@@ -1000,6 +1000,18 @@ def main():
     p_floom.add_argument("--json", "-j", action="store_true", help="Output raw JSON drift telemetry")
     p_floom.add_argument("--demo", action="store_true", help="Run with demonstration gaze fixation stream")
 
+    # attentional-funnel / boundary-gasket / foveal-conduit / leakage-analyzer
+    p_afunnel = subparsers.add_parser("attentional-funnel", aliases=["boundary-gasket", "foveal-conduit", "leakage-analyzer"], help="Autonomous cognitive spatial dynamic attentional funnel and saccadic boundary gasket")
+    p_afunnel.add_argument("input", nargs="?", default="", help="Input canvas entities JSON filepath")
+    p_afunnel.add_argument("--aperture", "-a", type=float, default=160.0, help="Central foveal aperture radius in px (default: 160.0)")
+    p_afunnel.add_argument("--conduit", "-c", type=float, default=320.0, help="Attentional conduit outer radius in px (default: 320.0)")
+    p_afunnel.add_argument("--min-opacity", "-m", type=float, default=0.15, help="Peripheral gasket minimum opacity (default: 0.15)")
+    p_afunnel.add_argument("--focal-id", "-f", default=None, help="Focal entity ID to lock funnel center")
+    p_afunnel.add_argument("--report", default="", help="Output boundary leakage markdown audit filepath")
+    p_afunnel.add_argument("--svg", default="", help="Output attentional funnel SVG diagram filepath")
+    p_afunnel.add_argument("--json", "-j", action="store_true", help="Output raw JSON funnel telemetry")
+    p_afunnel.add_argument("--demo", action="store_true", help="Run with demonstration architectural canvas entities")
+
     args = parser.parse_args()
 
 
@@ -4842,6 +4854,82 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Foveal re-centering SVG written to: {args.svg}")
+    elif args.command in ["attentional-funnel", "boundary-gasket", "foveal-conduit", "leakage-analyzer"]:
+        import scripts.attentional_funnel_gasket as afg_mod
+
+        gasket = afg_mod.AttentionalFunnelGasket(
+            foveal_radius=args.aperture,
+            gasket_radius=args.conduit,
+            min_transparency=args.min_opacity
+        )
+
+        entities = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+            try:
+                raw_data = json.loads(raw_text)
+                raw_list = raw_data if isinstance(raw_data, list) else raw_data.get("entities", [])
+                for idx, item in enumerate(raw_list, 1):
+                    entities.append(afg_mod.CanvasEntity(
+                        entity_id=str(item.get("id", f"ent-{idx}")),
+                        label=str(item.get("label", f"Entity {idx}")),
+                        x=float(item.get("x", 0.0)),
+                        y=float(item.get("y", 0.0)),
+                        width=float(item.get("width", 100.0)),
+                        height=float(item.get("height", 60.0)),
+                        cognitive_weight=float(item.get("weight", item.get("cognitive_weight", 1.0))),
+                        is_target=bool(item.get("is_target", False))
+                    ))
+            except json.JSONDecodeError:
+                pass
+        elif args.demo or not args.input:
+            entities = afg_mod.sample_canvas_entities()
+
+        telemetry, conduit = gasket.evaluate_canvas(entities, focal_entity_id=args.focal_id)
+
+        if args.json:
+            out_dict = {
+                "focal_center": list(telemetry.focal_center),
+                "focal_label": conduit.focal_label,
+                "foveal_radius": telemetry.foveal_radius,
+                "gasket_radius": telemetry.gasket_radius,
+                "total_entities": telemetry.total_entities,
+                "active_entities_count": telemetry.active_entities_count,
+                "peripheral_entities_count": telemetry.peripheral_entities_count,
+                "raw_leakage_index": telemetry.raw_leakage_index,
+                "attenuated_leakage_index": telemetry.attenuated_leakage_index,
+                "noise_suppression_pct": telemetry.noise_suppression_pct,
+                "gasket_status": telemetry.gasket_status,
+                "measurements": [
+                    {
+                        "id": m.entity_id,
+                        "label": m.label,
+                        "distance_px": m.distance_px,
+                        "raw_saliency": m.raw_saliency,
+                        "transparency_factor": m.transparency_factor,
+                        "attenuated_saliency": m.attenuated_saliency,
+                        "leakage_risk": m.leakage_risk
+                    }
+                    for m in telemetry.measurements
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = gasket.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = gasket.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Attentional funnel audit report written to: {args.report}")
+
+        if args.svg:
+            svg_code = gasket.generate_svg(telemetry, conduit, entities)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Attentional funnel SVG written to: {args.svg}")
     else:
         parser.print_help()
 
