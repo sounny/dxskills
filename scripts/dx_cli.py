@@ -777,6 +777,15 @@ def main():
     p_wset.add_argument("--json", "-j", action="store_true", help="Output raw JSON working set telemetry")
     p_wset.add_argument("--demo", action="store_true", help="Run with demonstration 8-card spatial canvas")
 
+    # dialectic-loom / aufhebung-loom / synthesis-loom / reification-loom
+    p_dloom = subparsers.add_parser("dialectic-loom", aliases=["aufhebung-loom", "synthesis-loom", "reification-loom"], help="Autonomous cognitive spatial multi-perspective dialectic reification and synthesis loom")
+    p_dloom.add_argument("input", nargs="?", default="", help="Input Obsidian .canvas filepath or argument cards JSON file")
+    p_dloom.add_argument("--max-chunks", "-m", type=int, default=4, help="Maximum concurrent working memory chunks (default: 4)")
+    p_dloom.add_argument("--canvas", "-o", default="", help="Output synthesized Obsidian .canvas filepath")
+    p_dloom.add_argument("--svg", default="", help="Output dark titanium dialectic triad SVG filepath")
+    p_dloom.add_argument("--json", "-j", action="store_true", help="Output raw JSON dialectic telemetry")
+    p_dloom.add_argument("--demo", action="store_true", help="Run with demonstration architectural thesis and antithesis cards")
+
     args = parser.parse_args()
 
 
@@ -3399,6 +3408,49 @@ def main():
         if args.svg:
             pruner.to_svg(args.svg)
             print(f"[DxSkills] Working set SVG diagram written to: {args.svg}")
+    elif args.command in ["dialectic-loom", "aufhebung-loom", "synthesis-loom", "reification-loom"]:
+        import scripts.dialectic_loom as dloom
+
+        loom = dloom.DialecticLoom(max_working_memory_chunks=args.max_chunks)
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            cards_input = raw_data
+        elif args.demo or not args.input:
+            cards_input = [
+                {
+                    "id": "node_thesis_01",
+                    "title": "Decoupled Autonomous Microservices",
+                    "statement": "Independent services optimize local development velocity, fault isolation, and autonomous datastores.",
+                    "perspective": "thesis",
+                    "core_values": ["Velocity", "Autonomy", "Elasticity"],
+                    "failure_modes": ["Cascading latency", "State divergence", "Distributed saga deadlocks"],
+                },
+                {
+                    "id": "node_anti_01",
+                    "title": "Strict Unified Monolith with ACID Ledger",
+                    "statement": "Centralized database transactions preserve total order, linearizability, and global system coherence.",
+                    "perspective": "antithesis",
+                    "core_values": ["Consistency", "Coherence", "Auditability"],
+                    "failure_modes": ["Deployment bottlenecks", "Database write saturation", "Single blast radius"],
+                },
+            ]
+
+        result = loom.analyze(cards_input)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + loom.generate_ascii_report(result))
+
+        if args.canvas:
+            loom.export_canvas(result, args.canvas)
+            print(f"[DxSkills] Dialectic synthesis canvas written to: {args.canvas}")
+
+        if args.svg:
+            loom.export_svg(result, args.svg)
+            print(f"[DxSkills] Dialectic triad SVG diagram written to: {args.svg}")
     else:
         parser.print_help()
 
