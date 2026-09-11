@@ -452,12 +452,16 @@
 - [x] **Task 104.2:** Non-linear saccade shaper attenuating high-frequency edge clutter to channel visual momentum.
 
 ### Phase 105: Autonomous Cognitive Spatial Bi-Directional Narrative Loom & Causal Graph Synthesizer
-- [ ] **Task 105.1:** Causal graph parser extracting non-linear antecedent-consequent dependencies across spatial notes.
-- [ ] **Task 105.2:** Bi-directional narrative loom weaving branching decision topologies into coherent prose briefs.
+- [x] **Task 105.1:** Causal graph parser extracting non-linear antecedent-consequent dependencies across spatial notes.
+- [x] **Task 105.2:** Bi-directional narrative loom weaving branching decision topologies into coherent prose briefs.
 
 ### Phase 106: Autonomous Cognitive Spatial Epistemic Uncertainty Radar & Assumption Stress-Tester
 - [ ] **Task 106.1:** Epistemic uncertainty evaluator measuring empirical grounding and confidence intervals across spatial claims.
 - [ ] **Task 106.2:** Assumption stress-testing engine probing fragile structural dependencies in architectural specifications.
+
+### Phase 107: Autonomous Cognitive Spatial Working Memory Anchor Consolidation & Semantic Snapshot Vault
+- [ ] **Task 107.1:** Working memory consolidation engine synthesizing persistent immutable snapshots of high-coherence sub-canvases.
+- [ ] **Task 107.2:** Semantic snapshot vault indexing compressed allocentric topologies for zero-friction cognitive rehydration.
 
 ---
 
@@ -565,4 +569,5 @@
 | **Cycle 97** | 2026-09-11 11:12 | Autonomous Cognitive Spatial Dynamic Lexical Stress-Testing & Gaze Anchor Synthesizer | `scripts/lexical_stress_tester.py`, `tests/test_lexical_stress_tester.py`, `index.html` | `a178ca6` |
 | **Cycle 98** | 2026-09-11 11:22 | Autonomous Cognitive Spatial Multi-Scale Semantic Anchor Distillation & Visual Indexer | `scripts/semantic_anchor_distiller.py`, `tests/test_semantic_anchor_distiller.py`, `index.html` | `fb809fe` |
 | **Cycle 99** | 2026-09-11 11:32 | Autonomous Cognitive Spatial Dynamic Foveal Horizon & Context Anchor Restorer | `scripts/foveal_horizon_tracker.py`, `tests/test_foveal_horizon_tracker.py`, `index.html` | `5fc6b67` |
-| **Cycle 100** | 2026-09-11 11:42 | Autonomous Cognitive Spatial Dynamic Attention Gradient & Peripheral Saccade Shaper | `scripts/attention_gradient_shaper.py`, `tests/test_attention_gradient_shaper.py`, `index.html` | `574c149` |
+| **Cycle 100** | 2026-09-11 11:42 | Autonomous Cognitive Spatial Dynamic Attention Gradient & Peripheral Saccade Shaper | `scripts/attention_gradient_shaper.py`, `tests/test_attention_gradient_shaper.py`, `index.html` | `ee6d48b` |
+| **Cycle 101** | 2026-09-11 11:52 | Autonomous Cognitive Spatial Bi-Directional Narrative Loom & Causal Graph Synthesizer | `scripts/causal_narrative_loom.py`, `tests/test_causal_narrative_loom.py`, `index.html` | `02e5563` |

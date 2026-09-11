@@ -859,6 +859,15 @@ def main():
     p_agradient.add_argument("--json", "-j", action="store_true", help="Output raw JSON gradient telemetry")
     p_agradient.add_argument("--demo", action="store_true", help="Run with demonstration multi-card eccentricity workspace")
 
+    # causal-loom / narrative-loom / causal-dag / quest-loom
+    p_cloom = subparsers.add_parser("causal-loom", aliases=["narrative-loom", "causal-dag", "quest-loom"], help="Autonomous cognitive spatial bi-directional narrative loom and causal graph synthesizer")
+    p_cloom.add_argument("input", nargs="?", default="", help="Input causal nodes JSON, DAG JSON, or text notes filepath")
+    p_cloom.add_argument("--depth", "-d", type=int, default=4, help="Maximum acceptable Cowan depth for primary causal chain (default: 4)")
+    p_cloom.add_argument("--output-md", default="", help="Output executive narrative markdown filepath")
+    p_cloom.add_argument("--svg", default="", help="Output causal DAG SVG diagram filepath")
+    p_cloom.add_argument("--json", "-j", action="store_true", help="Output raw JSON causal loom telemetry")
+    p_cloom.add_argument("--demo", action="store_true", help="Run with demonstration architectural causal DAG")
+
     args = parser.parse_args()
 
 
@@ -3865,6 +3874,60 @@ def main():
         if args.svg:
             shaper.export_svg(result, args.svg)
             print(f"[DxSkills] Attention gradient SVG written to: {args.svg}")
+    elif args.command in ["causal-loom", "narrative-loom", "causal-dag", "quest-loom"]:
+        import scripts.causal_narrative_loom as cnl_mod
+
+        loom = cnl_mod.CausalNarrativeLoom(max_cowan_depth=args.depth)
+
+        raw_nodes = []
+        raw_edges = []
+        text_corpus = None
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                if isinstance(raw_data, dict):
+                    raw_nodes = raw_data.get("nodes", [])
+                    raw_edges = raw_data.get("edges", [])
+                elif isinstance(raw_data, list):
+                    raw_nodes = raw_data
+            except json.JSONDecodeError:
+                text_corpus = content
+        elif args.demo or not args.input:
+            raw_nodes = [
+                {"id": "n1", "label": "Phonological Bottleneck", "node_type": "EVENT"},
+                {"id": "n2", "label": "Spatial Scaffolding Harness", "node_type": "DECISION"},
+                {"id": "n3", "label": "Peripheral Clutter Attenuation", "node_type": "DECISION"},
+                {"id": "n4", "label": "Cognitive Stamina Restoration", "node_type": "OUTCOME"},
+            ]
+            raw_edges = [
+                {"source_id": "n1", "target_id": "n2", "relation": "CAUSES"},
+                {"source_id": "n2", "target_id": "n3", "relation": "ENABLES"},
+                {"source_id": "n3", "target_id": "n4", "relation": "RESULTS_IN"},
+            ]
+
+        result = loom.weave_narrative(raw_nodes=raw_nodes, raw_edges=raw_edges, text_corpus=text_corpus)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + loom.generate_ascii_report(result))
+            print("\n--- [FORWARD CHRONOLOGICAL BRIEF] ---")
+            print(result.forward_narrative)
+            print("\n--- [BACKWARD DIAGNOSTIC LADDER] ---")
+            print(result.backward_diagnostic)
+
+        if args.output_md:
+            full_md = f"# Causal Executive Brief\n\n{result.forward_narrative}\n\n{result.backward_diagnostic}\n"
+            with open(args.output_md, "w", encoding="utf-8") as f:
+                f.write(full_md)
+            print(f"[DxSkills] Causal narrative brief written to: {args.output_md}")
+
+        if args.svg:
+            loom.export_svg(result, args.svg)
+            print(f"[DxSkills] Causal DAG SVG written to: {args.svg}")
     else:
         parser.print_help()
 
