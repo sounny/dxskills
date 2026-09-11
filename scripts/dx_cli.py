@@ -1337,6 +1337,17 @@ def main():
     p_spec.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_spec.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_spec.add_argument("--demo", action="store_true", help="Run with demonstration 4D cognitive spectral triple")
+
+    # geometric-quantization / kostant-souriau / prequantum-loom / bohr-sommerfeld
+    p_quant = subparsers.add_parser("geometric-quantization", aliases=["kostant-souriau", "prequantum-loom", "bohr-sommerfeld"], help="Autonomous cognitive spatial Geometric Quantization and Kostant-Souriau Prequantum Loom")
+    p_quant.add_argument("input", nargs="?", default="", help="Input quantization configuration JSON filepath")
+    p_quant.add_argument("--hbar", type=float, default=0.5, help="Planck action quantum hbar (default: 0.5)")
+    p_quant.add_argument("--omega", type=float, default=1.0, help="Harmonic oscillator frequency omega (default: 1.0)")
+    p_quant.add_argument("--report", default="", help="Output quantization diagnostic markdown filepath")
+    p_quant.add_argument("--svg", default="", help="Output Bohr-Sommerfeld phase portrait SVG filepath")
+    p_quant.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_quant.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_quant.add_argument("--demo", action="store_true", help="Run with demonstration anharmonic cognitive oscillator")
     args = parser.parse_args()
 
 
@@ -7506,6 +7517,54 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Spectral interactive HTML written to: {args.html}")
+    elif args.command in ["geometric-quantization", "kostant-souriau", "prequantum-loom", "bohr-sommerfeld"]:
+        from scripts.geometric_quantization_loom import (
+            GeometricQuantizationLoom,
+        )
+        if args.demo or not args.input:
+            loom = GeometricQuantizationLoom(hbar=args.hbar, omega=args.omega)
+        else:
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            hbar_val = data.get("hbar", args.hbar)
+            omega_val = data.get("omega", args.omega)
+            pot_name = data.get("potential_name", "Custom Cognitive Potential")
+            loom = GeometricQuantizationLoom(hbar=hbar_val, omega=omega_val, potential_name=pot_name)
+
+        result = loom.compute_quantization()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Geometric Quantization & Kostant-Souriau Prequantum Loom")
+            print("=================================================================")
+            print(f"Planck Constant (hbar):        {result.planck_constant_hbar:.4f}")
+            print(f"Potential Energy Model:        {result.potential_name}")
+            print(f"Quantized Bohr-Sommerfeld Leaves: {result.num_quantized_leaves}")
+            print(f"Ground Zero-Point Energy:      {result.zero_point_energy:.4f}")
+            print(f"Symplectic Curvature Flux:     {result.curvature_flux_integral:.4f}")
+            print(f"Dirac-Groenewold Fidelity:     {result.dirac_groenewold_fidelity * 100:.2f}%")
+            print(f"Epistemic Coherence Index:     {result.epistemic_coherence_index * 100:.1f}%")
+            print("Discrete Energy Levels E_n:")
+            for leaf in result.bohr_sommerfeld_leaves:
+                print(f"  n={leaf.quantum_number_n}: E={leaf.energy_level:.4f} (Action I={leaf.action_integral:.4f}, Phase={leaf.holonomy_phase:.3f} rad)")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Geometric quantization report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Bohr-Sommerfeld foliation SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Quantization interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
