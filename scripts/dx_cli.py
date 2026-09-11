@@ -562,6 +562,17 @@ def main():
     p_pacer.add_argument("--manifest", "-m", default="", help="Output Web Audio API manifest JSON filepath")
     p_pacer.add_argument("--json", "-j", action="store_true", help="Output raw JSON soundstage configuration")
     p_pacer.add_argument("--demo", action="store_true", help="Run with demonstration multi-track stream setup")
+
+    # fovea / tunnel
+    p_fovea = subparsers.add_parser("fovea", aliases=["tunnel", "attention-tunnel"], help="Autonomous cognitive spatial multi-scale attention tunnel and peripheral fovea synchronizer")
+    p_fovea.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath")
+    p_fovea.add_argument("--focus", "-f", default="", help="Node ID to focus on")
+    p_fovea.add_argument("--load", "-l", type=float, default=0.6, help="Cognitive load saturation 0.0 to 1.0 (default: 0.6)")
+    p_fovea.add_argument("--mode", "-m", choices=["desaturate_damp", "blur_attenuate", "minimal_skeleton", "adaptive_lod"], default="desaturate_damp", help="Damping mode (default: desaturate_damp)")
+    p_fovea.add_argument("--output-canvas", "-o", default="", help="Output synchronized .canvas filepath")
+    p_fovea.add_argument("--svg", "-s", default="", help="Output attention tunnel radar SVG filepath")
+    p_fovea.add_argument("--json", "-j", action="store_true", help="Output raw JSON fovea telemetry")
+    p_fovea.add_argument("--demo", action="store_true", help="Run with demonstration spatial canvas layout")
     
     args = parser.parse_args()
 
@@ -2196,6 +2207,64 @@ def main():
             with open(args.manifest, "w", encoding="utf-8") as f:
                 json.dump(manifest_data, f, indent=2)
             print(f"[DxSkills] Web Audio manifest exported to: {args.manifest}")
+    elif args.command in ["fovea", "tunnel", "attention-tunnel"]:
+        import scripts.fovea_synchronizer as fs
+        sync = fs.SpatialFoveaSynchronizer()
+        canvas_data = None
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                canvas_data = json.load(f)
+        elif args.demo or not args.canvas:
+            canvas_data = {
+                "nodes": [
+                    {"id": "node_core", "x": 0, "y": 0, "width": 260, "height": 140, "color": "1", "text": "### Raft Distributed Consensus\nActive leader heartbeat loop and log replication barrier."},
+                    {"id": "node_wal", "x": 200, "y": 160, "width": 240, "height": 130, "color": "2", "text": "### Write-Ahead Log Ring\nIn-memory circular buffer and fsync batcher."},
+                    {"id": "node_cache", "x": -220, "y": 180, "width": 240, "height": 130, "color": "3", "text": "### L1 Saliency Cache\nLRU eviction cache with TTL invalidation hooks."},
+                    {"id": "node_cold", "x": 850, "y": 750, "width": 250, "height": 140, "color": "4", "text": "### S3 Glacier Cold Storage\nPeriodic multi-part archival upload pipeline."},
+                    {"id": "node_audit", "x": -800, "y": 700, "width": 250, "height": 140, "color": "5", "text": "### Audit Compliance Sink\nCryptographic append-only ledger for telemetry."},
+                ],
+                "edges": []
+            }
+        
+        mode = fs.DampingMode(args.mode)
+        focus_id = args.focus if args.focus else (canvas_data["nodes"][0]["id"] if canvas_data.get("nodes") else None)
+        transformed_canvas, telemetry = sync.apply_attention_tunnel(
+            canvas_data, focus_node_id=focus_id, cognitive_load=args.load, damping_mode=mode
+        )
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + sync.generate_markdown_report(telemetry))
+
+        if args.output_canvas:
+            with open(args.output_canvas, "w", encoding="utf-8") as f:
+                json.dump(transformed_canvas, f, indent=2)
+            print(f"\n[DxSkills] Attention-tunneled .canvas exported to: {args.output_canvas}")
+
+        if args.svg:
+            anchors = []
+            fx = canvas_data["nodes"][0].get("x", 0)
+            fy = canvas_data["nodes"][0].get("y", 0)
+            for n in transformed_canvas.get("nodes", []):
+                nx = n.get("x", 0)
+                ny = n.get("y", 0)
+                d = math.hypot(nx - fx, ny - fy)
+                ang = math.degrees(math.atan2(ny - fy, nx - fx))
+                is_f = (n.get("id") == focus_id) or (d <= telemetry.tunnel_radius_px)
+                anchors.append(fs.PeripheralAnchor(
+                    node_id=n.get("id", ""),
+                    label=n.get("text", "").split("\n")[0].replace("#", "").strip() or "Node",
+                    x=nx,
+                    y=ny,
+                    distance_from_focus=round(d, 1),
+                    angle_degrees=round(ang, 1),
+                    opacity=1.0 if is_f else 0.35,
+                    is_foveal=is_f,
+                    color=n.get("color", "1"),
+                ))
+            svg_code = sync.export_svg_tunnel(anchors, telemetry, output_path=args.svg)
+            print(f"[DxSkills] Attention tunnel radar SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
