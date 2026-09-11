@@ -1,105 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Background Radial Gradient: Titanium Obsidian to Deep Slate -->
-    <radialGradient id="bg" cx="50%" cy="28%" r="72%">
-      <stop offset="0%" stop-color="#1e293b"/>
-      <stop offset="55%" stop-color="#0f172a"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </radialGradient>
-
-    <!-- Structural Pillar & Arch Gradient: Diamond White to Platinum -->
-    <linearGradient id="pillarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="70%" stop-color="#f1f5f9"/>
-      <stop offset="100%" stop-color="#cbd5e1"/>
-    </linearGradient>
-
-    <!-- Descending Structural Strut: Clean Titanium Silver -->
-    <linearGradient id="silverStrut" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="60%" stop-color="#e2e8f0"/>
-      <stop offset="100%" stop-color="#94a3b8"/>
-    </linearGradient>
-
-    <!-- Ascending Cognitive Catalyst: Radiant Electric Sky Cyan -->
-    <linearGradient id="cyanBeam" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#0284c7"/>
-      <stop offset="40%" stop-color="#0ea5e9"/>
-      <stop offset="80%" stop-color="#38bdf8"/>
-      <stop offset="100%" stop-color="#bae6fd"/>
-    </linearGradient>
-
-    <!-- Outer Squircle Bevel Highlight -->
-    <linearGradient id="bevelBorder" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="rgba(255, 255, 255, 0.45)"/>
-      <stop offset="25%" stop-color="rgba(56, 189, 248, 0.35)"/>
-      <stop offset="70%" stop-color="rgba(255, 255, 255, 0.08)"/>
-      <stop offset="100%" stop-color="rgba(56, 189, 248, 0.2)"/>
-    </linearGradient>
-
-    <!-- Tactile Drop Shadow -->
-    <filter id="markShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.7"/>
-    </filter>
-
-    <!-- Cyan Laser Glow -->
-    <filter id="cyanGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#38bdf8" flood-opacity="0.55"/>
-    </filter>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@800&amp;display=swap');
+      .glyph {
+        font-family: 'JetBrains Mono', monospace, -apple-system, sans-serif;
+        font-size: 224px;
+        font-weight: 800;
+        fill: #ffffff;
+        letter-spacing: -6px;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+    </style>
   </defs>
-
-  <!-- Base Squircle Container (Full 512x512 internal space) -->
-  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
-  <rect x="6" y="6" width="500" height="500" rx="110" fill="none" stroke="url(#bevelBorder)" stroke-width="3"/>
-
-  <!-- Blueprint Corner Coordinate Reticles -->
-  <g stroke="rgba(56, 189, 248, 0.4)" stroke-width="2.5" stroke-linecap="round">
-    <!-- Top-Left -->
-    <line x1="38" y1="50" x2="62" y2="50"/>
-    <line x1="50" y1="38" x2="50" y2="62"/>
-    <!-- Top-Right -->
-    <line x1="450" y1="50" x2="474" y2="50"/>
-    <line x1="462" y1="38" x2="462" y2="62"/>
-    <!-- Bottom-Left -->
-    <line x1="38" y1="462" x2="62" y2="462"/>
-    <line x1="50" y1="450" x2="50" y2="474"/>
-    <!-- Bottom-Right -->
-    <line x1="450" y1="462" x2="474" y2="462"/>
-    <line x1="462" y1="450" x2="462" y2="474"/>
-  </g>
-
-  <!-- Subtle Spatial Lattice Grid (3x3 Cognitive Matrix) -->
-  <g stroke="rgba(56, 189, 248, 0.05)" stroke-width="1.5">
-    <line x1="128" y1="40" x2="128" y2="472"/>
-    <line x1="256" y1="40" x2="256" y2="472"/>
-    <line x1="384" y1="40" x2="384" y2="472"/>
-    <line x1="40" y1="128" x2="472" y2="128"/>
-    <line x1="40" y1="256" x2="472" y2="256"/>
-    <line x1="40" y1="384" x2="472" y2="384"/>
-  </g>
-
-  <!-- THE MARKS (D-Foundation & X-Leverage) -->
-  <g filter="url(#markShadow)">
-
-    <!-- 1. The D-Foundation Pillar (Left Structural Spine) -->
-    <rect x="104" y="116" width="44" height="280" rx="22" fill="url(#pillarGrad)"/>
-
-    <!-- 2. The D-Foundation Cantilever Arch -->
-    <path d="M 126 116 H 248 C 338 116 398 172 398 256 C 398 340 338 396 248 396 H 126" 
-          fill="none" stroke="url(#pillarGrad)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
-
-    <!-- 3. The X-Strut: Descending Silver Arm (Top-Left to Bottom-Right) -->
-    <!-- Underlay Relief Mask (Depth Cutout) -->
-    <path d="M 216 146 L 388 366" fill="none" stroke="#020617" stroke-width="62" stroke-linecap="round"/>
-    <path d="M 216 146 L 388 366" fill="none" stroke="url(#silverStrut)" stroke-width="42" stroke-linecap="round"/>
-
-    <!-- 4. The X-Strut: Ascending Cyan Beam (Bottom-Left to Top-Right) -->
-    <!-- Over-Weave Relief Mask -->
-    <path d="M 216 366 L 388 146" fill="none" stroke="#020617" stroke-width="62" stroke-linecap="round"/>
-    <path d="M 216 366 L 388 146" fill="none" stroke="url(#cyanBeam)" stroke-width="42" stroke-linecap="round" filter="url(#cyanGlow)"/>
-
-    <!-- 5. Synaptic Convergence Node (The Cognitive Spark) -->
-    <circle cx="302" cy="256" r="10" fill="#ffffff" filter="url(#cyanGlow)"/>
-    <circle cx="302" cy="256" r="4.5" fill="#0284c7"/>
-  </g>
+  <rect width="512" height="512" rx="116" fill="#09090b"/>
+  <rect x="8" y="8" width="496" height="496" rx="108" fill="none" stroke="#27272a" stroke-width="8"/>
+  <text x="256" y="250" class="glyph">Dx</text>
 </svg>
