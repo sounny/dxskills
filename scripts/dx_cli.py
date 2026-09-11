@@ -1489,6 +1489,17 @@ def main():
     p_diff.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_diff.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_diff.add_argument("--demo", action="store_true", help="Run with demonstration U(1) gauge bundle and Cheeger-Simons hexagon")
+    # symplectic-floer / fukaya-category / a-infinity-loom / pseudo-holomorphic-disks
+    p_floer = subparsers.add_parser("symplectic-floer", aliases=["fukaya-category", "a-infinity-loom", "pseudo-holomorphic-disks"], help="Autonomous cognitive spatial Symplectic Floer Homology and Fukaya A-Infinity Loom")
+    p_floer.add_argument("input", nargs="?", default="", help="Input symplectic configuration JSON filepath")
+    p_floer.add_argument("--name", default="Cognitive Symplectic Workspace (M, omega)", help="Symplectic workspace identifier")
+    p_floer.add_argument("--ambient", default="Cotangent Bundle T^*Sigma (Liouville Symplectic Manifold)", help="Ambient symplectic manifold name")
+    p_floer.add_argument("--lagrangian-type", default="Exact Lagrangian (Vanishing Symplectic Area Class [omega] = 0)", choices=["Exact Lagrangian (Vanishing Symplectic Area Class [omega] = 0)", "Monotone Lagrangian (Proportional Area and Maslov Classes)", "Bohr-Sommerfeld Lagrangian Torus (Quantized Flux)", "Clifford Torus (Symmetric Monotone in Projective Space)"], help="Lagrangian submanifold type")
+    p_floer.add_argument("--report", default="", help="Output symplectic Floer telemetry markdown filepath")
+    p_floer.add_argument("--svg", default="", help="Output Lagrangian intersections and Whitney disks SVG filepath")
+    p_floer.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_floer.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_floer.add_argument("--demo", action="store_true", help="Run with demonstration Lagrangian intersections and Stasheff associahedra")
     args = parser.parse_args()
 
 
@@ -8400,6 +8411,65 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Differential cohomology interactive HTML written to: {args.html}")
+    elif args.command in ["symplectic-floer", "fukaya-category", "a-infinity-loom", "pseudo-holomorphic-disks"]:
+        from scripts.symplectic_floer_loom import (
+            SymplecticFloerLoom,
+            LagrangianType,
+            AInfinityOperationDegree,
+        )
+        loom = SymplecticFloerLoom(
+            schema_name=args.name,
+            ambient_manifold=args.ambient,
+            lagrangian_type=args.lagrangian_type,
+        )
+        if not (args.demo or not args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loom.schema_name = data.get("schema_name", args.name)
+            loom.ambient_manifold = data.get("ambient_manifold", args.ambient)
+            loom.lagrangian_type = data.get("lagrangian_type", args.lagrangian_type)
+
+        result = loom.evaluate_symplectic_floer()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Symplectic Floer Homology & Fukaya A-Infinity Category Loom")
+            print("=================================================================")
+            print(f"Target Symplectic Space:       {result.schema_name}")
+            print(f"Ambient Symplectic Manifold:   {result.ambient_symplectic_manifold}")
+            print(f"Differential d^2 = 0 Status:   {'VERIFIED (m_1^2 = 0)' if result.d_squared_zero_verified else 'FAILED'}")
+            print(f"A-Infinity Relations Status:   {'VERIFIED (Stasheff Associahedra Hold)' if result.a_infinity_relations_verified else 'FAILED'}")
+            print(f"Floer Cohomology Ranks:        {result.floer_cohomology_ranks}")
+            print("Lagrangian Submanifolds:")
+            for l in result.lagrangians:
+                print(f"  * {l.lagrangian_id} (Dim={l.dimension}): {l.label} [Maslov={l.maslov_class_number}]")
+            print("Intersection Points CF^*(L_i, L_j):")
+            for p in result.intersections:
+                print(f"  * {p.point_id}: Pair={p.lagrangian_pair} | Index={p.maslov_index} | Action={p.symplectic_action:.2f} | Status={'CYCLE' if p.is_floer_cycle else 'BOUNDARY'}")
+            print("Pseudo-Holomorphic Whitney Disks:")
+            for w in result.whitney_disks:
+                print(f"  * {w.disk_id}: {w.source_point_id} -> {w.target_point_id} | Maslov Diff={w.maslov_index_diff} | Energy={w.symplectic_energy:.2f}")
+            print("Fukaya A-Infinity Operations m_k:")
+            for o in result.a_infinity_ops:
+                print(f"  * {o.operation_name} (Arity {o.arity_k}): Polytope='{o.boundary_associahedron}' | Status={'VERIFIED' if o.relation_verified else 'FAILED'}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Symplectic Floer report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Symplectic Floer SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Symplectic Floer interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
