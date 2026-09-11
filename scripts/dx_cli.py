@@ -592,6 +592,17 @@ def main():
     p_gaze.add_argument("--svg", "-s", default="", help="Output saccadic velocity profile SVG filepath")
     p_gaze.add_argument("--json", "-j", action="store_true", help="Output raw JSON gaze inertia telemetry")
     p_gaze.add_argument("--demo", action="store_true", help="Run with demonstration spatial canvas layout")
+
+    # scanpath / flow / compress-reading
+    p_scanpath = subparsers.add_parser("scanpath", aliases=["flow", "compress-reading"], help="Autonomous cognitive spatial saccadic scanpath compressor and reading flow harness")
+    p_scanpath.add_argument("input", nargs="?", default="", help="Target text or markdown filepath to compress and guide")
+    p_scanpath.add_argument("--mode", "-m", choices=["bionic_ramp", "corridor_chunk", "return_beacon", "hybrid_flow"], default="hybrid_flow", help="Guidance mode (default: hybrid_flow)")
+    p_scanpath.add_argument("--chars", "-c", type=int, default=55, help="Target characters per corridor line (default: 55)")
+    p_scanpath.add_argument("--output", "-o", default="", help="Output guided markdown filepath")
+    p_scanpath.add_argument("--canvas", default="", help="Output Obsidian .canvas filepath")
+    p_scanpath.add_argument("--svg", "-s", default="", help="Output scanpath trajectory SVG filepath")
+    p_scanpath.add_argument("--json", "-j", action="store_true", help="Output raw JSON scanpath telemetry")
+    p_scanpath.add_argument("--demo", action="store_true", help="Run with demonstration technical specification prose")
     
     args = parser.parse_args()
 
@@ -2382,6 +2393,43 @@ def main():
         if args.svg:
             svg_code = balancer.export_svg_velocity_profile(telemetry, output_path=args.svg)
             print(f"[DxSkills] Saccade velocity profile SVG exported to: {args.svg}")
+    elif args.command in ["scanpath", "flow", "compress-reading"]:
+        import scripts.scanpath_compressor as spc
+        compressor = spc.SaccadicScanpathCompressor(target_line_chars=args.chars)
+        raw_text = ""
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8", errors="ignore") as f:
+                raw_text = f.read()
+        elif args.demo or not args.input:
+            raw_text = (
+                "Distributed consensus engines mandate deterministic execution across cluster boundaries. "
+                "Unsynchronized concurrent mutations risk catastrophic state corruption and partitioned quorums. "
+                "Spatial cognitive architectures eliminate phonological decoding strain by mapping complex "
+                "topologies directly into two-dimensional associative graphs."
+            )
+
+        mode = spc.GuidanceMode(args.mode)
+        guided_text, telemetry = compressor.compress_and_guide(raw_text, mode=mode)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + compressor.generate_markdown_report(telemetry))
+            print("\n## Guided Reading Preview\n")
+            print(guided_text[:400] + "..." if len(guided_text) > 400 else guided_text)
+
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as f:
+                f.write(guided_text)
+            print(f"\n[DxSkills] Guided reading text written to: {args.output}")
+
+        if args.canvas:
+            compressor.export_canvas(guided_text, telemetry, output_path=args.canvas)
+            print(f"[DxSkills] Reading corridor .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = compressor.export_svg_scanpath(telemetry, output_path=args.svg)
+            print(f"[DxSkills] Saccadic trajectory SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
