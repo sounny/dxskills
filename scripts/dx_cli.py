@@ -1477,6 +1477,18 @@ def main():
     p_topos.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_topos.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_topos.add_argument("--demo", action="store_true", help="Run with demonstration smooth manifolds higher topos and Joyal Kan fillers")
+    # differential-cohomology / cheeger-simons / deligne-cohomology / differential-characters
+    p_diff = subparsers.add_parser("differential-cohomology", aliases=["cheeger-simons", "deligne-cohomology", "differential-characters"], help="Autonomous cognitive spatial Differential Cohomology and Cheeger-Simons Characters Loom")
+    p_diff.add_argument("input", nargs="?", default="", help="Input differential cohomology configuration JSON filepath")
+    p_diff.add_argument("--name", default="Cognitive Gauge Field Manifold M", help="Manifold schema identifier")
+    p_diff.add_argument("--manifold-name", default="Spacetime 4-Manifold M^4", help="Manifold name")
+    p_diff.add_argument("--dim", type=int, default=4, help="Manifold dimension")
+    p_diff.add_argument("--degree", default="Degree 2 H^2_diff(M) (U(1) Principal Bundles with Connection)", choices=["Degree 2 H^2_diff(M) (U(1) Principal Bundles with Connection)", "Degree 1 H^1_diff(M) (Smooth Circle Maps C^infinity(M, S^1))", "Degree 3 H^3_diff(M) (Bundle Gerbes with Connection & B-Field)", "Degree 4 H^4_diff(M) (Cheeger-Chern-Simons Secondary Classes c_2)"], help="Differential cohomology degree")
+    p_diff.add_argument("--report", default="", help="Output differential cohomology telemetry markdown filepath")
+    p_diff.add_argument("--svg", default="", help="Output Cheeger-Simons hexagon and curvature form SVG filepath")
+    p_diff.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_diff.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_diff.add_argument("--demo", action="store_true", help="Run with demonstration U(1) gauge bundle and Cheeger-Simons hexagon")
     args = parser.parse_args()
 
 
@@ -8334,6 +8346,60 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Higher topos interactive HTML written to: {args.html}")
+    elif args.command in ["differential-cohomology", "cheeger-simons", "deligne-cohomology", "differential-characters"]:
+        from scripts.differential_cohomology_loom import (
+            DifferentialCohomologyLoom,
+            DifferentialDegree,
+            HexagonExactSequenceType,
+        )
+        loom = DifferentialCohomologyLoom(
+            schema_name=args.name,
+            manifold_name=args.manifold_name,
+            manifold_dim=args.dim,
+            degree=args.degree,
+        )
+        if not (args.demo or not args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loom.schema_name = data.get("schema_name", args.name)
+            loom.manifold_name = data.get("manifold_name", args.manifold_name)
+            loom.manifold_dim = int(data.get("manifold_dim", args.dim))
+            loom.degree = data.get("degree", args.degree)
+
+        result = loom.evaluate_differential_cohomology()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Differential Cohomology & Cheeger-Simons Characters Loom")
+            print("=================================================================")
+            print(f"Target Manifold:               {result.manifold_name} (Dim={result.manifold_dimension})")
+            print(f"Differential Degree:           {result.degree}")
+            print(f"Curvature Form:                {result.curvature.form_expression}")
+            print(f"Characteristic Class:          {result.character.integer_characteristic_class}")
+            print(f"Flat Holonomy Amplitude:       exp(2*pi*i * {result.character.holonomy_mod_1:.2f})")
+            print(f"De Rham Compatibility:         {'VERIFIED' if result.de_rham_compatibility_verified else 'FAILED'}")
+            print(f"Cheeger-Simons Exactness:      {'VERIFIED' if result.cheeger_simons_exactness_verified else 'FAILED'}")
+            print("Cheeger-Simons Interlocking Sequences:")
+            for s in result.hexagon_sequences:
+                print(f"  * {s.sequence_type[:24]}: Kernel='{s.subgroup_kernel[:24]}...' | Image='{s.quotient_image[:24]}...' | Status={'EXACT' if s.exactness_verified else 'FAILED'}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Differential cohomology report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Cheeger-Simons hexagon SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Differential cohomology interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
