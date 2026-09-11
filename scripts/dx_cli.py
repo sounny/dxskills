@@ -1216,6 +1216,18 @@ def main():
     p_rlatch.add_argument("--svg", default="", help="Output retinal latch interactive SVG filepath")
     p_rlatch.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_rlatch.add_argument("--demo", action="store_true", help="Run with demonstration mental rotation simulation")
+    # fiber-bundle / holonomy-weaver / topological-bundle / polytope-holonomy / parallel-transport
+    p_fbdl = subparsers.add_parser("fiber-bundle", aliases=["holonomy-weaver", "topological-bundle", "polytope-holonomy", "parallel-transport"], help="Autonomous cognitive spatial topological fiber bundle and polytope holonomy weaver engine")
+    p_fbdl.add_argument("--type", default="mobius", choices=["mobius", "hopf", "torus", "cylinder"], help="Fiber bundle manifold geometry (default: mobius)")
+    p_fbdl.add_argument("--radius", type=float, default=160.0, help="Base manifold radius in px (default: 160.0)")
+    p_fbdl.add_argument("--steps", type=int, default=64, help="Discretization sampling steps (default: 64)")
+    p_fbdl.add_argument("--twist", type=float, default=1.0, help="Topological twist parameter factor (default: 1.0)")
+    p_fbdl.add_argument("--p-winds", type=int, default=2, help="Toroidal p-winding integer (default: 2)")
+    p_fbdl.add_argument("--q-winds", type=int, default=3, help="Toroidal q-winding integer (default: 3)")
+    p_fbdl.add_argument("--report", default="", help="Output holonomy diagnostic markdown filepath")
+    p_fbdl.add_argument("--svg", default="", help="Output fiber bundle interactive SVG filepath")
+    p_fbdl.add_argument("--json", "-j", action="store_true", help="Output raw JSON holonomy telemetry")
+    p_fbdl.add_argument("--demo", action="store_true", help="Run with demonstration Mobius strip fiber bundle")
     args = parser.parse_args()
 
 
@@ -6433,6 +6445,86 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Retinal latch SVG written to: {args.svg}")
+    elif args.command in ["fiber-bundle", "holonomy-weaver", "topological-bundle", "polytope-holonomy", "parallel-transport"]:
+        import scripts.topological_fiber_bundle as tfb_mod
+        weaver = tfb_mod.TopologicalFiberBundle(twist_parameter=args.twist)
+
+        btype = args.type.lower()
+        if btype == "hopf":
+            telemetry = weaver.weave_hopf_fibration(
+                base_radius_px=args.radius,
+                steps=args.steps,
+                fiber_twist=args.twist,
+            )
+        elif btype == "torus":
+            telemetry = weaver.weave_torus_bundle(
+                major_radius_px=args.radius,
+                p_winds=args.p_winds,
+                q_winds=args.q_winds,
+                steps=args.steps,
+            )
+        elif btype == "cylinder":
+            telemetry = weaver.weave_mobius_bundle(
+                radius_px=args.radius,
+                steps=args.steps,
+                twist_factor=0.0,
+            )
+        else:
+            telemetry = weaver.weave_mobius_bundle(
+                radius_px=args.radius,
+                steps=args.steps,
+                twist_factor=args.twist,
+            )
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print(f"[DxSkills] Topological Fiber Bundle & Holonomy Telemetry")
+            print(f"Bundle Type: {telemetry.bundle_type}")
+            print(f"Total Steps: {telemetry.total_steps}")
+            print(f"Loop Perimeter: {telemetry.loop_perimeter_px:.1f} px")
+            print(f"Total Twist: {telemetry.total_twist_deg:.1f} deg")
+            print(f"Holonomy Angle: {telemetry.holonomy_angle_deg:.1f} deg")
+            print(f"Non-Trivial Topology: {telemetry.is_non_trivial_topology}")
+            print(f"Curvature Integral: {telemetry.connection_curvature_integral:.3f} rad")
+            if telemetry.warnings:
+                for w in telemetry.warnings:
+                    print(f"Note: {w}")
+
+        if args.report:
+            md_lines = [
+                "# Topological Fiber Bundle & Holonomy Diagnostic Report",
+                "",
+                f"**Bundle Type:** `{telemetry.bundle_type}`",
+                f"- **Total Discretization Steps:** {telemetry.total_steps}",
+                f"- **Loop Perimeter:** {telemetry.loop_perimeter_px:.1f} px",
+                f"- **Total Fiber Twist:** {telemetry.total_twist_deg:.1f} deg",
+                f"- **Holonomy Angle:** {telemetry.holonomy_angle_deg:.1f} deg",
+                f"- **Is Non-Trivial Topology:** {telemetry.is_non_trivial_topology}",
+                f"- **Connection Curvature Integral:** {telemetry.connection_curvature_integral:.3f} rad",
+                "",
+                "## Topological Fibers Sample (First 5)",
+                "",
+                "| Step t | Base (X, Y, Z) | Fiber Angle | Vector (dx, dy, dz) |",
+                "| :--- | :--- | :--- | :--- |",
+            ]
+            for f_vec in telemetry.fibers[:5]:
+                md_lines.append(
+                    f"| {f_vec.t:.3f} | ({f_vec.base_x:.1f}, {f_vec.base_y:.1f}, {f_vec.base_z:.1f}) | {f_vec.fiber_angle_deg:.1f} deg | ({f_vec.vector_dx:.2f}, {f_vec.vector_dy:.2f}, {f_vec.vector_dz:.2f}) |"
+                )
+            if telemetry.warnings:
+                md_lines.extend(["", "## Diagnostic Notes", ""])
+                for w in telemetry.warnings:
+                    md_lines.append(f"- [TOPOLOGY] {w}")
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write("\n".join(md_lines) + "\n")
+            print(f"[DxSkills] Holonomy report written to: {args.report}")
+
+        if args.svg:
+            svg_code = weaver.render_fiber_bundle_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Fiber bundle SVG written to: {args.svg}")
     else:
         parser.print_help()
 
