@@ -990,6 +990,16 @@ def main():
     p_bradar.add_argument("--json", "-j", action="store_true", help="Output raw JSON multiverse telemetry")
     p_bradar.add_argument("--demo", action="store_true", help="Run with demonstration architectural bifurcation forks")
 
+    # foveal-recentering / saccadic-drift / drift-compensator-loom / foveal-loom
+    p_floom = subparsers.add_parser("foveal-recentering", aliases=["saccadic-drift", "drift-compensator-loom", "foveal-loom"], help="Autonomous cognitive spatial working memory saccadic drift compensator and foveal re-centering loom")
+    p_floom.add_argument("input", nargs="?", default="", help="Input gaze fixations JSON filepath")
+    p_floom.add_argument("--threshold", "-t", type=float, default=45.0, help="Ocular drift threshold in px (default: 45.0)")
+    p_floom.add_argument("--gain", "-g", type=float, default=0.40, help="Magnetic restorative vector gain (default: 0.40)")
+    p_floom.add_argument("--report", default="", help="Output foveal drift audit markdown filepath")
+    p_floom.add_argument("--svg", default="", help="Output foveal re-centering SVG diagram filepath")
+    p_floom.add_argument("--json", "-j", action="store_true", help="Output raw JSON drift telemetry")
+    p_floom.add_argument("--demo", action="store_true", help="Run with demonstration gaze fixation stream")
+
     args = parser.parse_args()
 
 
@@ -4762,6 +4772,76 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Multiverse bifurcation SVG written to: {args.svg}")
+    elif args.command in ["foveal-recentering", "saccadic-drift", "drift-compensator-loom", "foveal-loom"]:
+        import scripts.foveal_recentering_loom as frl_mod
+
+        loom = frl_mod.FovealReCenteringLoom(
+            drift_threshold=args.threshold,
+            magnetic_gain=args.gain
+        )
+
+        fixations = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                raw_list = raw_data if isinstance(raw_data, list) else raw_data.get("fixations", [])
+                for idx, item in enumerate(raw_list, 1):
+                    fixations.append(frl_mod.GazeFixationPoint(
+                        point_id=item.get("id", f"fix-{idx}"),
+                        target_label=item.get("target_label", item.get("label", f"Target {idx}")),
+                        target_x=float(item.get("target_x", item.get("tx", 0.0))),
+                        target_y=float(item.get("target_y", item.get("ty", 0.0))),
+                        gaze_x=float(item.get("gaze_x", item.get("gx", 0.0))),
+                        gaze_y=float(item.get("gaze_y", item.get("gy", 0.0))),
+                        timestamp_ms=float(item.get("timestamp_ms", float(idx) * 250.0))
+                    ))
+            except json.JSONDecodeError:
+                pass
+        elif args.demo or not args.input:
+            fixations = frl_mod.sample_gaze_fixations()
+
+        telemetry = loom.evaluate_fixations(fixations)
+
+        if args.json:
+            out_dict = {
+                "total_fixations": telemetry.total_fixations,
+                "mean_displacement_px": telemetry.mean_displacement_px,
+                "max_displacement_px": telemetry.max_displacement_px,
+                "cumulative_drift_error": telemetry.cumulative_drift_error,
+                "locked_count": telemetry.locked_count,
+                "drifting_count": telemetry.drifting_count,
+                "disoriented_count": telemetry.disoriented_count,
+                "disorientation_rate_pct": telemetry.disorientation_rate_pct,
+                "measurements": [
+                    {
+                        "id": m.point_id,
+                        "label": m.target_label,
+                        "displacement": m.displacement_px,
+                        "velocity": m.drift_velocity_px_s,
+                        "state": m.state,
+                        "restore_vector": [m.restore_vector_x, m.restore_vector_y]
+                    }
+                    for m in telemetry.measurements
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = loom.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = loom.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Foveal drift audit report written to: {args.report}")
+
+        if args.svg:
+            svg_code = loom.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Foveal re-centering SVG written to: {args.svg}")
     else:
         parser.print_help()
 
