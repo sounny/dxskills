@@ -1126,6 +1126,15 @@ def main():
     p_pgrid.add_argument("--svg", default="", help="Output polar radar grid SVG filepath")
     p_pgrid.add_argument("--json", "-j", action="store_true", help="Output raw JSON polar grid telemetry")
     p_pgrid.add_argument("--demo", action="store_true", help="Run with demonstration allocentric landmark and target session")
+    # gaze-stabilizer / attentional-funnel-stabilizer / scanpath-limiter / gaze-envelope
+    p_gaze = subparsers.add_parser("gaze-stabilizer", aliases=["attentional-funnel-stabilizer", "scanpath-limiter", "gaze-envelope"], help="Autonomous cognitive spatial dynamic attentional funnel and gaze envelope stabilizer")
+    p_gaze.add_argument("input", nargs="?", default="", help="Input scanpath and channels JSON filepath")
+    p_gaze.add_argument("--envelope-width", type=float, default=90.0, help="Attentional corridor envelope width in pixels (default: 90.0)")
+    p_gaze.add_argument("--damping", type=float, default=0.65, help="Jitter damping factor between 0.0 and 1.0 (default: 0.65)")
+    p_gaze.add_argument("--report", default="", help="Output gaze stabilization diagnostic markdown filepath")
+    p_gaze.add_argument("--svg", default="", help="Output gaze envelope interactive SVG filepath")
+    p_gaze.add_argument("--json", "-j", action="store_true", help="Output raw JSON gaze stabilization telemetry")
+    p_gaze.add_argument("--demo", action="store_true", help="Run with demonstration technical architecture scanpath")
     args = parser.parse_args()
 
 
@@ -5903,6 +5912,58 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Polar radar grid SVG written to: {args.svg}")
+    elif args.command in ["gaze-stabilizer", "attentional-funnel-stabilizer", "scanpath-limiter", "gaze-envelope"]:
+        import scripts.attentional_gaze_stabilizer as ags_mod
+        stabilizer = ags_mod.AttentionalGazeStabilizer(
+            default_envelope_width_px=args.envelope_width,
+            jitter_damping_factor=args.damping,
+        )
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                raw_pts = [
+                    ags_mod.GazePoint(
+                        point_id=str(p.get("id", f"gp-{i}")),
+                        x=float(p.get("x", 0.0)),
+                        y=float(p.get("y", 0.0)),
+                        timestamp_ms=float(p.get("timestamp_ms", i * 100.0)),
+                        fixation_dwell_ms=float(p.get("dwell_ms", 120.0)),
+                        is_fixation=bool(p.get("is_fixation", True)),
+                    )
+                    for i, p in enumerate(data.get("points", data.get("gaze_points", [])))
+                ]
+                channels = [
+                    ags_mod.AttentionalChannel(
+                        channel_id=str(c.get("id", f"ch-{i}")),
+                        title=str(c.get("title", f"Channel {i+1}")),
+                        points=[(float(pt[0]), float(pt[1])) for pt in c.get("points", [])],
+                        envelope_width_px=float(c.get("width_px", args.envelope_width)),
+                        priority=int(c.get("priority", 1)),
+                        color=str(c.get("color", "#58a6ff")),
+                    )
+                    for i, c in enumerate(data.get("channels", []))
+                ]
+                telemetry = stabilizer.stabilize_scanpath(raw_pts, channels)
+        else:
+            telemetry = ags_mod.AttentionalGazeStabilizer.create_demo_telemetry()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            report_md = stabilizer.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = stabilizer.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Gaze stabilization report written to: {args.report}")
+
+        if args.svg:
+            svg_code = stabilizer.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Gaze envelope SVG written to: {args.svg}")
     else:
         parser.print_help()
 
