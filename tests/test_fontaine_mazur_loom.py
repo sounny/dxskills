@@ -8,7 +8,7 @@ import os
 import sys
 
 # Ensure scripts dir is accessible
-sys.path.insert(0, os.path.abspath(r"C:\Users\sounn\.gemini\antigravity\brain\d458b56e-3188-4374-8cf3-234474d7caec\scratch"))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts")))
 from fontaine_mazur_loom import (
     FontaineMazurLoom,
     FontaineMazurArchetype,

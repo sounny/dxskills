@@ -1734,6 +1734,15 @@ def main():
     p_fm.add_argument("--svg", default="", help="Output Fontaine-Mazur SVG filepath")
     p_fm.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_fm.add_argument("--demo", action="store_true", help="Run with demonstration period rings, Hodge-Tate weights, and modularity isomorphism R = T")
+    # serre-modularity / odd-representation / serre-weight-loom / khare-wintenberger
+    p_sm = subparsers.add_parser("serre-modularity", aliases=["odd-representation", "serre-weight-loom", "khare-wintenberger"], help="Autonomous cognitive spatial Serre's Modularity Conjecture and Odd Galois Representations Loom")
+    p_sm.add_argument("--level", "-n", type=int, default=11, help="Artin conductor prime-to-p level N (default: 11)")
+    p_sm.add_argument("--prime", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11, 13], help="Residual prime p (default: 5)")
+    p_sm.add_argument("--weight", "-k", type=int, default=2, help="Serre weight k (default: 2)")
+    p_sm.add_argument("--archetype", default="elliptic", choices=["elliptic", "delta", "dihedral", "even"], help="Residual Galois representation archetype (default: elliptic)")
+    p_sm.add_argument("--svg", default="", help="Output Serre Modularity SVG filepath")
+    p_sm.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_sm.add_argument("--demo", action="store_true", help="Run with demonstration Serre invariants, tame inertia actions, and Khare-Wintenberger theorem")
     args = parser.parse_args()
 
 
@@ -9948,6 +9957,60 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_fontaine_mazur_svg())
             print(f"[DxSkills] Fontaine-Mazur SVG written to: {out_path}")
+    elif args.command in ["serre-modularity", "odd-representation", "serre-weight-loom", "khare-wintenberger"]:
+        from scripts.serre_modularity_loom import (
+            SerreModularityLoom,
+            SerreModularityArchetype,
+        )
+        arch_map = {
+            "elliptic": SerreModularityArchetype.WEIGHT_TWO_ELLIPTIC.value,
+            "delta": SerreModularityArchetype.RAMANUJAN_DELTA_MOD_P.value,
+            "dihedral": SerreModularityArchetype.DIHEDRAL_INDUCTION.value,
+            "even": SerreModularityArchetype.EVEN_NON_MODULAR.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, SerreModularityArchetype.WEIGHT_TWO_ELLIPTIC.value)
+
+        loom = SerreModularityLoom(
+            level_n=args.level,
+            prime_p=args.prime,
+            default_archetype=chosen_arch,
+        )
+        rep = loom.representations[0]
+        inv = loom.serre_invariants[0]
+        mod = loom.modularity_data[0]
+        verdict = loom.evaluate_serre_conjecture(
+            is_odd=rep.is_odd,
+            is_irreducible=rep.is_irreducible,
+            level_n=inv.serre_level_n,
+            weight_k=inv.serre_weight_k,
+        )
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Serre's Modularity Conjecture & Odd Galois Representations Loom")
+            print("=================================================================")
+            print(f"Prime p & Artin Conductor:     Prime p = {rep.prime_p} | Level N(rho_bar) = {rep.artin_conductor_prime_to_p}")
+            print(f"Galois Representation:         {rep.representation_id} ({loom.default_archetype.split('(')[0].strip()})")
+            print(f"Parity Condition:              Odd = {rep.is_odd} (det(rho_bar(c)) = {'-1' if rep.is_odd else '+1'})")
+            print(f"Irreducibility:                {rep.is_irreducible}")
+            print(f"Serre Optimal Invariants:      N = {inv.serre_level_n} | k = {inv.serre_weight_k} | epsilon = {inv.serre_character_epsilon}")
+            print(f"Tame Inertia Weights:          {inv.tame_inertia_weights} (Fontaine-Laffaille: {inv.is_fontaine_laffaille})")
+            print(f"Companion Form Pair:           {inv.is_companion_form_pair}")
+            print(f"Serre Modularity Verdict:      {mod.is_modular} ({verdict['serre_verdict']})")
+            print(f"Modular Target Space:          {mod.modular_eigenform_space}")
+            print(f"Khare-Wintenberger Theorem:    {mod.proof_reference}")
+            print(f"Deformation Lifting:           {mod.deformation_lifting_status}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "serre_modularity_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_serre_svg())
+            print(f"[DxSkills] Serre Modularity SVG written to: {out_path}")
     else:
         parser.print_help()
 
