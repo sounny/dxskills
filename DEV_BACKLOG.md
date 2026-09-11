@@ -660,8 +660,16 @@
 - [x] **Task 156.2:** Mirror symmetry visualizer rendering A-model symplectic intersection Floer homology vs B-model complex deformations in dark titanium SVG.
 
 ### Phase 157: Autonomous Cognitive Spatial Derived Algebraic Geometry & Higher Stacks Loom
-- [ ] **Task 157.1:** Derived Artin/Deligne-Mumford stack solver evaluating cotangent complexes and deformation rings on cognitive schemas.
-- [ ] **Task 157.2:** Higher stack visualizer rendering simplicial nerve atlases, obstruction group cocycles, and virtual fundamental classes in dark titanium SVG.
+- [x] **Task 157.1:** Derived Artin/Deligne-Mumford stack solver evaluating cotangent complexes and deformation rings on cognitive schemas.
+- [x] **Task 157.2:** Higher stack visualizer rendering simplicial nerve atlases, obstruction group cocycles, and virtual fundamental classes in dark titanium SVG.
+
+### Phase 158: Autonomous Cognitive Spatial Perverse Sheaves & Intersection Cohomology Loom
+- [ ] **Task 158.1:** Beilinson-Bernstein-Deligne-Gabber (BBDG) decomposition theorem solver evaluating perversity t-structures, stratified spaces, and intersection complexes IC_X on singular cognitive boundaries.
+- [ ] **Task 158.2:** Intersection cohomology visualizer rendering stratification strata, perversity filtration ladders, and Poincare-Verdier duals in dark titanium SVG.
+
+### Phase 159: Autonomous Cognitive Spatial Motivic Homotopy & Voevodsky Slice Filtration Loom
+- [ ] **Task 159.1:** A^1-homotopy category solver evaluating Nisnevich sheaves with transfers, algebraic K-theory slices, and motivic Adams-Novikov spectral sequences on cognitive schemas.
+- [ ] **Task 159.2:** Motivic homotopy visualizer rendering A^1-invariance cylinders, Tate twist spheres S^(p,q), and slice tower filtration stages in dark titanium SVG.
 
 ---
 
@@ -821,7 +829,8 @@
 | **Cycle 149** | 2026-09-11 19:52 | Autonomous Cognitive Spatial Geometric Quantization & Kostant-Souriau Prequantum Loom | `scripts/geometric_quantization_loom.py`, `tests/test_geometric_quantization_loom.py`, `scripts/dx_cli.py`, `index.html` | `47b63bd` |
 | **Cycle 150** | 2026-09-11 20:02 | Autonomous Cognitive Spatial Atiyah-Singer Index Theorem & Topological Anomaly Loom | `scripts/atiyah_singer_index_loom.py`, `tests/test_atiyah_singer_index_loom.py`, `scripts/dx_cli.py`, `index.html` | `8ddb1cb` |
 | **Cycle 151** | 2026-09-11 20:12 | Autonomous Cognitive Spatial K-Theory & Topological Vector Bundle Classification Loom | `scripts/k_theory_bundle_loom.py`, `tests/test_k_theory_bundle_loom.py`, `scripts/dx_cli.py`, `index.html` | `20c1cb7` |
-| **Cycle 152** | 2026-09-11 20:22 | Autonomous Cognitive Spatial Homological Mirror Symmetry & Kontsevich Dual Loom | `scripts/homological_mirror_loom.py`, `tests/test_homological_mirror_loom.py`, `scripts/dx_cli.py`, `index.html` | `bfcfca6` |
+| **Cycle 152** | 2026-09-11 20:22 | Autonomous Cognitive Spatial Homological Mirror Symmetry & Kontsevich Dual Loom | `scripts/homological_mirror_loom.py`, `tests/test_homological_mirror_loom.py`, `scripts/dx_cli.py`, `index.html` | `a6c1920` |
+| **Cycle 153** | 2026-09-11 20:32 | Autonomous Cognitive Spatial Derived Algebraic Geometry & Higher Stacks Loom | `scripts/derived_stack_loom.py`, `tests/test_derived_stack_loom.py`, `scripts/dx_cli.py`, `index.html` | `3ddf168` |
 
 
 

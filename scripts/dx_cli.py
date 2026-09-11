@@ -1384,6 +1384,20 @@ def main():
     p_mirror.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_mirror.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_mirror.add_argument("--demo", action="store_true", help="Run with demonstration Lagrangian pair and coherent sheaves")
+    # derived-stack / higher-stack / artin-loom / cotangent-complex
+    p_stack = subparsers.add_parser("derived-stack", aliases=["higher-stack", "artin-loom", "cotangent-complex"], help="Autonomous cognitive spatial Derived Algebraic Geometry and Higher Stacks Loom")
+    p_stack.add_argument("input", nargs="?", default="", help="Input derived stack configuration JSON filepath")
+    p_stack.add_argument("--name", default="Cognitive Perspective Moduli Stack M_persp", help="Derived stack identifier")
+    p_stack.add_argument("--base-dim", type=int, default=4, help="Base space dimension")
+    p_stack.add_argument("--aut-dim", type=int, default=1, help="Automorphism group dimension (T^0)")
+    p_stack.add_argument("--relations", type=int, default=2, help="Relations / obstruction dimension in H^(-1)(L)")
+    p_stack.add_argument("--syzygies", type=int, default=0, help="Higher syzygies dimension in H^(-2)(L)")
+    p_stack.add_argument("--group", default="GL(1, C)", help="Automorphism Lie group label")
+    p_stack.add_argument("--report", default="", help="Output derived stack telemetry markdown filepath")
+    p_stack.add_argument("--svg", default="", help="Output simplicial nerve and cotangent ladder SVG filepath")
+    p_stack.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_stack.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_stack.add_argument("--demo", action="store_true", help="Run with demonstration cognitive derived stack atlas")
     args = parser.parse_args()
 
 
@@ -7781,6 +7795,77 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Mirror symmetry interactive HTML written to: {args.html}")
+    elif args.command in ["derived-stack", "higher-stack", "artin-loom", "cotangent-complex"]:
+        from scripts.derived_stack_loom import (
+            DerivedStackLoom,
+            StackCategory,
+        )
+        if args.demo or not args.input:
+            loom = DerivedStackLoom(stack_name=args.name)
+            result = loom.evaluate_derived_stack(
+                base_dim=args.base_dim,
+                automorphism_dim=args.aut_dim,
+                num_relations=args.relations,
+                higher_syzygies=args.syzygies,
+                automorphism_group=args.group,
+            )
+        else:
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            s_name = data.get("stack_name", args.name)
+            loom = DerivedStackLoom(stack_name=s_name)
+            result = loom.evaluate_derived_stack(
+                base_dim=int(data.get("base_dim", args.base_dim)),
+                automorphism_dim=int(data.get("automorphism_dim", args.aut_dim)),
+                num_relations=int(data.get("num_relations", args.relations)),
+                higher_syzygies=int(data.get("higher_syzygies", args.syzygies)),
+                automorphism_group=data.get("automorphism_group", args.group),
+            )
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Derived Algebraic Geometry & Higher Stacks Loom")
+            print("=================================================================")
+            print(f"Stack Name:                    {result.stack_name}")
+            print(f"Classification:                {result.stack_category}")
+            print(f"Base Atlas Dimension:          {result.locus.dimension}")
+            print(f"Automorphism Group:            {result.locus.automorphism_group} (Dim {result.locus.automorphism_dim})")
+            print("Simplicial Nerve Levels:")
+            for sn in result.simplicial_nerve:
+                print(f"  Level {sn.level_n}: {sn.label} (Dim={sn.dimension})")
+            print(f"Cotangent Complex Amplitude:   [{result.cotangent_complex.amplitude_min}, {result.cotangent_complex.amplitude_max}]")
+            print(f"  H^0 (Differentials):         Dim={result.cotangent_complex.h0_differentials_dim}")
+            print(f"  H^(-1) (Relations):          Dim={result.cotangent_complex.h_minus1_relations_dim}")
+            print(f"  H^(-2) (Higher Syzygies):    Dim={result.cotangent_complex.h_minus2_syzygies_dim}")
+            print(f"  Euler Characteristic:        chi={result.cotangent_complex.total_euler_characteristic}")
+            print("Deformation Lie Algebra:")
+            print(f"  T^0 (Infinitesimal Aut):     Dim={result.deformation_profile.t0_automorphisms_dim}")
+            print(f"  T^1 (Deformations):          Dim={result.deformation_profile.t1_infinitesimal_deformations_dim}")
+            print(f"  T^2 (Obstruction Space):     Dim={result.deformation_profile.t2_obstructions_dim}")
+            print(f"  Obstruction Vanishing:       {'YES (Unobstructed)' if result.deformation_profile.obstruction_class_vanishes else 'NO (Obstructed)'}")
+            print("Virtual Fundamental Class [X]^vir:")
+            print(f"  Virtual Dimension (vdim):    {result.virtual_class.virtual_dimension}")
+            print(f"  Actual Dimension:            {result.virtual_class.actual_dimension}")
+            print(f"  Excess Dimension:            {result.virtual_class.excess_dimension}")
+            print(f"  Virtual Cycle Degree:        {result.virtual_class.virtual_cycle_degree:.4f}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Derived stack report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Simplicial nerve & cotangent ladder SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Derived stack interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
