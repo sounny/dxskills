@@ -1143,6 +1143,15 @@ def main():
     p_loom.add_argument("--svg", default="", help="Output Hegelian dialectical tensor loom SVG filepath")
     p_loom.add_argument("--json", "-j", action="store_true", help="Output raw JSON dialectical lattice telemetry")
     p_loom.add_argument("--demo", action="store_true", help="Run with demonstration technical architecture dialectic")
+    # concept-hologram / holographic-weaver / interference-pattern / semantic-hologram
+    p_holo = subparsers.add_parser("concept-hologram", aliases=["holographic-weaver", "interference-pattern", "semantic-hologram"], help="Autonomous cognitive spatial multimodal concept hologram and interference pattern weaver")
+    p_holo.add_argument("input", nargs="?", default="", help="Input multimodal concept wave emitters JSON filepath")
+    p_holo.add_argument("--grid-step", type=float, default=30.0, help="Field sampling grid step in pixels (default: 30.0)")
+    p_holo.add_argument("--threshold", type=float, default=0.55, help="Global coherence threshold for holographic resonance (default: 0.55)")
+    p_holo.add_argument("--report", default="", help="Output concept hologram diagnostic markdown filepath")
+    p_holo.add_argument("--svg", default="", help="Output concept hologram interference SVG filepath")
+    p_holo.add_argument("--json", "-j", action="store_true", help="Output raw JSON holographic field telemetry")
+    p_holo.add_argument("--demo", action="store_true", help="Run with demonstration multimodal concept field")
     args = parser.parse_args()
 
 
@@ -6027,6 +6036,50 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Dialectical tensor loom SVG written to: {args.svg}")
+    elif args.command in ["concept-hologram", "holographic-weaver", "interference-pattern", "semantic-hologram"]:
+        import scripts.concept_hologram_weaver as chw_mod
+        weaver = chw_mod.ConceptHologramWeaver(
+            sample_grid_step=args.grid_step,
+            coherence_threshold=args.threshold,
+        )
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                emitters = [
+                    chw_mod.WaveEmitter(
+                        emitter_id=str(e.get("id", f"em-{i}")),
+                        title=str(e.get("title", f"Emitter {i+1}")),
+                        x=float(e.get("x", 200.0 + i * 150.0)),
+                        y=float(e.get("y", 250.0)),
+                        amplitude=float(e.get("amplitude", 1.0)),
+                        wavelength_px=float(e.get("wavelength_px", 60.0)),
+                        phase_rad=float(e.get("phase_rad", 0.0)),
+                        modality=str(e.get("modality", "SPATIAL")),
+                        color=str(e.get("color", "#58a6ff")),
+                    )
+                    for i, e in enumerate(data.get("emitters", data.get("concepts", [])))
+                ]
+                telemetry = weaver.compute_wave_field(emitters)
+        else:
+            telemetry = chw_mod.ConceptHologramWeaver.create_demo_telemetry()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            report_md = weaver.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = weaver.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Concept hologram report written to: {args.report}")
+
+        if args.svg:
+            svg_code = weaver.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Concept hologram SVG written to: {args.svg}")
     else:
         parser.print_help()
 
