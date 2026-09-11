@@ -635,6 +635,16 @@ def main():
     p_shield.add_argument("--json", "-j", action="store_true", help="Output raw JSON memory shield telemetry")
     p_shield.add_argument("--demo", action="store_true", help="Run with demonstration spatial canvas layout")
 
+    # dual-code / dual-coder / dual-track
+    p_dual = subparsers.add_parser("dual-code", aliases=["dual-coder", "dual-track"], help="Autonomous cognitive spatial dual-code working memory interleaver")
+    p_dual.add_argument("canvas", nargs="?", default="", help="Target Obsidian .canvas filepath")
+    p_dual.add_argument("--prose", "-p", default="", help="Target verbal prose or markdown filepath")
+    p_dual.add_argument("--output-markdown", "-o", default="", help="Output interleaved markdown filepath")
+    p_dual.add_argument("--output-canvas", "-c", default="", help="Output dual-code synchronized Obsidian .canvas filepath")
+    p_dual.add_argument("--svg", "-s", default="", help="Output dual-track visualization SVG filepath")
+    p_dual.add_argument("--json", "-j", action="store_true", help="Output raw JSON dual-code telemetry")
+    p_dual.add_argument("--demo", action="store_true", help="Run with demonstration dual-code architecture pair")
+
     args = parser.parse_args()
 
 
@@ -2560,6 +2570,53 @@ def main():
         if args.svg:
             shield.export_svg_shield(telemetry, args.svg)
             print(f"[DxSkills] Memory shield radar SVG exported to: {args.svg}")
+    elif args.command in ["dual-code", "dual-coder", "dual-track"]:
+        import scripts.dual_code_interleaver as dci
+
+        interleaver = dci.DualCodeInterleaver()
+
+        canvas_data = {}
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                canvas_data = json.load(f)
+        elif args.demo or not args.canvas:
+            canvas_data = {
+                "nodes": [
+                    {"id": "node-consensus", "text": "Raft Consensus Module\n\nCoordinates cluster leader election and log replication across distributed instances."},
+                    {"id": "node-wal", "text": "Write-Ahead Storage Log\n\nPersists append-only state mutations to durable NVMe storage before commit confirmation."},
+                    {"id": "node-telemetry", "text": "Cluster Telemetry Gateway\n\nAggregates Prometheus metrics, health heartbeats, and cluster topology status."},
+                ]
+            }
+
+        prose_text = ""
+        if args.prose and os.path.isfile(args.prose):
+            with open(args.prose, "r", encoding="utf-8", errors="ignore") as f:
+                prose_text = f.read()
+        elif args.demo or not args.prose:
+            prose_text = (
+                "The Raft consensus module coordinates cluster leader election and ensures deterministic log replication. "
+                "The write-ahead storage log persists append-only state mutations directly to durable disk. "
+                "The cluster telemetry gateway aggregates health heartbeats and distributes performance metrics across nodes."
+            )
+
+        blocks, telemetry = interleaver.align_channels(canvas_data, prose_text)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + interleaver.render_ascii_dual_stream(telemetry))
+
+        if args.output_markdown:
+            interleaver.export_interleaved_markdown(telemetry, args.output_markdown)
+            print(f"[DxSkills] Interleaved specification written to: {args.output_markdown}")
+
+        if args.output_canvas:
+            interleaver.export_canvas(telemetry, args.output_canvas)
+            print(f"[DxSkills] Dual-code .canvas exported to: {args.output_canvas}")
+
+        if args.svg:
+            interleaver.export_svg_dual_track(telemetry, args.svg)
+            print(f"[DxSkills] Dual-track SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
