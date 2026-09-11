@@ -1117,6 +1117,15 @@ def main():
     p_polyc.add_argument("--svg", default="", help="Output polyhedral net blueprint SVG filepath")
     p_polyc.add_argument("--json", "-j", action="store_true", help="Output raw JSON crystallizer telemetry")
     p_polyc.add_argument("--demo", action="store_true", help="Run with demonstration modular concept set")
+    # polar-grid / landmark-polar / bearing-synthesizer / allocentric-bearing
+    p_pgrid = subparsers.add_parser("polar-grid", aliases=["landmark-polar", "bearing-synthesizer", "allocentric-bearing"], help="Autonomous cognitive spatial allocentric landmark polar grid and dynamic bearing synthesizer")
+    p_pgrid.add_argument("input", nargs="?", default="", help="Input landmark and targets JSON filepath")
+    p_pgrid.add_argument("--interval", type=float, default=120.0, help="Concentric range ring interval in pixels (default: 120.0)")
+    p_pgrid.add_argument("--rings", type=int, default=3, help="Number of concentric polar range rings (default: 3)")
+    p_pgrid.add_argument("--report", default="", help="Output polar grid audit markdown filepath")
+    p_pgrid.add_argument("--svg", default="", help="Output polar radar grid SVG filepath")
+    p_pgrid.add_argument("--json", "-j", action="store_true", help="Output raw JSON polar grid telemetry")
+    p_pgrid.add_argument("--demo", action="store_true", help="Run with demonstration allocentric landmark and target session")
     args = parser.parse_args()
 
 
@@ -5823,6 +5832,77 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Polyhedral net blueprint SVG written to: {args.svg}")
+    elif args.command in ["polar-grid", "landmark-polar", "bearing-synthesizer", "allocentric-bearing"]:
+        import scripts.allocentric_polar_grid as apg_mod
+        synthesizer = apg_mod.AllocentricPolarGridSynthesizer(
+            default_ring_interval_px=args.interval,
+            num_rings=args.rings,
+        )
+
+        landmark = None
+        targets = []
+
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                lm_data = data.get("landmark", {})
+                landmark = apg_mod.PolarLandmark(
+                    landmark_id=str(lm_data.get("id", "lm-hub")),
+                    title=str(lm_data.get("title", "Origin Hub")),
+                    x=float(lm_data.get("x", 460.0)),
+                    y=float(lm_data.get("y", 280.0)),
+                    radius_px=float(lm_data.get("radius_px", 16.0)),
+                    is_primary=bool(lm_data.get("is_primary", True)),
+                )
+                targets = data.get("targets", data.get("nodes", []))
+        else:
+            landmark, targets = apg_mod.sample_polar_session()
+
+        telemetry = synthesizer.calculate_polar_bearings(landmark, targets)
+
+        if args.json:
+            out_dict = {
+                "landmark": {
+                    "id": telemetry.primary_landmark.landmark_id,
+                    "title": telemetry.primary_landmark.title,
+                    "x": telemetry.primary_landmark.x,
+                    "y": telemetry.primary_landmark.y,
+                },
+                "target_count": telemetry.target_count,
+                "max_range_px": telemetry.max_range_px,
+                "ring_count": telemetry.ring_count,
+                "angular_dispersion_index": telemetry.angular_dispersion_index,
+                "allocentric_stability_score": telemetry.allocentric_stability_score,
+                "target_bearings": [
+                    {
+                        "target_id": b.target_id,
+                        "title": b.title,
+                        "pos_x": b.pos_x,
+                        "pos_y": b.pos_y,
+                        "distance_px": b.distance_px,
+                        "bearing_deg": b.bearing_deg,
+                        "cardinal_heading": b.cardinal_heading,
+                        "range_ring_zone": b.range_ring_zone,
+                    }
+                    for b in telemetry.target_bearings
+                ],
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = synthesizer.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = synthesizer.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Polar grid report written to: {args.report}")
+
+        if args.svg:
+            svg_code = synthesizer.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Polar radar grid SVG written to: {args.svg}")
     else:
         parser.print_help()
 
