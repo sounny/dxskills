@@ -550,6 +550,18 @@ def main():
     p_examine.add_argument("--svg", "-s", default="", help="Output 5-axis rigor radar SVG filepath")
     p_examine.add_argument("--json", "-j", action="store_true", help="Output raw JSON examination scorecard")
     p_examine.add_argument("--demo", action="store_true", help="Run with demonstration architecture components")
+
+    # audio-pacer / pacer / soundstage
+    p_pacer = subparsers.add_parser("audio-pacer", aliases=["pacer", "soundstage"], help="Autonomous cognitive spatial saliency decoupler and multi-track audio pacer")
+    p_pacer.add_argument("task", nargs="?", default="Cognitive Architecture Sprint", help="Task name or description")
+    p_pacer.add_argument("--complexity", "-k", type=float, default=0.7, help="Task complexity 0.0 to 1.0 (default: 0.7)")
+    p_pacer.add_argument("--load", "-l", type=float, default=0.6, help="Cognitive load saturation 0.0 to 1.0 (default: 0.6)")
+    p_pacer.add_argument("--streams", "-s", nargs="*", default=[], help="Streams in format 'Name:Type' where Type in primary_focus, telemetry_log, rhythmic_pacer, alert_urgent, background_ambience")
+    p_pacer.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_pacer.add_argument("--svg", default="", help="Output 2D soundstage radar SVG filepath")
+    p_pacer.add_argument("--manifest", "-m", default="", help="Output Web Audio API manifest JSON filepath")
+    p_pacer.add_argument("--json", "-j", action="store_true", help="Output raw JSON soundstage configuration")
+    p_pacer.add_argument("--demo", action="store_true", help="Run with demonstration multi-track stream setup")
     
     args = parser.parse_args()
 
@@ -2136,6 +2148,54 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Socratic Rigor Radar SVG exported to: {args.svg}")
+    elif args.command in ["audio-pacer", "pacer", "soundstage"]:
+        import scripts.audio_pacer as ap
+        pacer = ap.SpatialAudioPacer()
+        task_profile = ap.CognitiveTaskProfile(
+            task_name=args.task,
+            complexity_score=args.complexity,
+            cognitive_load=args.load,
+        )
+        raw_streams = []
+        if args.demo or not args.streams:
+            raw_streams = [
+                {"id": "s1", "name": "Primary Code IDE", "track_type": ap.AudioTrackType.PRIMARY_FOCUS, "description": "Active coding AST buffer"},
+                {"id": "s2", "name": "Telemetry Logs", "track_type": ap.AudioTrackType.TELEMETRY_LOG, "description": "Build pipeline and test stream"},
+                {"id": "s3", "name": "Rhythmic Metronome", "track_type": ap.AudioTrackType.RHYTHMIC_PACER, "description": "Cognitive grounding pulse"},
+                {"id": "s4", "name": "Production Alerts", "track_type": ap.AudioTrackType.ALERT_URGENT, "description": "Critical exception alerts"},
+            ]
+        else:
+            for idx, item in enumerate(args.streams):
+                if ":" in item:
+                    s_name, s_type = item.rsplit(":", 1)
+                else:
+                    s_name, s_type = item, "telemetry_log"
+                raw_streams.append({
+                    "id": f"stream_{idx+1}",
+                    "name": s_name.strip(),
+                    "track_type": s_type.strip(),
+                })
+
+        config = pacer.decouple_saliency(task_profile, raw_streams)
+
+        if args.json:
+            print(json.dumps(config.to_dict(), indent=2))
+        else:
+            print("\n" + pacer.generate_markdown_report(config))
+
+        if args.canvas:
+            pacer.export_canvas(config, output_path=args.canvas)
+            print(f"\n[DxSkills] Spatial Soundstage .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            pacer.export_svg_soundstage(config, output_path=args.svg)
+            print(f"[DxSkills] Soundstage Radar SVG exported to: {args.svg}")
+
+        if args.manifest:
+            manifest_data = pacer.generate_web_audio_manifest(config)
+            with open(args.manifest, "w", encoding="utf-8") as f:
+                json.dump(manifest_data, f, indent=2)
+            print(f"[DxSkills] Web Audio manifest exported to: {args.manifest}")
     else:
         parser.print_help()
 
