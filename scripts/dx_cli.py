@@ -513,7 +513,16 @@ def main():
     p_reflector.add_argument("--json", "-j", action="store_true", help="Output raw JSON assessment telemetry")
     p_reflector.add_argument("--demo", action="store_true", help="Run with demonstration assumptions suite")
     
+    # horizon
+    p_horizon = subparsers.add_parser("horizon", help="Autonomous cognitive multi-scale working memory horizon visualizer")
+    p_horizon.add_argument("input", nargs="?", default="", help="Optional JSON file with horizon items")
+    p_horizon.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_horizon.add_argument("--svg", "-s", default="", help="Output concentric horizon radar SVG filepath")
+    p_horizon.add_argument("--json", "-j", action="store_true", help="Output raw JSON horizon telemetry")
+    p_horizon.add_argument("--demo", action="store_true", help="Run with demonstration multi-scale horizon items")
+    
     args = parser.parse_args()
+
 
     
     if args.command == "dump":
@@ -1948,8 +1957,55 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Metacognitive Radar SVG exported to: {args.svg}")
+    elif args.command == "horizon":
+        import scripts.horizon_visualizer as hv
+        viz = hv.WorkingMemoryHorizonVisualizer()
+        items = []
+        if args.input:
+            raw_text = read_input(args.input)
+            data = json.loads(raw_text)
+            for d in data:
+                items.append(hv.HorizonItem(
+                    id=d.get("id", str(len(items) + 1)),
+                    label=d.get("label", "Task"),
+                    horizon=d.get("horizon", "immediate"),
+                    estimated_hours=float(d.get("estimated_hours", 1.0)),
+                    cognitive_weight=float(d.get("cognitive_weight", 5.0)),
+                    parent_id=d.get("parent_id"),
+                ))
+        else:
+            items = [
+                hv.HorizonItem("imm-1", "Patch critical token eviction bug", "immediate", 0.5, 4.0),
+                hv.HorizonItem("imm-2", "Review pre-commit zero em dash rule", "immediate", 0.25, 2.0),
+                hv.HorizonItem("imm-3", "Write unit tests for load shedder", "immediate", 1.0, 3.0),
+                hv.HorizonItem("tac-1", "Deploy multi-modal audio telemetry stream", "tactical", 14.0, 6.0, parent_id="str-1"),
+                hv.HorizonItem("tac-2", "Refactor CLI subparser dispatch tables", "tactical", 8.0, 5.0),
+                hv.HorizonItem("str-1", "Federated neuro-ergonomic spatial desktop OS", "strategic", 160.0, 9.0),
+            ]
+
+        telemetry = viz.evaluate_horizons(items)
+
+        if args.json:
+            out = {
+                "telemetry": telemetry.to_dict(),
+                "items": [it.to_dict() for it in items],
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            print("\n" + viz.export_summary_markdown(telemetry, items))
+
+        if args.canvas:
+            viz.export_canvas(items, telemetry, output_path=args.canvas)
+            print(f"\n[DxSkills] Concentric Horizon .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = viz.export_svg_radar(items, telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Concentric Horizon Radar SVG exported to: {args.svg}")
     else:
         parser.print_help()
+
 
 
 
