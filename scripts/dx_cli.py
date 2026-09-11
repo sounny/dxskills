@@ -1839,6 +1839,14 @@ def main():
     p_cy.add_argument("--svg", default="", help="Output Calabi-Yau Modularity SVG filepath")
     p_cy.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_cy.add_argument("--demo", action="store_true", help="Run demonstration Calabi-Yau moduli analysis, attractor flow, and S_4 modularity")
+    # k3-modularity / borcherds-product / transcendental-lattice / k3-loom
+    p_k3 = subparsers.add_parser("k3-modularity", aliases=["borcherds-product", "transcendental-lattice", "k3-loom"], help="Autonomous cognitive spatial K3 Surfaces Modularity and Borcherds Automorphic Products Loom")
+    p_k3.add_argument("--discriminant", "-d", type=int, default=-3, help="Discriminant D of transcendental lattice T(S) (default: -3)")
+    p_k3.add_argument("--picard", type=int, default=20, help="Picard number rho(S) (default: 20)")
+    p_k3.add_argument("--model", default="shioda", choices=["shioda", "fermat", "klein", "generic"], help="K3 surface model (default: shioda)")
+    p_k3.add_argument("--svg", default="", help="Output K3 Modularity SVG filepath")
+    p_k3.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_k3.add_argument("--demo", action="store_true", help="Run demonstration K3 lattice analysis, Shioda-Inose CM modularity, and Borcherds product")
     args = parser.parse_args()
 
 
@@ -10741,6 +10749,63 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.render_svg(result))
             print(f"[DxSkills] Calabi-Yau SVG written to: {out_path}")
+    elif args.command in ["k3-modularity", "borcherds-product", "transcendental-lattice", "k3-loom"]:
+        from scripts.k3_modularity_loom import (
+            K3ModularityLoom,
+        )
+        model_map = {
+            "shioda": "Shioda-Inose Singular K3 (D=-3)",
+            "fermat": "Fermat Quartic K3 (D=-4)",
+            "klein": "Klein Quartic Related K3 (D=-7)",
+            "generic": "Generic K3 (Picard 1)",
+        }
+        model_label = model_map.get(args.model, "Shioda-Inose Singular K3 (D=-3)")
+        loom = K3ModularityLoom(model_label)
+        result = loom.analyze()
+
+        if args.json:
+            import json
+            from dataclasses import asdict
+            b_dict = asdict(result.borcherds)
+            b_dict["product_evaluation_sample"] = [
+                result.borcherds.product_evaluation_sample.real,
+                result.borcherds.product_evaluation_sample.imag,
+            ]
+            res_dict = {
+                "surface_label": result.surface_label,
+                "lattice": asdict(result.lattice),
+                "borcherds": b_dict,
+                "modular_weight": result.modular_weight,
+                "modular_level": result.modular_level,
+                "hecke_eigenvalues": result.hecke_eigenvalues,
+                "point_counts_f_p": result.point_counts_f_p,
+                "shioda_inose_cm_field": result.shioda_inose_cm_field,
+                "modularity_proven": result.modularity_proven,
+                "notes": result.notes,
+            }
+            print(json.dumps(res_dict, indent=2))
+        else:
+            print("=================================================================")
+            print("  K3 Surfaces Modularity & Borcherds Automorphic Products Loom")
+            print("=================================================================")
+            print(f"K3 Surface:                   {result.surface_label}")
+            print(f"Picard Number rho(S):         {result.lattice.picard_number} (Singular: {result.lattice.is_singular})")
+            print(f"Transcendental Lattice T(S):  Rank {result.lattice.transcendental_rank} | Sig {result.lattice.transcendental_signature}")
+            print(f"Quadratic Form / Disc:        {result.lattice.quadratic_form} | D = {result.lattice.discriminant_d}")
+            print(f"Shioda-Inose CM Field:        {result.shioda_inose_cm_field}")
+            print(f"Borcherds Theta Lift:         Orthogonal group O(2, {result.borcherds.lattice_signature[1]})")
+            print(f"Reflective Roots in Chamber:  {result.borcherds.num_reflective_roots}")
+            print(f"Associated Modular Form:      Weight k = {result.modular_weight} | Level N = {result.modular_level}")
+            print(f"Modularity Verified (CM):     {result.modularity_proven}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "k3_modularity_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] K3 Modularity SVG written to: {out_path}")
     else:
         parser.print_help()
 
