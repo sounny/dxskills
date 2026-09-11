@@ -484,6 +484,14 @@ def main():
     p_decision.add_argument("--svg", "-s", default="", help="Output 2D decision quadrant SVG filepath")
     p_decision.add_argument("--json", "-j", action="store_true", help="Output raw JSON decision matrix telemetry")
     p_decision.add_argument("--demo", action="store_true", help="Run with demonstration strategic software initiatives")
+
+    # shed
+    p_shed = subparsers.add_parser("shed", help="Autonomous cognitive dynamic working memory stress-tester and load shedder")
+    p_shed.add_argument("input", nargs="?", default="", help="Target markdown outline or structured notes")
+    p_shed.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_shed.add_argument("--svg", "-s", default="", help="Output cognitive load stress gauge SVG filepath")
+    p_shed.add_argument("--target-cdi", type=float, default=0.55, help="Target Cognitive Degradation Index threshold (default: 0.55)")
+    p_shed.add_argument("--json", "-j", action="store_true", help="Output raw JSON load shedding telemetry")
     
     args = parser.parse_args()
     
@@ -1776,6 +1784,73 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Decision Matrix SVG exported to: {args.svg}")
+    elif args.command == "shed":
+        import scripts.load_shedder as ls
+        shedder = ls.WorkingMemoryLoadShedder()
+        if args.input:
+            content = read_input(args.input)
+            shedder.load_from_markdown(content)
+        else:
+            sample_outline = """# Distributed Storage Engine
+- Master coordinator node
+  - Heartbeat lease monitor
+  - Election timeout listener
+  - Cluster metadata cache
+    - Cache invalidation hook
+    - Cache hit telemetry
+    - Serialized TTL eviction
+- Write-Ahead Log Partition
+  - Segment file rotation
+  - Group commit fsync batcher
+  - Checkpoint barrier snapshot
+    - Snapshot compression worker
+    - S3 cold backup replica
+- Client Connection Multiplexer
+  - TLS handshake terminator
+  - Keep-alive ping responder
+  - Backpressure request buffer
+    - Micro-buffer watermark high
+    - Micro-buffer watermark low"""
+            shedder.load_from_markdown(sample_outline)
+
+        audit = shedder.execute_load_shedding(target_cdi=args.target_cdi)
+
+        if args.json:
+            out = {
+                "initial_load_points": audit.initial_telemetry.total_load_points,
+                "initial_cdi": audit.initial_telemetry.cognitive_degradation_index,
+                "initial_status": audit.initial_telemetry.status,
+                "post_shed_load_points": audit.post_shed_telemetry.total_load_points,
+                "post_shed_cdi": audit.post_shed_telemetry.cognitive_degradation_index,
+                "post_shed_status": audit.post_shed_telemetry.status,
+                "load_points_freed": audit.load_points_freed,
+                "reduction_percentage": audit.reduction_percentage,
+                "pruned_leaves_count": audit.pruned_leaves_count,
+                "retained_nodes_count": len(audit.retained_nodes),
+                "shed_nodes": [
+                    {
+                        "label": n.label,
+                        "depth": n.depth,
+                        "shed_tier": n.shed_tier
+                    }
+                    for n in audit.shed_nodes
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            print("\n" + shedder.export_summary_markdown(audit))
+
+        if args.canvas:
+            canvas_data = shedder.export_canvas(audit)
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                json.dump(canvas_data, f, indent=2)
+            print(f"\n[DxSkills] Decluttered Cognitive Canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = shedder.export_svg_gauge(audit)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Cognitive Stress Gauge SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
