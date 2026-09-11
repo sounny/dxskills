@@ -800,9 +800,14 @@
 - [x] **Task 184.3:** Interactive CLI suite (`dessins-enfants`, `belyi-map`, `monodromy-graph`, `galois-dessin-loom`) with full unit test coverage and zero em dash compliance.
 
 ### Phase 185: Autonomous Cognitive Spatial Non-Abelian Chabauty & Kim Motivic Fundamental Group Loom
-- [ ] **Task 185.1:** Non-abelian Chabauty engine modeling Minhyong Kim's Selmer varieties, unipotent motivic fundamental groups pi_1^mot(X), and p-adic iterated integrals.
-- [ ] **Task 185.2:** P-adic locus visualizer rendering Chabauty-Kim cutting equations, Frobenius crystalline invariants, and rational point bounding trajectories in dark titanium SVG.
-- [ ] **Task 185.3:** Interactive CLI suite (`nonabelian-chabauty`, `chabauty-kim`, `unipotent-selmer`, `p-adic-points-loom`) with full unit test coverage and zero em dash compliance.
+- [x] **Task 185.1:** Non-abelian Chabauty engine modeling Minhyong Kim's Selmer varieties, unipotent motivic fundamental groups pi_1^mot(X), and p-adic iterated integrals.
+- [x] **Task 185.2:** P-adic locus visualizer rendering Chabauty-Kim cutting equations, Frobenius crystalline invariants, and rational point bounding trajectories in dark titanium SVG.
+- [x] **Task 185.3:** Interactive CLI suite (`nonabelian-chabauty`, `chabauty-kim`, `unipotent-selmer`, `p-adic-points-loom`) with full unit test coverage and zero em dash compliance.
+
+### Phase 186: Autonomous Cognitive Spatial Hodge-Tate Spectral Sequences & Hyodo-Kato Cohomology Loom
+- [ ] **Task 186.1:** Hyodo-Kato cohomology engine modeling log-crystalline cohomology H_log-cris(X_k), log-Frobenius phi, and log-monodromy N on semistable varieties.
+- [ ] **Task 186.2:** Semistable reduction visualizer rendering the Hyodo-Kato isomorphism, weight filtrations, and Hodge-Tate spectral degeneration in dark titanium SVG.
+- [ ] **Task 186.3:** Interactive CLI suite (`hyodo-kato`, `log-crystalline`, `monodromy-filtration`, `semistable-loom`) with full unit test coverage and zero em dash compliance.
 
 ---
 
@@ -990,7 +995,8 @@
 | **Cycle 177** | 2026-09-12 00:32 | Autonomous Cognitive Spatial Categorical Langlands & Ind-Coherent Sheaves on Bun_G Loom | `scripts/categorical_langlands_loom.py`, `tests/test_categorical_langlands_loom.py`, `scripts/dx_cli.py`, `index.html` | `b831e01` |
 | **Cycle 178** | 2026-09-12 00:42 | Autonomous Cognitive Spatial Chromatic Homotopy Theory & Morava K-Theory Loom | `scripts/chromatic_homotopy_loom.py`, `tests/test_chromatic_homotopy_loom.py`, `scripts/dx_cli.py`, `index.html` | `7fb68f7` |
 | **Cycle 179** | 2026-09-12 00:52 | Autonomous Cognitive Spatial Geometric Class Field Theory & Langlands Duality for Function Fields Loom | `scripts/geometric_cft_loom.py`, `tests/test_geometric_cft_loom.py`, `scripts/dx_cli.py`, `index.html` | `1034a63` |
-| **Cycle 180** | 2026-09-12 01:02 | Autonomous Cognitive Spatial Grothendieck Dessins d'Enfants & Belyi Map Galois Ramification Loom | `scripts/dessins_enfants_loom.py`, `tests/test_dessins_enfants_loom.py`, `scripts/dx_cli.py`, `index.html` | `42ac823` |
+| **Cycle 180** | 2026-09-12 01:02 | Autonomous Cognitive Spatial Grothendieck Dessins d'Enfants & Belyi Map Galois Ramification Loom | `scripts/dessins_enfants_loom.py`, `tests/test_dessins_enfants_loom.py`, `scripts/dx_cli.py`, `index.html` | `43ab8af` |
+| **Cycle 181** | 2026-09-12 01:12 | Autonomous Cognitive Spatial Non-Abelian Chabauty & Kim Motivic Fundamental Group Loom | `scripts/non_abelian_chabauty_loom.py`, `tests/test_non_abelian_chabauty_loom.py`, `scripts/dx_cli.py`, `index.html` | `5a3c519` |
 
 
 

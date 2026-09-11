@@ -1656,6 +1656,15 @@ def main():
     p_des.add_argument("--svg", default="", help="Output Dessins d'Enfants SVG filepath")
     p_des.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_des.add_argument("--demo", action="store_true", help="Run with demonstration bipartite ribbon graphs, monodromy triad, and Galois orbit")
+    # nonabelian-chabauty / chabauty-kim / unipotent-selmer / p-adic-points-loom
+    p_nab = subparsers.add_parser("nonabelian-chabauty", aliases=["chabauty-kim", "unipotent-selmer", "p-adic-points-loom"], help="Autonomous cognitive spatial Non-Abelian Chabauty and Kim Motivic Fundamental Group Loom")
+    p_nab.add_argument("--genus", "-g", type=int, default=2, choices=[1, 2, 3, 4], help="Curve genus g (default: 2)")
+    p_nab.add_argument("--rank", "-r", type=int, default=2, choices=[0, 1, 2, 3, 4], help="Mordell-Weil rank r (default: 2)")
+    p_nab.add_argument("--prime-p", "-p", type=int, default=7, choices=[3, 5, 7, 11, 13], help="Base prime p (default: 7)")
+    p_nab.add_argument("--depth", "-n", type=int, default=2, choices=[1, 2, 3, 4], help="Unipotent fundamental depth n (default: 2)")
+    p_nab.add_argument("--svg", default="", help="Output Non-Abelian Chabauty SVG filepath")
+    p_nab.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_nab.add_argument("--demo", action="store_true", help="Run with demonstration Selmer varieties, Coleman iterated integrals, and point bounds")
     args = parser.parse_args()
 
 
@@ -9446,6 +9455,47 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f: 
                 f.write(loom.generate_dessin_svg())
             print(f"[DxSkills] Dessins d'Enfants SVG written to: {args.svg}")
+    elif args.command in ["nonabelian-chabauty", "chabauty-kim", "unipotent-selmer", "p-adic-points-loom"]:
+        from scripts.non_abelian_chabauty_loom import (
+            NonAbelianChabautyLoom,
+            ChabautyDepthArchetype,
+        )
+
+        loom = NonAbelianChabautyLoom(
+            curve_genus=args.genus,
+            mordell_weil_rank=args.rank,
+            prime_p=args.prime_p,
+            unipotent_depth=args.depth,
+        )
+        sel = loom.selmer_records[0]
+        bnd = loom.rational_bounds[0]
+        int_sample = loom.iterated_integrals[:2]
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Non-Abelian Chabauty & Kim Motivic Fundamental Group Loom")
+            print("=================================================================")
+            print(f"Hyperelliptic Curve:           Genus g = {sel.curve_genus} | Mordell-Weil Rank r = {sel.mordell_weil_rank}")
+            print(f"Prime p & Unipotent Depth:     Prime p = {bnd.prime_p} | Depth n = {sel.unipotent_depth_n} (Nilpotent Step {sel.lie_algebra_nilpotency_step})")
+            print(f"Global Selmer Dimension:       dim H_f^1(G_Q, U_{sel.unipotent_depth_n}) = {sel.global_selmer_dim}")
+            print(f"Local Selmer Dimension:        dim H_f^1(G_{{Q_p}}, U_{sel.unipotent_depth_n}) = {sel.local_selmer_dim}")
+            print(f"Dimension Gap (Loc - Glob):    Delta = {sel.dimension_gap} (Cutting Equations = {sel.cutting_equations_exist})")
+            print(f"Iterated Coleman Integrals:    Count = {len(loom.iterated_integrals)}")
+            for itm in int_sample:
+                print(f"  [{itm.integral_id}] Depth {itm.depth}: Value = {itm.local_evaluation_value} (Convergent = {itm.is_coleman_convergent})")
+            print(f"Annihilating Locus Size:       |X(Q_{bnd.prime_p})_{sel.unipotent_depth_n}| = {bnd.finite_annihilating_locus_size} points")
+            print(f"Verified Rational Points:      |X(Q)| = {bnd.verified_rational_points_count} points (Status: {bnd.chabauty_kim_status})")
+            print(f"Sample Points on Curve:        {bnd.rational_points_sample}")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_chabauty_svg())
+            print(f"[DxSkills] Non-Abelian Chabauty SVG written to: {args.svg}")
     else:
         parser.print_help()
 
