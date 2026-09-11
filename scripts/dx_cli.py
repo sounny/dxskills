@@ -1092,6 +1092,14 @@ def main():
     p_spred.add_argument("--json", "-j", action="store_true", help="Output raw JSON trajectory telemetry")
     p_spred.add_argument("--demo", action="store_true", help="Run with demonstration ocular fixation sequence")
 
+    # knowledge-mesh / hypergraph-weaver / mesh-consolidator / semantic-weaver
+    p_kmesh = subparsers.add_parser("knowledge-mesh", aliases=["hypergraph-weaver", "mesh-consolidator", "semantic-weaver"], help="Autonomous cognitive spatial knowledge mesh consolidator and semantic hyper-graph weaver")
+    p_kmesh.add_argument("input", nargs="?", default="", help="Input multi-domain knowledge nodes JSON filepath")
+    p_kmesh.add_argument("--min-cluster", type=int, default=2, help="Minimum nodes to form hyper-edge (default: 2)")
+    p_kmesh.add_argument("--report", default="", help="Output knowledge mesh audit markdown filepath")
+    p_kmesh.add_argument("--svg", default="", help="Output knowledge hyper-graph SVG filepath")
+    p_kmesh.add_argument("--json", "-j", action="store_true", help="Output raw JSON mesh telemetry")
+    p_kmesh.add_argument("--demo", action="store_true", help="Run with demonstration multi-domain knowledge mesh")
     args = parser.parse_args()
 
 
@@ -5607,6 +5615,77 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Saccadic trajectory SVG written to: {args.svg}")
+    elif args.command in ["knowledge-mesh", "hypergraph-weaver", "mesh-consolidator", "semantic-weaver"]:
+        import scripts.knowledge_mesh_weaver as kmw_mod
+        weaver = kmw_mod.KnowledgeMeshWeaver(min_cluster_size=args.min_cluster)
+
+        nodes = []
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                items = data.get("nodes", data) if isinstance(data, dict) else data
+                for item in items:
+                    nodes.append(
+                        kmw_mod.MeshNode(
+                            node_id=str(item.get("id", item.get("node_id", "node"))),
+                            title=str(item.get("title", "Node")),
+                            domain=str(item.get("domain", "General")),
+                            semantic_primitives=item.get("primitives", item.get("semantic_primitives", [])),
+                            pos_x=float(item.get("x", item.get("pos_x", 0.0))),
+                            pos_y=float(item.get("y", item.get("pos_y", 0.0))),
+                            weight=float(item.get("weight", 1.0)),
+                        )
+                    )
+        else:
+            nodes = kmw_mod.sample_knowledge_mesh()
+
+        telemetry = weaver.weave_mesh(nodes)
+
+        if args.json:
+            out_dict = {
+                "total_nodes": telemetry.total_nodes,
+                "domain_count": telemetry.domain_count,
+                "hyper_edges_count": telemetry.hyper_edges_count,
+                "cross_domain_bridges_count": telemetry.cross_domain_bridges_count,
+                "mesh_density": telemetry.mesh_density,
+                "interconnected_reasoning_index": telemetry.interconnected_reasoning_index,
+                "hyper_edges": [
+                    {
+                        "edge_id": he.edge_id,
+                        "title": he.title,
+                        "shared_primitive": he.shared_primitive,
+                        "member_node_ids": he.member_node_ids,
+                        "domains_spanned": he.domains_spanned,
+                        "coherence_score": he.coherence_score,
+                    }
+                    for he in telemetry.hyper_edges
+                ],
+                "domain_bridges": [
+                    {
+                        "domain_a": db.domain_a,
+                        "domain_b": db.domain_b,
+                        "bridging_primitives": db.bridging_primitives,
+                        "resonance_strength": db.resonance_strength,
+                    }
+                    for db in telemetry.domain_bridges
+                ],
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = weaver.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = weaver.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Knowledge mesh report written to: {args.report}")
+
+        if args.svg:
+            svg_code = weaver.generate_svg(nodes, telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Knowledge hyper-graph SVG written to: {args.svg}")
     else:
         parser.print_help()
 
