@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth scroll-pt-28 md:scroll-pt-32">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DxSkills: Cognitive Scaffolding for Non-Linear & Spatial Thinkers</title>
-  <meta name="description" content="Open-standard AI skills and system prompts that make agentic AI naturally dyslexia-friendly. Built for rapid ideation, spatial reasoning, and zero typing friction.">
+  <title>DxSkills: Turning Artificial Intelligence into Planetary Intelligence</title>
+  <meta name="description" content="Turning Artificial Intelligence into Planetary Intelligence. Open-standard AI skills and cognitive scaffolding for non-linear, spatial, and dyslexic thinkers.">
   <link rel="canonical" href="https://dxskills.sounny.com">
 
   <!-- PWA & Mobile Web App Manifest -->
@@ -20,14 +20,14 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dxskills.sounny.com">
   <meta property="og:site_name" content="DxSkills">
-  <meta property="og:title" content="DxSkills: Cognitive Scaffolding for Non-Linear & Spatial Thinkers">
-  <meta property="og:description" content="Open-standard AI skills and system prompts that make agentic AI naturally dyslexia-friendly. Built for rapid ideation, spatial reasoning, and zero typing friction.">
+  <meta property="og:title" content="DxSkills: Turning Artificial Intelligence into Planetary Intelligence">
+  <meta property="og:description" content="Turning Artificial Intelligence into Planetary Intelligence. Open-standard AI skills and cognitive scaffolding for non-linear, spatial, and dyslexic thinkers.">
   
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://dxskills.sounny.com">
-  <meta name="twitter:title" content="DxSkills: Cognitive Scaffolding for Non-Linear & Spatial Thinkers">
-  <meta name="twitter:description" content="Open-standard AI skills and system prompts that make agentic AI naturally dyslexia-friendly.">
+  <meta name="twitter:title" content="DxSkills: Turning Artificial Intelligence into Planetary Intelligence">
+  <meta name="twitter:description" content="Turning Artificial Intelligence into Planetary Intelligence. Open-standard AI skills and cognitive scaffolding for non-linear, spatial, and dyslexic thinkers.">
   
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -121,111 +121,114 @@
 </head>
 <body class="bg-mono-50 text-mono-950 dark:bg-mono-950 dark:text-mono-100 antialiased selection:bg-mono-900 selection:text-white dark:selection:bg-mono-100 dark:selection:text-mono-950 min-h-screen flex flex-col transition-colors duration-200">
 
-  <!-- TOP ANNOUNCEMENT BANNER -->
-  <div class="border-b border-mono-200 dark:border-mono-800/80 bg-mono-100/80 dark:bg-mono-900/60 backdrop-blur-md px-4 py-2 text-center text-xs font-mono text-mono-600 dark:text-mono-400">
-    <div class="max-w-7xl mx-auto flex items-center justify-center gap-2">
-      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 border border-mono-300 dark:border-mono-700 text-[11px] font-semibold">v0.1 Live</span>
-      <span>DxSkills open-standard cognitive scaffolding suite is live.</span>
-      <a href="https://github.com/sounny/dxskills" target="_blank" class="text-mono-950 dark:text-mono-100 hover:underline font-semibold ml-1 flex items-center gap-1">Star on GitHub <i data-lucide="arrow-up-right" class="w-3 h-3"></i></a>
-    </div>
-  </div>
-
-  <!-- NAVIGATION -->
-  <nav class="sticky top-0 z-50 border-b border-mono-200/80 dark:border-mono-800/80 bg-white/85 dark:bg-mono-950/85 backdrop-blur-xl transition-colors duration-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-      
-      <!-- Brand Logo (Adobe-Style Black Square with Dx) -->
-      <a href="#" class="flex items-center gap-2.5 group shrink-0" title="DxSkills Home">
-        <div class="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-extrabold text-sm tracking-tight border border-zinc-800 shadow-sm group-hover:scale-105 transition-transform shrink-0">
-          Dx
-        </div>
-        <span class="font-bold tracking-tight text-mono-950 dark:text-mono-100 text-base leading-none">DxSkills</span>
-      </a>
-
-      <!-- Primary Navigation Links -->
-      <div class="hidden lg:flex items-center gap-7 text-xs font-mono text-mono-600 dark:text-mono-400">
-        <a href="#philosophy" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Philosophy</a>
-        <a href="#skills" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Skills</a>
-        <a href="#simulator" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Live Demo</a>
-        <a href="#d-mode" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Presets</a>
-        <a href="#install" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Install</a>
-        <a href="#benchmarks" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Benchmarks</a>
+  <!-- DOCKED HEADER: Announcement Banner + Navigation Bar -->
+  <header id="main-header" class="fixed top-0 inset-x-0 z-50 transition-colors duration-200">
+    <!-- TOP ANNOUNCEMENT BANNER -->
+    <div class="border-b border-mono-200 dark:border-mono-800/80 bg-mono-100/90 dark:bg-mono-900/90 backdrop-blur-md px-4 py-1.5 text-center text-xs font-mono text-mono-600 dark:text-mono-400">
+      <div class="max-w-7xl mx-auto flex items-center justify-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 border border-mono-300 dark:border-mono-700 text-[11px] font-semibold">v0.1 Live</span>
+        <span>Turning Artificial Intelligence into Planetary Intelligence.</span>
+        <a href="https://github.com/sounny/dxskills" target="_blank" class="text-mono-950 dark:text-mono-100 hover:underline font-semibold ml-1 flex items-center gap-1">Star on GitHub <i data-lucide="arrow-up-right" class="w-3 h-3"></i></a>
       </div>
+    </div>
 
-      <!-- Actions & Controls (Cleared Up & Minimalist) -->
-      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+    <!-- NAVIGATION -->
+    <nav class="border-b border-mono-200/80 dark:border-mono-800/80 bg-white/90 dark:bg-mono-950/90 backdrop-blur-xl transition-colors duration-200 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
-        <!-- Search Button -->
-        <button onclick="openSearchModal()" class="h-8 w-8 flex items-center justify-center rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition" title="Quick Search (Ctrl+K or /)">
-          <i data-lucide="search" class="w-4 h-4"></i>
-        </button>
-
-        <!-- Theme Toggle Button -->
-        <button id="theme-toggle" onclick="toggleTheme()" class="h-8 w-8 flex items-center justify-center rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition" title="Toggle Theme">
-          <span id="theme-icon-light" class="inline dark:hidden flex items-center justify-center">
-            <i data-lucide="moon" class="w-4 h-4"></i>
-          </span>
-          <span id="theme-icon-dark" class="hidden dark:flex items-center justify-center">
-            <i data-lucide="sun" class="w-4 h-4"></i>
-          </span>
-        </button>
-
-        <!-- Primary CTA: Get D-Mode -->
-        <a href="#d-mode" class="h-8 px-3.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 hover:bg-mono-800 dark:hover:bg-white text-xs font-mono font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
-          <span>Get D-Mode</span>
+        <!-- Brand Logo (Adobe-Style Black Square with Dx) -->
+        <a href="#" class="flex items-center gap-2.5 group shrink-0" title="DxSkills Home">
+          <div class="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-extrabold text-sm tracking-tight border border-zinc-800 shadow-sm group-hover:scale-105 transition-transform shrink-0">
+            Dx
+          </div>
+          <span class="font-bold tracking-tight text-mono-950 dark:text-mono-100 text-base leading-none">DxSkills</span>
         </a>
 
-        <!-- Mobile Menu Toggle Button (Visible below LG) -->
-        <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition shrink-0" title="Toggle Navigation Menu">
-          <i data-lucide="menu" id="mobile-menu-icon" class="w-4 h-4"></i>
-        </button>
+        <!-- Primary Navigation Links -->
+        <div class="hidden lg:flex items-center gap-7 text-xs font-mono text-mono-600 dark:text-mono-400">
+          <a href="#philosophy" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Philosophy</a>
+          <a href="#skills" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Skills</a>
+          <a href="#simulator" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Live Demo</a>
+          <a href="#d-mode" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Presets</a>
+          <a href="#install" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Install</a>
+          <a href="#benchmarks" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Benchmarks</a>
+        </div>
+
+        <!-- Actions & Controls (Cleared Up & Minimalist) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          
+          <!-- Search Button -->
+          <button onclick="openSearchModal()" class="h-8 w-8 flex items-center justify-center rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition" title="Quick Search (Ctrl+K or /)">
+            <i data-lucide="search" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Theme Toggle Button -->
+          <button id="theme-toggle" onclick="toggleTheme()" class="h-8 w-8 flex items-center justify-center rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition" title="Toggle Theme">
+            <span id="theme-icon-light" class="inline dark:hidden flex items-center justify-center">
+              <i data-lucide="moon" class="w-4 h-4"></i>
+            </span>
+            <span id="theme-icon-dark" class="hidden dark:flex items-center justify-center">
+              <i data-lucide="sun" class="w-4 h-4"></i>
+            </span>
+          </button>
+
+          <!-- Primary CTA: Get D-Mode -->
+          <a href="#d-mode" class="h-8 px-3.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 hover:bg-mono-800 dark:hover:bg-white text-xs font-mono font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
+            <span>Get D-Mode</span>
+          </a>
+
+          <!-- Mobile Menu Toggle Button (Visible below LG) -->
+          <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition shrink-0" title="Toggle Navigation Menu">
+            <i data-lucide="menu" id="mobile-menu-icon" class="w-4 h-4"></i>
+          </button>
+
+        </div>
 
       </div>
 
-    </div>
+      <!-- MOBILE NAVIGATION DRAWER -->
+      <div id="mobile-menu" class="hidden lg:hidden border-t border-mono-200/80 dark:border-mono-800/80 bg-white/95 dark:bg-mono-950/95 backdrop-blur-2xl transition-all duration-200 px-4 py-4 space-y-3">
+        <!-- Quick Mobile Actions -->
+        <div class="pb-2 border-b border-mono-200/80 dark:border-mono-800/80 flex items-center gap-2">
+          <a href="#d-mode" onclick="toggleMobileMenu()" class="flex-1 py-2.5 px-3 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold text-xs font-mono flex items-center justify-center gap-2 shadow-sm">
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i> Get Universal D-Mode
+          </a>
+          <button onclick="toggleLanguage()" class="py-2.5 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-xs font-mono font-bold flex items-center gap-1 text-mono-700 dark:text-mono-300">
+            <i data-lucide="globe" class="w-3.5 h-3.5"></i> <span id="mobile-lang-label">FR</span>
+          </button>
+        </div>
 
-    <!-- MOBILE NAVIGATION DRAWER -->
-    <div id="mobile-menu" class="hidden lg:hidden border-t border-mono-200/80 dark:border-mono-800/80 bg-white/95 dark:bg-mono-950/95 backdrop-blur-2xl transition-all duration-200 px-4 py-4 space-y-3">
-      <!-- Quick Mobile Actions -->
-      <div class="pb-2 border-b border-mono-200/80 dark:border-mono-800/80 flex items-center gap-2">
-        <a href="#d-mode" onclick="toggleMobileMenu()" class="flex-1 py-2.5 px-3 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold text-xs font-mono flex items-center justify-center gap-2 shadow-sm">
-          <i data-lucide="zap" class="w-3.5 h-3.5"></i> Get Universal D-Mode
-        </a>
-        <button onclick="toggleLanguage()" class="py-2.5 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-xs font-mono font-bold flex items-center gap-1 text-mono-700 dark:text-mono-300">
-          <i data-lucide="globe" class="w-3.5 h-3.5"></i> <span id="mobile-lang-label">FR</span>
-        </button>
+        <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+          <a href="#philosophy" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+            <i data-lucide="compass" class="w-3.5 h-3.5 text-mono-500"></i> Philosophy
+          </a>
+          <a href="#skills" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+            <i data-lucide="layers" class="w-3.5 h-3.5 text-mono-500"></i> Skills Suite
+          </a>
+          <a href="#simulator" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+            <i data-lucide="play" class="w-3.5 h-3.5 text-mono-500"></i> Live Demo
+          </a>
+          <a href="#d-mode" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-mono-500"></i> Presets
+          </a>
+          <a href="#install" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+            <i data-lucide="terminal" class="w-3.5 h-3.5 text-mono-500"></i> Install & Sync
+          </a>
+          <a href="#benchmarks" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-mono-500"></i> Benchmarks
+          </a>
+        </div>
+        <div class="pt-2 border-t border-mono-200/80 dark:border-mono-800/80 flex items-center justify-between gap-2 text-xs font-mono">
+          <button onclick="toggleMobileMenu(); openBundleModal();" class="flex-1 py-2 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center justify-center gap-1.5 font-semibold">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i> Bundle (.zip)
+          </button>
+          <a href="https://github.com/sounny/dxskills" target="_blank" class="flex-1 py-2 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center justify-center gap-1.5 font-semibold">
+            <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub <i data-lucide="external-link" class="w-3 h-3 opacity-60"></i>
+          </a>
+        </div>
       </div>
-
-      <div class="grid grid-cols-2 gap-2 text-xs font-mono">
-        <a href="#philosophy" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
-          <i data-lucide="compass" class="w-3.5 h-3.5 text-mono-500"></i> Philosophy
-        </a>
-        <a href="#skills" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
-          <i data-lucide="layers" class="w-3.5 h-3.5 text-mono-500"></i> Skills Suite
-        </a>
-        <a href="#simulator" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
-          <i data-lucide="play" class="w-3.5 h-3.5 text-mono-500"></i> Live Demo
-        </a>
-        <a href="#d-mode" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
-          <i data-lucide="zap" class="w-3.5 h-3.5 text-mono-500"></i> Presets
-        </a>
-        <a href="#install" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
-          <i data-lucide="terminal" class="w-3.5 h-3.5 text-mono-500"></i> Install & Sync
-        </a>
-        <a href="#benchmarks" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
-          <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-mono-500"></i> Benchmarks
-        </a>
-      </div>
-      <div class="pt-2 border-t border-mono-200/80 dark:border-mono-800/80 flex items-center justify-between gap-2 text-xs font-mono">
-        <button onclick="toggleMobileMenu(); openBundleModal();" class="flex-1 py-2 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center justify-center gap-1.5 font-semibold">
-          <i data-lucide="download" class="w-3.5 h-3.5"></i> Bundle (.zip)
-        </button>
-        <a href="https://github.com/sounny/dxskills" target="_blank" class="flex-1 py-2 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center justify-center gap-1.5 font-semibold">
-          <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub <i data-lucide="external-link" class="w-3 h-3 opacity-60"></i>
-        </a>
-      </div>
-    </div>
-  </nav>
+    </nav>
+  </header>
 
   <!-- FLOATING COGNITIVE & ACCESSIBILITY DOCK -->
   <aside aria-label="Cognitive Accessibility Controls" class="fixed bottom-5 right-5 z-40 hidden sm:flex items-center p-1 rounded-full bg-white/90 dark:bg-mono-900/90 backdrop-blur-xl border border-mono-200/80 dark:border-mono-800/80 shadow-lg shadow-mono-950/5 dark:shadow-black/40 gap-1 text-xs font-mono">
@@ -252,13 +255,13 @@
   </aside>
 
   <!-- HERO SECTION -->
-  <section class="relative pt-20 pb-16 md:pt-28 md:pb-24 border-b border-mono-200 dark:border-mono-800/80 bg-grid overflow-hidden">
+  <section class="relative pt-32 pb-16 sm:pt-36 md:pt-40 md:pb-24 border-b border-mono-200 dark:border-mono-800/80 bg-grid overflow-hidden">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
       
       <!-- Pill Badge -->
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-mono-300 dark:border-mono-700 bg-white/90 dark:bg-mono-900/90 text-mono-700 dark:text-mono-300 text-xs font-mono mb-8 shadow-sm">
         <span class="w-1.5 h-1.5 rounded-full bg-mono-900 dark:bg-mono-100 animate-pulse"></span>
-        <span>Cognitive Leverage Over Deficit Patching</span>
+        <span>Turning Artificial Intelligence into Planetary Intelligence</span>
       </div>
 
       <!-- Main Headline -->
@@ -269,7 +272,7 @@
 
       <!-- Subtitle -->
       <p class="mt-6 text-base sm:text-lg md:text-xl text-mono-600 dark:text-mono-400 max-w-2xl mx-auto leading-relaxed">
-        An open-standard library of AI skills and system prompts that make ChatGPT, Claude, and agentic assistants naturally dyslexia-friendly. Designed for spatial thinkers, rapid ideators, and systems builders.
+        An open-standard library of AI skills and cognitive scaffolding that turns artificial intelligence into planetary intelligence. Designed for spatial thinkers, rapid ideators, and systems builders.
       </p>
 
       <!-- CTA Buttons -->

@@ -57,8 +57,7 @@ class TestDxSkillsIntegrity(unittest.TestCase):
         em_dash = "\u2014"
         violations = []
         for root, dirs, files in os.walk(ROOT_DIR):
-            if ".git" in root or "dist" in root or "__pycache__" in root:
-                continue
+            dirs[:] = [d for d in dirs if d not in {".git", "dist", "__pycache__", "node_modules", ".vscode", "out"}]
             for file in files:
                 if file.endswith((".md", ".html", ".py", ".mmd", ".cff", ".json")):
                     filepath = os.path.join(root, file)
