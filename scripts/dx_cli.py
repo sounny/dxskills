@@ -1853,6 +1853,14 @@ def main():
     p_bsd.add_argument("--svg", default="", help="Output BSD Conjecture SVG filepath")
     p_bsd.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_bsd.add_argument("--demo", action="store_true", help="Run demonstration BSD balance, Heegner point canonical height, and Kolyvagin Sha bound")
+    # beilinson-flach / rankin-selberg-euler / asymmetric-euler / flach-loom
+    p_bf = subparsers.add_parser("beilinson-flach", aliases=["rankin-selberg-euler", "asymmetric-euler", "flach-loom"], help="Autonomous cognitive spatial Beilinson-Flach Elements and Asymmetric Euler Systems Loom")
+    p_bf.add_argument("--form-f", default="f11a", choices=["f11a", "f19a", "f37a"], help="First modular form spec label (default: f11a)")
+    p_bf.add_argument("--form-g", default="g19a", choices=["g11a", "g19a", "g37a"], help="Second modular form spec label (default: g19a)")
+    p_bf.add_argument("--prime-p", type=int, default=5, help="Prime p for explicit reciprocity evaluation (default: 5)")
+    p_bf.add_argument("--svg", default="", help="Output Beilinson-Flach Loom SVG filepath")
+    p_bf.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_bf.add_argument("--demo", action="store_true", help="Run demonstration Rankin-Selberg product, degree 4 Euler factors, BF classes, and Selmer bounding")
     args = parser.parse_args()
 
 
@@ -10854,6 +10862,49 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.render_svg(result))
             print(f"[DxSkills] BSD Conjecture SVG written to: {out_path}")
+    elif args.command in ["beilinson-flach", "rankin-selberg-euler", "asymmetric-euler", "flach-loom"]:
+        from scripts.beilinson_flach_loom import (
+            BeilinsonFlachLoom,
+            ModularFormSpec,
+        )
+        f_level = 11 if "11" in args.form_f else (19 if "19" in args.form_f else 37)
+        g_level = 19 if "19" in args.form_g else (11 if "11" in args.form_g else 37)
+        f_spec = ModularFormSpec(label=args.form_f, weight=2, level=f_level)
+        g_spec = ModularFormSpec(label=args.form_g, weight=2, level=g_level)
+        loom = BeilinsonFlachLoom(f_spec, g_spec)
+        conv = loom.analyze_rankin_selberg()
+        tower = loom.construct_beilinson_flach_tower([1, 2, 3, 6, 12])
+        rec = loom.evaluate_explicit_reciprocity(args.prime_p)
+
+        if args.json:
+            import json
+            from dataclasses import asdict
+            res_dict = {
+                "rankin_selberg": asdict(conv),
+                "tower_levels": [asdict(t) for t in tower],
+                "reciprocity": asdict(rec),
+            }
+            print(json.dumps(res_dict, indent=2))
+        else:
+            print("=================================================================")
+            print("  Beilinson-Flach Elements & Asymmetric Euler Systems Loom")
+            print("=================================================================")
+            print(f"Rankin-Selberg Convolution:   {conv.form_f.label} (x) {conv.form_g.label}")
+            print(f"Conductor & Central s:        N = {conv.conductor} | s = {conv.central_critical_s}")
+            print(f"Central L-value:              L(f (x) g, 1) = {conv.central_l_value:.4f}")
+            print(f"Root Number & Analytic Rank:  w = {conv.sign_root_number} | r_an = {conv.analytic_rank}")
+            print(f"Beilinson-Flach Levels:       {len(tower)} tower classes verified")
+            print(f"Explicit Reciprocity at p={rec.prime_p}:  Regulator = {rec.dual_exponential_regulator:.4f} (Match: {rec.reciprocity_verified})")
+            print(f"Bloch-Kato Selmer Bound:      dim H^1_f = {rec.selmer_dimension_bound} | #Sha(f (x) g) = {rec.sha_rankin_selberg_order} (Finite)")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "beilinson_flach_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg())
+            print(f"[DxSkills] Beilinson-Flach SVG written to: {out_path}")
     else:
         parser.print_help()
 
