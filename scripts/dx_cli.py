@@ -1525,6 +1525,15 @@ def main():
     p_perf.add_argument("--svg", default="", help="Output perfectoid spaces and Fargues-Fontaine curve SVG filepath")
     p_perf.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_perf.add_argument("--demo", action="store_true", help="Run with demonstration perfectoid field, adic space, and slope polygon")
+    # shimura-variety / pel-moduli / reflex-field / hecke-orbit
+    p_shimura = subparsers.add_parser("shimura-variety", aliases=["pel-moduli", "reflex-field", "hecke-orbit"], help="Autonomous cognitive spatial Arithmetic Geometry and Langlands-Shimura Variety Loom")
+    p_shimura.add_argument("--type", default="Modular Curve Y(N) (GL_2, Upper Half Plane H)", choices=["Modular Curve Y(N) (GL_2, Upper Half Plane H)", "Siegel Modular Variety A_g (GSp_2g, Siegel Upper Half Space H_g)", "Hilbert-Blumenthal Variety (Res_{F/Q} GL_2, Real Quadratic H^2)", "Picard Unitary Surface (GU(2, 1), Complex 2-Ball B^2)"], help="Shimura variety family")
+    p_shimura.add_argument("--genus", "-g", type=int, default=1, help="Abelian variety dimension g (default: 1)")
+    p_shimura.add_argument("--level", "-n", type=int, default=1, help="Congruence level N for Gamma(N) (default: 1)")
+    p_shimura.add_argument("--prime", "-p", type=int, default=2, help="Prime p for Hecke operator T_p (default: 2)")
+    p_shimura.add_argument("--svg", default="", help="Output Shimura datum and Baily-Borel cusp SVG filepath")
+    p_shimura.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_shimura.add_argument("--demo", action="store_true", help="Run with demonstration Shimura datum, PEL moduli, and Hecke tree")
     args = parser.parse_args()
 
 
@@ -8617,6 +8626,45 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_perfectoid_svg())
             print(f"[DxSkills] Perfectoid Spaces SVG written to: {args.svg}")
+    elif args.command in ["shimura-variety", "pel-moduli", "reflex-field", "hecke-orbit"]:
+        from scripts.shimura_variety_loom import (
+            ShimuraVarietyLoom,
+            ShimuraType,
+            PELDatumType,
+            BoundaryStratumType,
+        )
+        loom = ShimuraVarietyLoom(
+            shimura_type=args.type,
+            dimension_g=args.genus,
+            level_n=args.level,
+        )
+        pel = loom.instantiate_pel_moduli("PEL-DEMO-01")
+        hecke = loom.evaluate_hecke_orbit("HECKE-DEMO", prime_p=args.prime)
+        coh = loom.decompose_etale_cohomology("COH-DEMO-01", degree=1)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            sd = loom.shimura_datum
+            print("=================================================================")
+            print("  Arithmetic Geometry & Langlands-Shimura Variety Loom")
+            print("=================================================================")
+            print(f"Shimura Variety Family:        {loom.shimura_type}")
+            print(f"Deligne Group G:               {sd.group_name if sd else 'N/A'}")
+            print(f"Hermitian Symmetric Space X:   {sd.symmetric_domain if sd else 'N/A'}")
+            print(f"Canonical Reflex Field:        {sd.reflex_field if sd else 'N/A'}")
+            print(f"Complex Dimension:             {sd.complex_dimension if sd else 1}")
+            print(f"PEL Moduli ID:                 {pel.moduli_id} (Level N={pel.level_n})")
+            print(f"Hecke Operator T_{args.prime}:            Degree={hecke.double_coset_degree} | Orbit Points={hecke.orbit_points_count}")
+            print(f"Ramanujan Eigenvalue Estimate: {hecke.eigenvalue_estimate:.4f}")
+            print(f"Etale Cohomology H^1 Galois:   Dimension={coh.galois_rep_dim} (Frobenius={coh.frobenius_eigenvalue:.4f})")
+            print(f"Ramanujan Bound Status:        {'VERIFIED' if coh.ramanujan_bound_verified else 'FAILED'}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_shimura_svg())
+            print(f"[DxSkills] Shimura Variety SVG written to: {args.svg}")
     else:
         parser.print_help()
 
