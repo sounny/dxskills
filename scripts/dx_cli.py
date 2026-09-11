@@ -543,7 +543,16 @@ def main():
     p_damp.add_argument("--svg", "-s", default="", help="Output attention residue gauge SVG filepath")
     p_damp.add_argument("--json", "-j", action="store_true", help="Output raw JSON interleaving telemetry")
     
+    # examine / grill / cross-examine
+    p_examine = subparsers.add_parser("examine", aliases=["grill", "cross-examine"], help="Autonomous cognitive multi-perspective architectural Socratic cross-examiner")
+    p_examine.add_argument("title", nargs="?", default="Core System Architecture", help="System or proposal title")
+    p_examine.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_examine.add_argument("--svg", "-s", default="", help="Output 5-axis rigor radar SVG filepath")
+    p_examine.add_argument("--json", "-j", action="store_true", help="Output raw JSON examination scorecard")
+    p_examine.add_argument("--demo", action="store_true", help="Run with demonstration architecture components")
+    
     args = parser.parse_args()
+
 
 
 
@@ -2102,8 +2111,34 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Attention Residue Gauge SVG exported to: {args.svg}")
+    elif args.command in ["examine", "grill", "cross-examine"]:
+        import scripts.socratic_cross_examiner as sce
+        examiner = sce.SocraticCrossExaminer()
+        comps = [
+            {"name": "Ingress API Gateway", "has_tests": True, "has_failover": True, "is_stateless": True},
+            {"name": "Raft State Machine", "has_tests": True, "has_failover": True, "is_stateless": False},
+            {"name": "Async Task Dispatcher", "has_tests": True, "has_failover": False, "is_stateless": True},
+            {"name": "Memory Buffer Ring", "has_tests": False, "has_failover": False, "is_stateless": False},
+        ]
+        scorecard = examiner.cross_examine_architecture(args.title, comps)
+
+        if args.json:
+            print(json.dumps(scorecard.to_dict(), indent=2))
+        else:
+            print("\n" + examiner.export_summary_markdown(scorecard))
+
+        if args.canvas:
+            examiner.export_canvas(scorecard, output_path=args.canvas)
+            print(f"\n[DxSkills] Socratic Examination .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = examiner.export_svg_radar(scorecard)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Socratic Rigor Radar SVG exported to: {args.svg}")
     else:
         parser.print_help()
+
 
 
 
