@@ -748,6 +748,14 @@ def main():
     p_scalib.add_argument("--json", "-j", action="store_true", help="Output raw JSON gaze telemetry")
     p_scalib.add_argument("--demo", action="store_true", help="Run with demonstration multi-column spatial cards")
 
+    # schema-projection / schema-projector / cross-scale-projector / allocentric-projector
+    p_sproj = subparsers.add_parser("schema-projection", aliases=["schema-projector", "cross-scale-projector", "allocentric-projector"], help="Autonomous cognitive spatial schema morphing and cross-scale projection engine")
+    p_sproj.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or nodes JSON file")
+    p_sproj.add_argument("--output-canvas", "-o", default="", help="Output multi-scale projected Obsidian .canvas filepath")
+    p_sproj.add_argument("--svg", default="", help="Output cross-scale projection SVG diagram filepath")
+    p_sproj.add_argument("--json", "-j", action="store_true", help="Output raw JSON projection telemetry")
+    p_sproj.add_argument("--demo", action="store_true", help="Run with demonstration triadic abstraction plane entities")
+
     args = parser.parse_args()
 
 
@@ -3250,6 +3258,43 @@ def main():
         if args.svg:
             calibrator.to_svg(args.svg)
             print(f"[DxSkills] Gaze velocity SVG diagram written to: {args.svg}")
+    elif args.command in ["schema-projection", "schema-projector", "cross-scale-projector", "allocentric-projector"]:
+        import scripts.schema_projection_engine as sproj
+
+        projector = sproj.SchemaCrossScaleProjector()
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data and isinstance(raw_data["nodes"], list):
+                projector.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                projector.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_canvas = {
+                "nodes": [
+                    {"id": "node_macro", "text": "# Strategic Domain\nMacro overarching distributed system boundary", "x": 100, "y": 100},
+                    {"id": "node_meso", "text": "# Event Broker\nMeso service channel and streaming pipeline", "x": 300, "y": 200},
+                    {"id": "node_micro", "text": "# AST Parser\nMicro method def parse_ast_tree(node: ASTNode)", "x": 550, "y": 350}
+                ],
+                "edges": []
+            }
+            projector.load_canvas(demo_canvas)
+
+        entities, telemetry = projector.project_schema()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + projector.render_ascii_report(telemetry))
+
+        if args.output_canvas:
+            projector.to_canvas(args.output_canvas, canvas_title="Multi-Scale Schema Canvas")
+            print(f"[DxSkills] Multi-scale projected canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            projector.to_svg(args.svg)
+            print(f"[DxSkills] Cross-scale projection SVG diagram written to: {args.svg}")
     else:
         parser.print_help()
 
