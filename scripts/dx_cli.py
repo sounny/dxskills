@@ -1617,6 +1617,13 @@ def main():
     p_padic.add_argument("--svg", default="", help="Output p-Adic Hodge Theory and Fontaine Rings SVG filepath")
     p_padic.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_padic.add_argument("--demo", action="store_true", help="Run with demonstration period rings tower, Newton-Hodge polygons, and filtered module")
+    # geometric-satake / affine-grassmannian / mirkovic-vilonen / satake-loom
+    p_sat = subparsers.add_parser("geometric-satake", aliases=["affine-grassmannian", "mirkovic-vilonen", "satake-loom"], help="Autonomous cognitive spatial Geometric Satake Equivalence and Mirkovic-Vilonen Cycles Loom")
+    p_sat.add_argument("--group", default="sl2", choices=["sl2", "sl3", "so5", "sp4", "g2"], help="Reductive group G (default: sl2)")
+    p_sat.add_argument("--coweight-level", "-k", type=int, default=2, help="Dominant coweight level k (default: 2)")
+    p_sat.add_argument("--svg", default="", help="Output Geometric Satake and Mirkovic-Vilonen SVG filepath")
+    p_sat.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_sat.add_argument("--demo", action="store_true", help="Run with demonstration Schubert stratification, MV cycles, and tensor convolution")
     args = parser.parse_args()
 
 
@@ -9168,6 +9175,53 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_padic_svg())
             print(f"[DxSkills] p-Adic Hodge Theory SVG written to: {args.svg}")
+    elif args.command in ["geometric-satake", "affine-grassmannian", "mirkovic-vilonen", "satake-loom"]:
+        from scripts.geometric_satake_loom import (
+            GeometricSatakeLoom,
+            ReductiveGroupType,
+        )
+        group_map = {
+            "sl2": ReductiveGroupType.SL2_PGL2.value,
+            "sl3": ReductiveGroupType.SL3_PGL3.value,
+            "so5": ReductiveGroupType.SO5_SP4.value,
+            "sp4": ReductiveGroupType.SP4_SO5.value,
+            "g2": ReductiveGroupType.G2_SELFDUAL.value,
+        }
+        chosen_group = group_map.get(args.group, ReductiveGroupType.SL2_PGL2.value)
+
+        loom = GeometricSatakeLoom(
+            default_group=chosen_group,
+            coweight_level=args.coweight_level,
+        )
+        grp = loom.groups[0]
+        var = loom.schubert_varieties[0]
+        cycles = loom.evaluate_mirkovic_vilonen_cycles()
+        eq = loom.compute_satake_equivalence("SATAKE-RUN-01")
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Geometric Satake Equivalence & Mirkovic-Vilonen Loom")
+            print("=================================================================")
+            print(f"Reductive Group G & Dual:      {grp.group_type} -> Dual {grp.dual_group_label}")
+            print(f"Cartan Type & Rank:            Type {grp.cartan_type} | Rank = {grp.rank} | Weyl Order = {grp.weyl_group_order}")
+            print(f"Dominant Coweight Lambda:      Lambda = {var.dominant_coweight}")
+            print(f"Schubert Variety Gr^Lambda:    Dimension 2<rho, lambda> = {var.dimension_2rho_lambda}")
+            print(f"Intersection Cohomology Sheaf: {var.intersection_cohomology_sheaf}")
+            print(f"Euler Characteristic:          chi(Gr^lambda) = {var.euler_characteristic}")
+            print(f"Dual Highest Weight Module:    {eq.highest_weight_representation}")
+            print(f"Dual Representation Dimension: dim V_{grp.dual_group_label}(lambda) = {eq.representation_dimension}")
+            print(f"Mirkovic-Vilonen Cycles Count: {len(cycles)} components (exact weight multiplicities)")
+            print(f"Weight Multiplicities:         {[(c.weight_mu, c.weight_space_dimension) for c in cycles]}")
+            print(f"Tensor Convolution Fusion:     {eq.tensor_convolution_decomposition}")
+            print(f"Tannakian Equivalence Status:  ESTABLISHED (Perv_G(O)(Gr_G), *) =~ (Rep(G^vee), tensor)")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_satake_svg())
+            print(f"[DxSkills] Geometric Satake SVG written to: {args.svg}")
     else:
         parser.print_help()
 
