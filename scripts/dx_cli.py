@@ -1873,6 +1873,13 @@ def main():
     p_ksw.add_argument("--svg", default="", help="Output Kudla Program SVG filepath")
     p_ksw.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_ksw.add_argument("--demo", action="store_true", help="Run demonstration Kudla-Rapoport cycles, incoherent Eisenstein derivatives, and arithmetic Siegel-Weil matching")
+    # kudla-millson / arithmetic-cohomology / poincare-theta / millson-loom
+    p_km = subparsers.add_parser("kudla-millson", aliases=["arithmetic-cohomology", "poincare-theta", "millson-loom"], help="Autonomous cognitive spatial Kudla-Millson Forms and Arithmetic Cohomology Loom")
+    p_km.add_argument("--signature", "-s", default="2,1", choices=["2,1", "3,2", "1,2"], help="Quadratic space signature p,q (default: 2,1)")
+    p_km.add_argument("--max-n", type=int, default=5, help="Maximum Fourier index n (default: 5)")
+    p_km.add_argument("--svg", default="", help="Output Kudla-Millson SVG filepath")
+    p_km.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_km.add_argument("--demo", action="store_true", help="Run demonstration Kudla-Millson Schwartz form, theta series, and Poincare duality pairings")
     args = parser.parse_args()
 
 
@@ -11000,6 +11007,45 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.render_svg(result))
             print(f"[DxSkills] Kudla Siegel-Weil SVG written to: {out_path}")
+    elif args.command in ["kudla-millson", "arithmetic-cohomology", "poincare-theta", "millson-loom"]:
+        from scripts.kudla_millson_loom import (
+            KudlaMillsonLoom,
+        )
+        parts = [int(x.strip()) for x in args.signature.split(",")]
+        sig = (parts[0], parts[1])
+        loom = KudlaMillsonLoom(sig)
+        result = loom.analyze(args.max_n)
+
+        if args.json:
+            import json
+            from dataclasses import asdict
+            res_dict = {
+                "space": asdict(result.space),
+                "form_closed": result.form_closed,
+                "harmonic_laplacian": result.harmonic_laplacian_eigenvalue,
+                "pairings": [asdict(p) for p in result.pairings],
+                "poincare_duality_status": result.poincare_duality_status,
+            }
+            print(json.dumps(res_dict, indent=2))
+        else:
+            print("=================================================================")
+            print("  Kudla-Millson Forms & Arithmetic Cohomology Loom")
+            print("=================================================================")
+            print(f"Orthogonal Space:             {result.space.name} (Signature {result.space.signature_p},{result.space.signature_q})")
+            print(f"Symmetric Domain Dim:         dim(D) = {result.space.symmetric_space_dim} | Form Degree q = {result.space.form_degree_q}")
+            print(f"Modular Weight:               k = {result.space.modular_weight} for Gamma_0({result.space.level_n})")
+            print(f"Kudla-Millson Form Closed:    d(phi_KM) = 0 ({result.form_closed})")
+            print(f"Poincare Duality Pairings:    {len(result.pairings)} cycle intersections evaluated")
+            print(f"Cycle-Form Duality Status:    {result.poincare_duality_status}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "kudla_millson_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Kudla-Millson SVG written to: {out_path}")
     else:
         parser.print_help()
 

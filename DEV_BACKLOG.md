@@ -935,9 +935,14 @@
 - [x] **Task 211.3:** Interactive CLI suite (`kudla-siegel-weil`, `arithmetic-cycles`, `arithmetic-siegel-weil`, `siegel-weil-loom`) with full unit test coverage and zero em dash compliance.
 
 ### Phase 212: Autonomous Cognitive Spatial Kudla-Millson Forms & Arithmetic Cohomology Loom
-- [ ] **Task 212.1:** Kudla-Millson forms engine modeling differential forms of weight (p+q)/2 with values in cohomology, theta series of Kudla-Millson, and dualities between cycle classes and automorphic forms.
-- [ ] **Task 212.2:** Visualizer rendering Kudla-Millson closed differential forms, Poincaré duality pairings on orthogonal symmetric domains, and arithmetic cohomology lattices in dark titanium SVG.
-- [ ] **Task 212.3:** Interactive CLI suite (`kudla-millson`, `arithmetic-cohomology`, `poincare-theta`, `millson-loom`) with full unit test coverage and zero em dash compliance.
+- [x] **Task 212.1:** Kudla-Millson forms engine modeling differential forms of weight (p+q)/2 with values in cohomology, theta series of Kudla-Millson, and dualities between cycle classes and automorphic forms.
+- [x] **Task 212.2:** Visualizer rendering Kudla-Millson closed differential forms, Poincaré duality pairings on orthogonal symmetric domains, and arithmetic cohomology lattices in dark titanium SVG.
+- [x] **Task 212.3:** Interactive CLI suite (`kudla-millson`, `arithmetic-cohomology`, `poincare-theta`, `millson-loom`) with full unit test coverage and zero em dash compliance.
+
+### Phase 213: Autonomous Cognitive Spatial Borcherds Lift & Singular Theta Correspondence Loom
+- [ ] **Task 213.1:** Borcherds lift engine modeling singular theta lifts from weakly holomorphic modular forms of weight 1 - n/2 to meromorphic automorphic forms with known divisor singularities (Borcherds products).
+- [ ] **Task 213.2:** Visualizer rendering singular theta kernel integration, Weyl chamber walls, and infinite product expansions along Heegner divisors in dark titanium SVG.
+- [ ] **Task 213.3:** Interactive CLI suite (`borcherds-lift`, `singular-theta`, `borcherds-products`, `weyl-chambers`) with full unit test coverage and zero em dash compliance.
 
 ---
 
@@ -1152,7 +1157,8 @@
 | **Cycle 204** | 2026-09-12 05:02 | Autonomous Cognitive Spatial Birch-Swinnerton-Dyer (BSD) Conjecture & Higher Rank Heegner Points Loom | `scripts/bsd_conjecture_loom.py`, `tests/test_bsd_conjecture_loom.py`, `scripts/dx_cli.py`, `index.html` | `7629a16` |
 | **Cycle 205** | 2026-09-12 05:12 | Autonomous Cognitive Spatial Beilinson-Flach Elements & Asymmetric Euler Systems Loom | `scripts/beilinson_flach_loom.py`, `tests/test_beilinson_flach_loom.py`, `scripts/dx_cli.py`, `index.html` | `d8e2dea` |
 | **Cycle 206** | 2026-09-12 05:22 | Autonomous Cognitive Spatial Gross-Kohnen-Zagier Theorem & Higher Modular Forms Loom | `scripts/gross_kohnen_zagier_loom.py`, `tests/test_gross_kohnen_zagier_loom.py`, `scripts/dx_cli.py`, `index.html` | `c276537` |
-| **Cycle 207** | 2026-09-12 05:32 | Autonomous Cognitive Spatial Kudla Program & Arithmetic Siegel-Weil Formula Loom | `scripts/kudla_program_loom.py`, `tests/test_kudla_program_loom.py`, `scripts/dx_cli.py`, `index.html` | `685632e` |
+| **Cycle 207** | 2026-09-12 05:32 | Autonomous Cognitive Spatial Kudla Program & Arithmetic Siegel-Weil Formula Loom | `scripts/arithmetic_siegel_weil_loom.py`, `tests/test_arithmetic_siegel_weil_loom.py`, `scripts/dx_cli.py`, `index.html` | `5696ad4` |
+| **Cycle 208** | 2026-09-12 05:42 | Autonomous Cognitive Spatial Kudla-Millson Forms & Arithmetic Cohomology Loom | `scripts/kudla_millson_loom.py`, `tests/test_kudla_millson_loom.py`, `scripts/dx_cli.py`, `index.html` | `5582ad0` |
 
 
 
