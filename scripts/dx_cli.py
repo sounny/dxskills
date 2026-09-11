@@ -1791,6 +1791,14 @@ def main():
     p_ls.add_argument("--svg", default="", help="Output Langlands-Shahidi SVG filepath")
     p_ls.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_ls.add_argument("--demo", action="store_true", help="Run with demonstration intertwining operator, Shahidi gamma factors, and functorial lifts")
+    # arthur-trace-formula / endoscopic-classification / arthur-packet / selberg-trace-loom
+    p_at = subparsers.add_parser("arthur-trace-formula", aliases=["endoscopic-classification", "arthur-packet", "selberg-trace-loom"], help="Autonomous cognitive spatial Arthur-Selberg Trace Formula and Endoscopic Classification Loom")
+    p_at.add_argument("--cutoff", "-c", type=float, default=2.5, help="Test function truncation parameter T (default: 2.5)")
+    p_at.add_argument("--truncation", "-t", type=int, default=4, help="Spectral truncation level (default: 4)")
+    p_at.add_argument("--group", "-g", default="so5", choices=["so5", "sp4", "so7", "gl4"], help="Classical group archetype (default: so5)")
+    p_at.add_argument("--svg", default="", help="Output Arthur-Selberg SVG filepath")
+    p_at.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_at.add_argument("--demo", action="store_true", help="Run with demonstration geometric orbital sums, endoscopic transfer, and Arthur packets")
     args = parser.parse_args()
 
 
@@ -10372,6 +10380,55 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_svg())
             print(f"[DxSkills] Langlands-Shahidi SVG written to: {out_path}")
+    elif args.command in ["arthur-trace-formula", "endoscopic-classification", "arthur-packet", "selberg-trace-loom"]:
+        from scripts.arthur_trace_loom import (
+            ArthurSelbergTraceLoom,
+            ArthurGroupArchetype,
+        )
+        group_map = {
+            "so5": ArthurGroupArchetype.SO5_SPLIT.value,
+            "sp4": ArthurGroupArchetype.SP4_SPLIT.value,
+            "so7": ArthurGroupArchetype.SO7_SPLIT.value,
+            "gl4": ArthurGroupArchetype.GL4_STANDARD.value,
+        }
+        chosen_group = group_map.get(args.group, ArthurGroupArchetype.SO5_SPLIT.value)
+
+        loom = ArthurSelbergTraceLoom(
+            test_function_cutoff=args.cutoff,
+            spectral_truncation_level=args.truncation,
+            default_archetype=chosen_group,
+        )
+        ev = loom.evaluate_trace_formula()
+        param = loom.arthur_parameter
+
+        if args.json:
+            import json
+            print(json.dumps(loom.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Arthur-Selberg Trace Formula & Endoscopic Classification Loom")
+            print("=================================================================")
+            print(f"Reductive Group:               {loom.archetype_str}")
+            print(f"Test Function Cutoff T:        {loom.test_function_cutoff}")
+            print(f"Geometric Orbital Sum:         I_geom(f) = {ev.geometric_total:.4f} ({len(loom.orbital_components)} classes)")
+            print(f"Spectral Automorphic Sum:      I_spec(f) = {ev.spectral_total:.4f} ({len(loom.spectral_components)} representations)")
+            print(f"Endoscopic Reconstructed:      sum_H iota S^H(f^H) = {ev.endoscopic_reconstructed_total:.4f}")
+            print(f"Trace Identity Residual:       |I_geom - I_spec| = {ev.trace_identity_residual:.5f} (Stabilized: {ev.is_stabilized})")
+            if param:
+                print(f"Arthur Parameter:              {param.parameter_label}")
+                print(f"Dual Group & Component Group:  {param.dual_group_label} | |S_psi| = {param.component_group_order}")
+            print(f"Arthur Packet Size:            {len(loom.arthur_packet)} representations in Pi_psi")
+            print(f"Cognitive Resonance Score:     {ev.cognitive_resonance_score:.4f}")
+            print(f"Spatial Stability Index:       {ev.spatial_stability_index:.4f}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "arthur_trace_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_svg())
+            print(f"[DxSkills] Arthur-Selberg SVG written to: {out_path}")
     else:
         parser.print_help()
 
