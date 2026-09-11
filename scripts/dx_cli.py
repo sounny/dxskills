@@ -503,7 +503,18 @@ def main():
     p_resilience.add_argument("--svg", "-s", default="", help="Output breathing cadence SVG visualizer filepath")
     p_resilience.add_argument("--json", "-j", action="store_true", help="Output raw JSON fatigue telemetry")
     
+    # reflector / bias
+    p_reflector = subparsers.add_parser("reflector", aliases=["bias", "blindspot"], help="Autonomous cognitive multi-perspective metacognitive reflector and bias breaker")
+    p_reflector.add_argument("title", nargs="?", default="Strategic Architecture Spec", help="Thesis or architectural proposal title")
+    p_reflector.add_argument("--assumptions", "-a", nargs="*", default=[], help="List of assumptions in format 'Label:validated' or 'Label'")
+    p_reflector.add_argument("--perspectives", "-p", type=int, default=2, help="Number of distinct analytical viewpoints consulted (default: 2)")
+    p_reflector.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_reflector.add_argument("--svg", "-s", default="", help="Output dialectic radar SVG filepath")
+    p_reflector.add_argument("--json", "-j", action="store_true", help="Output raw JSON assessment telemetry")
+    p_reflector.add_argument("--demo", action="store_true", help="Run with demonstration assumptions suite")
+    
     args = parser.parse_args()
+
     
     if args.command == "dump":
         cmd_dump(args)
@@ -1895,8 +1906,51 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Breathing Visualizer SVG exported to: {args.svg}")
+    elif args.command in ["reflector", "bias", "blindspot"]:
+        import scripts.metacognitive_reflector as mr
+        reflector = mr.MetacognitiveReflector()
+        assumptions = []
+        if args.demo or not args.assumptions:
+            assumptions = [
+                {"label": "Sub-millisecond Edge Replication", "validated": False},
+                {"label": "Zero Consensus Split-Brain", "validated": True},
+                {"label": "Infinite Memory Pool", "validated": False},
+                {"label": "Immutable Audit Log Guarantee", "validated": True},
+                {"label": "Instantaneous Client Re-connection", "validated": False},
+            ]
+        else:
+            for item in args.assumptions:
+                if ":" in item:
+                    lbl, val = item.rsplit(":", 1)
+                    assumptions.append({"label": lbl.strip(), "validated": val.strip().lower() in ["true", "1", "yes"]})
+                else:
+                    assumptions.append({"label": item.strip(), "validated": False})
+
+        assessment = reflector.assess_thesis(
+            args.title, assumptions, perspective_breadth=args.perspectives
+        )
+
+        if args.json:
+            out = {
+                "assessment": assessment.to_dict(),
+                "lenses": [l.to_dict() for l in assessment.lenses],
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            print("\n" + reflector.export_summary_markdown(assessment))
+
+        if args.canvas:
+            reflector.export_canvas(assessment, output_path=args.canvas)
+            print(f"\n[DxSkills] Metacognitive Reflector .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = reflector.export_svg_radar(assessment)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Metacognitive Radar SVG exported to: {args.svg}")
     else:
         parser.print_help()
+
 
 
 if __name__ == "__main__":
