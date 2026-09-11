@@ -1758,6 +1758,14 @@ def main():
     p_fs.add_argument("--svg", default="", help="Output Fargues-Scholze SVG filepath")
     p_fs.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_fs.add_argument("--demo", action="store_true", help="Run with demonstration Bun_G stack, local shtukas, excursion operators, and L-parameters")
+    # kudla-program / arithmetic-intersection / special-cycles-loom / kudla-rapoport
+    p_kp = subparsers.add_parser("kudla-program", aliases=["arithmetic-intersection", "special-cycles-loom", "kudla-rapoport"], help="Autonomous cognitive spatial Kudla Program Arithmetic Intersection Loom")
+    p_kp.add_argument("--signature", default="3,2", choices=["3,2", "2,2", "1,1"], help="Signature of orthogonal/unitary space (default: 3,2)")
+    p_kp.add_argument("--prime", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11, 13], help="Base prime p (default: 5)")
+    p_kp.add_argument("--archetype", default="siegel", choices=["siegel", "hilbert", "modular", "rapoport"], help="Shimura variety archetype (default: siegel)")
+    p_kp.add_argument("--svg", default="", help="Output Kudla Program SVG filepath")
+    p_kp.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_kp.add_argument("--demo", action="store_true", help="Run with demonstration special cycles, Kudla-Rapoport intersections, and Eisenstein series derivative")
     args = parser.parse_args()
 
 
@@ -10129,6 +10137,61 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_fargues_scholze_svg())
             print(f"[DxSkills] Fargues-Scholze SVG written to: {out_path}")
+    elif args.command in ["kudla-program", "arithmetic-intersection", "special-cycles-loom", "kudla-rapoport"]:
+        from scripts.kudla_program_loom import (
+            KudlaProgramLoom,
+            KudlaArchetype,
+        )
+        arch_map = {
+            "siegel": KudlaArchetype.SO3_2_SIEGEL_SURFACE.value,
+            "hilbert": KudlaArchetype.SO2_2_HILBERT_BLUMENTHAL.value,
+            "modular": KudlaArchetype.GU1_1_MODULAR_CURVE.value,
+            "rapoport": KudlaArchetype.RAPOPORT_ZINK_P_DIVISIBLE.value,
+        }
+        sig_map = {
+            "3,2": (3, 2),
+            "2,2": (2, 2),
+            "1,1": (1, 1),
+        }
+        chosen_sig = sig_map.get(args.signature, (3, 2))
+        chosen_arch = arch_map.get(args.archetype, KudlaArchetype.SO3_2_SIEGEL_SURFACE.value)
+
+        loom = KudlaProgramLoom(
+            signature=chosen_sig,
+            prime_p=args.prime,
+            default_archetype=chosen_arch,
+        )
+        datum = loom.shimura_datum
+        cycles = loom.special_cycles
+        total_int = loom.compute_total_arithmetic_intersection(1, 2)
+        eis = loom.eisenstein_series
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Kudla Program Arithmetic Intersection Loom")
+            print("=================================================================")
+            print(f"Orthogonal Shimura Datum:      {datum.quadratic_space_label}")
+            print(f"Discriminant & Reflex Field:   D = {datum.lattice_discriminant} | E = {datum.reflex_field}")
+            print(f"Symmetric Domain:              {datum.symmetric_domain_label}")
+            print(f"Special Cycles Loomed:         {len(cycles)} fundamental cycles (CH^1(M)_hat)")
+            print(f"First Cycle Geometric Deg:     deg(Z(1)) = {cycles[0].geometric_degree}")
+            print(f"First Cycle Arithmetic Deg:    deg_hat(Z_hat(1)) = {cycles[0].arithmetic_degree}")
+            print(f"Local Intersection Multiplicity:Int_{total_int['local_intersections'][0]['prime_p']}(1, 2) = {total_int['local_intersections'][0]['local_intersection_multiplicity']}")
+            print(f"Finite Places Sum:             sum_{{p < inf}} Int_p log p = {total_int['finite_places_sum']}")
+            print(f"Archimedean Star Product:      Int_inf(1, 2) = {total_int['archimedean_star_product']}")
+            print(f"Total Arithmetic Pairing:      <Z_hat(1), Z_hat(2)> = {total_int['total_arithmetic_pairing']}")
+            print(f"Eisenstein Derivative Match:   deg_hat(phi_hat(tau)) = E'(0, tau) (Verified: {eis.kudla_conjecture_verified})")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "kudla_program_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_svg())
+            print(f"[DxSkills] Kudla Program SVG written to: {out_path}")
     else:
         parser.print_help()
 
