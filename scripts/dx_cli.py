@@ -877,6 +877,17 @@ def main():
     p_eradar.add_argument("--json", "-j", action="store_true", help="Output raw JSON epistemic telemetry")
     p_eradar.add_argument("--demo", action="store_true", help="Run with demonstration architectural claims and stress vectors")
 
+    # vault-consolidate / anchor-vault / semantic-snapshot / rehydration-vault
+    p_vault = subparsers.add_parser("vault-consolidate", aliases=["anchor-vault", "semantic-snapshot", "rehydration-vault"], help="Autonomous cognitive spatial working memory anchor consolidation and semantic snapshot vault")
+    p_vault.add_argument("input", nargs="?", default="", help="Input canvas anchors JSON file or workspace specification")
+    p_vault.add_argument("--threshold", "-t", type=float, default=0.65, help="Coherence threshold for sub-canvas consolidation (default: 0.65)")
+    p_vault.add_argument("--radius", "-r", type=float, default=250.0, help="Spatial proximity radius for clustering (default: 250.0)")
+    p_vault.add_argument("--manifest", default="", help="Output rehydration manifest markdown filepath")
+    p_vault.add_argument("--svg", default="", help="Output vault map SVG diagram filepath")
+    p_vault.add_argument("--rehydrate", default="", help="Rehydrate snapshot payload by snapshot ID or cluster ID")
+    p_vault.add_argument("--json", "-j", action="store_true", help="Output raw JSON vault telemetry")
+    p_vault.add_argument("--demo", action="store_true", help="Run with demonstration multi-cluster canvas anchors")
+
     args = parser.parse_args()
 
 
@@ -4011,6 +4022,68 @@ def main():
         if args.svg:
             radar.export_svg(result, args.svg)
             print(f"[DxSkills] Epistemic radar SVG written to: {args.svg}")
+    elif args.command in ["vault-consolidate", "anchor-vault", "semantic-snapshot", "rehydration-vault"]:
+        import scripts.anchor_consolidation_vault as acv_mod
+
+        vault = acv_mod.AnchorConsolidationVault(coherence_threshold=args.threshold)
+
+        raw_anchors = []
+        raw_conns = []
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                if isinstance(raw_data, dict):
+                    raw_anchors = raw_data.get("anchors", [])
+                    raw_conns = raw_data.get("connections", [])
+                elif isinstance(raw_data, list):
+                    raw_anchors = raw_data
+            except json.JSONDecodeError:
+                raw_anchors = [{"id": f"anc_{idx+1}", "label": line.strip()} for idx, line in enumerate(content.splitlines()) if line.strip()]
+        elif args.demo or not args.input:
+            raw_anchors = [
+                {"id": "a1", "label": "Affine Viewport Matrix", "x": 100.0, "y": 120.0, "coherence_score": 0.88},
+                {"id": "a2", "label": "Pinch-Zoom Transform", "x": 140.0, "y": 150.0, "coherence_score": 0.92},
+                {"id": "a3", "label": "Foveal Focus Reticle", "x": 180.0, "y": 130.0, "coherence_score": 0.85},
+                {"id": "b1", "label": "Attentional Blink Detector", "x": 600.0, "y": 100.0, "coherence_score": 0.78},
+                {"id": "b2", "label": "Eccentricity Attenuator", "x": 650.0, "y": 140.0, "coherence_score": 0.82},
+                {"id": "c1", "label": "Exploratory Thought Fragment", "x": 400.0, "y": 400.0, "coherence_score": 0.40},
+            ]
+            raw_conns = [
+                {"source": "a1", "target": "a2"},
+                {"source": "a2", "target": "a3"},
+                {"source": "b1", "target": "b2"},
+            ]
+
+        result = vault.consolidate_subcanvases(
+            raw_anchors=raw_anchors,
+            raw_connections=raw_conns,
+            cluster_proximity_radius=args.radius,
+        )
+
+        if args.rehydrate:
+            rehydrated = vault.rehydrate_snapshot(args.rehydrate, result)
+            if rehydrated:
+                print(f"[DxSkills] Successfully rehydrated snapshot '{args.rehydrate}':")
+                print(json.dumps(rehydrated, indent=2))
+            else:
+                print(f"[DxSkills] Snapshot '{args.rehydrate}' not found in vault.")
+        elif args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + vault.generate_ascii_report(result))
+            print("\n" + result.rehydration_manifest_md)
+
+        if args.manifest:
+            with open(args.manifest, "w", encoding="utf-8") as f:
+                f.write(result.rehydration_manifest_md)
+            print(f"[DxSkills] Rehydration manifest written to: {args.manifest}")
+
+        if args.svg:
+            vault.export_svg(result, args.svg)
+            print(f"[DxSkills] Vault map SVG written to: {args.svg}")
     else:
         parser.print_help()
 
