@@ -476,6 +476,14 @@ def main():
     p_morph.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_morph.add_argument("--svg", "-s", default="", help="Output cross-domain schema isomorphism SVG filepath")
     p_morph.add_argument("--json", "-j", action="store_true", help="Output raw JSON schema morphing telemetry")
+
+    # decision
+    p_decision = subparsers.add_parser("decision", help="Autonomous cognitive multi-perspective decision matrix and opportunity cost evaluator")
+    p_decision.add_argument("input", nargs="?", default="", help="Target JSON options file or structured decisions text")
+    p_decision.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_decision.add_argument("--svg", "-s", default="", help="Output 2D decision quadrant SVG filepath")
+    p_decision.add_argument("--json", "-j", action="store_true", help="Output raw JSON decision matrix telemetry")
+    p_decision.add_argument("--demo", action="store_true", help="Run with demonstration strategic software initiatives")
     
     args = parser.parse_args()
     
@@ -1719,6 +1727,55 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Schema Isomorphism SVG exported to: {args.svg}")
+    elif args.command == "decision":
+        import scripts.decision_matrix as dm
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            matrix = dm.SpatialDecisionMatrix.from_dict(data)
+        else:
+            matrix = dm.create_sample_decision_matrix()
+
+        audit = matrix.evaluate_matrix()
+
+        if args.json:
+            out = {
+                "total_options": audit.total_options,
+                "q1_count": audit.q1_count,
+                "q2_count": audit.q2_count,
+                "q3_count": audit.q3_count,
+                "q4_count": audit.q4_count,
+                "highest_leverage_option": audit.highest_leverage_option.name if audit.highest_leverage_option else None,
+                "highest_opportunity_cost_option": audit.highest_opportunity_cost_option.name if audit.highest_opportunity_cost_option else None,
+                "action_roadmap": [
+                    {
+                        "id": o.option_id,
+                        "name": o.name,
+                        "quadrant": o.quadrant,
+                        "leverage_score": o.leverage_score,
+                        "compounding_leverage": o.compounding_leverage,
+                        "cognitive_flow": o.cognitive_flow,
+                        "opportunity_cost_risk": o.opportunity_cost_risk,
+                        "reversibility": o.reversibility
+                    }
+                    for o in audit.action_roadmap
+                ]
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            print("\n" + matrix.export_summary_markdown(audit))
+
+        if args.canvas:
+            canvas_data = matrix.export_canvas(audit)
+            with open(args.canvas, "w", encoding="utf-8") as f:
+                json.dump(canvas_data, f, indent=2)
+            print(f"\n[DxSkills] Decision Matrix .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = matrix.export_svg_matrix(audit)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Decision Matrix SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
