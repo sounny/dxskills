@@ -970,6 +970,16 @@ def main():
     p_kpacer.add_argument("--json", "-j", action="store_true", help="Output raw JSON kinetic telemetry")
     p_kpacer.add_argument("--demo", action="store_true", help="Run with demonstration ocular saccade sequence")
 
+    # entropy-gate / density-equalizer / semantic-entropy / topological-density
+    p_egate = subparsers.add_parser("entropy-gate", aliases=["density-equalizer", "semantic-entropy", "topological-density"], help="Autonomous cognitive spatial semantic entropy gate and topological density equalizer")
+    p_egate.add_argument("input", nargs="?", default="", help="Input canvas JSON filepath")
+    p_egate.add_argument("--radius", "-r", type=float, default=120.0, help="Local interaction foveal radius in px (default: 120.0)")
+    p_egate.add_argument("--iterations", "-i", type=int, default=40, help="Force-directed relaxation iterations (default: 40)")
+    p_egate.add_argument("--report", default="", help="Output entropy audit markdown filepath")
+    p_egate.add_argument("--svg", default="", help="Output topological density SVG diagram filepath")
+    p_egate.add_argument("--json", "-j", action="store_true", help="Output raw JSON entropy telemetry")
+    p_egate.add_argument("--demo", action="store_true", help="Run with demonstration clustered canvas nodes")
+
     args = parser.parse_args()
 
 
@@ -4571,6 +4581,94 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(result.kinetic_pacer_svg)
             print(f"[DxSkills] Main Sequence kinetic SVG written to: {args.svg}")
+    elif args.command in ["entropy-gate", "density-equalizer", "semantic-entropy", "topological-density"]:
+        import scripts.semantic_entropy_gate as seg_mod
+
+        equalizer = seg_mod.SemanticEntropyEqualizer(radius=args.radius)
+
+        nodes = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                if isinstance(raw_data, list):
+                    nodes = [
+                        seg_mod.SemanticNode(
+                            node_id=item.get("id", f"node-{idx}"),
+                            label=item.get("label", item.get("text", f"Node {idx}")),
+                            x=float(item.get("x", 0.0)),
+                            y=float(item.get("y", 0.0)),
+                            token_count=int(item.get("token_count", 10)),
+                            concept_count=int(item.get("concept_count", 2)),
+                            edge_count=int(item.get("edge_count", 1)),
+                            cluster_id=str(item.get("cluster_id", "default"))
+                        )
+                        for idx, item in enumerate(raw_data, 1)
+                    ]
+                elif isinstance(raw_data, dict):
+                    raw_nodes = raw_data.get("nodes", [])
+                    nodes = [
+                        seg_mod.SemanticNode(
+                            node_id=item.get("id", f"node-{idx}"),
+                            label=item.get("label", item.get("text", f"Node {idx}")),
+                            x=float(item.get("x", 0.0)),
+                            y=float(item.get("y", 0.0)),
+                            token_count=int(item.get("token_count", len(item.get("text", "").split()) or 10)),
+                            concept_count=int(item.get("concept_count", 2)),
+                            edge_count=int(item.get("edge_count", 1)),
+                            cluster_id=str(item.get("cluster_id", item.get("color", "default")))
+                        )
+                        for idx, item in enumerate(raw_nodes, 1)
+                    ]
+            except json.JSONDecodeError:
+                pass
+        elif args.demo or not args.input:
+            nodes = seg_mod.sample_canvas_nodes()
+
+        telemetry = equalizer.equalize_density(nodes, iterations=args.iterations)
+
+        if args.json:
+            out_dict = {
+                "total_nodes": telemetry.total_nodes,
+                "radius": telemetry.radius,
+                "global_entropy": telemetry.global_entropy,
+                "initial_density_variance": telemetry.initial_density_variance,
+                "equalized_density_variance": telemetry.equalized_density_variance,
+                "variance_reduction_percent": telemetry.variance_reduction_percent,
+                "critical_crowding_count": telemetry.critical_crowding_count,
+                "max_displacement": telemetry.max_displacement,
+                "mean_displacement": telemetry.mean_displacement,
+                "nodes": [
+                    {
+                        "id": n.node_id,
+                        "label": n.label,
+                        "cluster": n.cluster_id,
+                        "orig": [n.original_x, n.original_y],
+                        "equalized": [n.adjusted_x, n.adjusted_y],
+                        "displacement": n.displacement,
+                        "pre_density": n.pre_local_density,
+                        "post_density": n.post_local_density
+                    }
+                    for n in telemetry.redistributed_nodes
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = equalizer.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = equalizer.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Entropy and density report written to: {args.report}")
+
+        if args.svg:
+            svg_code = equalizer.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Density equalization SVG written to: {args.svg}")
     else:
         parser.print_help()
 
