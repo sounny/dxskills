@@ -868,6 +868,15 @@ def main():
     p_cloom.add_argument("--json", "-j", action="store_true", help="Output raw JSON causal loom telemetry")
     p_cloom.add_argument("--demo", action="store_true", help="Run with demonstration architectural causal DAG")
 
+    # epistemic-radar / uncertainty-radar / assumption-tester / fragility-radar
+    p_eradar = subparsers.add_parser("epistemic-radar", aliases=["uncertainty-radar", "assumption-tester", "fragility-radar"], help="Autonomous cognitive spatial epistemic uncertainty radar and assumption stress-tester")
+    p_eradar.add_argument("input", nargs="?", default="", help="Input claims JSON file or architectural text specification")
+    p_eradar.add_argument("--threshold", "-t", type=float, default=0.60, help="Fragility threshold for single points of failure (default: 0.60)")
+    p_eradar.add_argument("--output-table", default="", help="Output markdown mitigation table filepath")
+    p_eradar.add_argument("--svg", default="", help="Output epistemic radar SVG diagram filepath")
+    p_eradar.add_argument("--json", "-j", action="store_true", help="Output raw JSON epistemic telemetry")
+    p_eradar.add_argument("--demo", action="store_true", help="Run with demonstration architectural claims and stress vectors")
+
     args = parser.parse_args()
 
 
@@ -3928,6 +3937,80 @@ def main():
         if args.svg:
             loom.export_svg(result, args.svg)
             print(f"[DxSkills] Causal DAG SVG written to: {args.svg}")
+    elif args.command in ["epistemic-radar", "uncertainty-radar", "assumption-tester", "fragility-radar"]:
+        import scripts.epistemic_uncertainty_radar as eur_mod
+
+        radar = eur_mod.EpistemicUncertaintyRadar(fragility_threshold=args.threshold)
+
+        raw_claims = []
+        stress_scenarios = None
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                if isinstance(raw_data, dict):
+                    raw_claims = raw_data.get("claims", [])
+                    stress_scenarios = raw_data.get("stress_scenarios", None)
+                elif isinstance(raw_data, list):
+                    raw_claims = raw_data
+            except json.JSONDecodeError:
+                # Text lines as claims
+                raw_claims = [{"id": f"c_{idx+1}", "statement": line.strip()} for idx, line in enumerate(content.splitlines()) if line.strip()]
+        elif args.demo or not args.input:
+            raw_claims = [
+                {
+                    "id": "clm_1",
+                    "statement": "Hardware-accelerated CSS transforms maintain steady 60fps benchmark telemetry.",
+                    "category": "PERFORMANCE",
+                    "grounding_tier": "EMPIRICAL",
+                    "confidence_score": 0.98,
+                    "fragility_index": 0.12,
+                },
+                {
+                    "id": "clm_2",
+                    "statement": "Anstis retinal acuity decay equation models peripheral visual dropout correctly.",
+                    "category": "ARCHITECTURE",
+                    "grounding_tier": "THEORETICAL",
+                    "confidence_score": 0.85,
+                    "fragility_index": 0.28,
+                },
+                {
+                    "id": "clm_3",
+                    "statement": "Typical reading speed will remain stable across variable display contrasts.",
+                    "category": "ERGONOMICS",
+                    "grounding_tier": "HEURISTIC",
+                    "confidence_score": 0.58,
+                    "fragility_index": 0.65,
+                },
+                {
+                    "id": "clm_4",
+                    "statement": "We assume memory pressure will probably not trigger mobile browser tab reloads.",
+                    "category": "ARCHITECTURE",
+                    "grounding_tier": "SPECULATIVE",
+                    "confidence_score": 0.25,
+                    "fragility_index": 0.92,
+                },
+            ]
+
+        result = radar.evaluate_claims(raw_claims=raw_claims, stress_scenarios=stress_scenarios)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + radar.generate_ascii_report(result))
+            print("\n--- [MITIGATION STRATEGY TABLE] ---")
+            print(result.mitigation_table_md)
+
+        if args.output_table:
+            with open(args.output_table, "w", encoding="utf-8") as f:
+                f.write(result.mitigation_table_md)
+            print(f"[DxSkills] Epistemic mitigation table written to: {args.output_table}")
+
+        if args.svg:
+            radar.export_svg(result, args.svg)
+            print(f"[DxSkills] Epistemic radar SVG written to: {args.svg}")
     else:
         parser.print_help()
 
