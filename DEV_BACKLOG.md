@@ -444,12 +444,16 @@
 - [x] **Task 102.2:** Multi-scale spatial visual indexer generating interactive thumbnail radar maps for instant cognitive orientation.
 
 ### Phase 103: Autonomous Cognitive Spatial Dynamic Foveal Horizon & Context Anchor Restorer
-- [ ] **Task 103.1:** Spatial foveal horizon tracker calculating visual drift latency across deep zoom scales.
-- [ ] **Task 103.2:** Contextual breadcrumb anchor restorer projecting non-destructive re-entry guides upon focus shifts.
+- [x] **Task 103.1:** Spatial foveal horizon tracker calculating visual drift latency across deep zoom scales.
+- [x] **Task 103.2:** Contextual breadcrumb anchor restorer projecting non-destructive re-entry guides upon focus shifts.
 
 ### Phase 104: Autonomous Cognitive Spatial Dynamic Attention Gradient & Peripheral Saccade Shaper
 - [ ] **Task 104.1:** Peripheral attention gradient model mapping eccentric visual acuity decay across 2D workspaces.
 - [ ] **Task 104.2:** Non-linear saccade shaper attenuating high-frequency edge clutter to channel visual momentum.
+
+### Phase 105: Autonomous Cognitive Spatial Bi-Directional Narrative Loom & Causal Graph Synthesizer
+- [ ] **Task 105.1:** Causal graph parser extracting non-linear antecedent-consequent dependencies across spatial notes.
+- [ ] **Task 105.2:** Bi-directional narrative loom weaving branching decision topologies into coherent prose briefs.
 
 ---
 
@@ -555,4 +559,5 @@
 | **Cycle 95** | 2026-09-11 10:52 | Autonomous Cognitive Spatial Cross-Scale Associative Constellation & Galois Lattice Engine | `scripts/galois_lattice_engine.py`, `tests/test_galois_lattice_engine.py`, `index.html` | `2d36057` |
 | **Cycle 96** | 2026-09-11 11:02 | Autonomous Cognitive Spatial Working Memory Saccadic Fatigue Meter & Dynamic Contrast Damper | `scripts/saccadic_fatigue_meter.py`, `tests/test_saccadic_fatigue_meter.py`, `index.html` | `0b5902d` |
 | **Cycle 97** | 2026-09-11 11:12 | Autonomous Cognitive Spatial Dynamic Lexical Stress-Testing & Gaze Anchor Synthesizer | `scripts/lexical_stress_tester.py`, `tests/test_lexical_stress_tester.py`, `index.html` | `a178ca6` |
-| **Cycle 98** | 2026-09-11 11:22 | Autonomous Cognitive Spatial Multi-Scale Semantic Anchor Distillation & Visual Indexer | `scripts/semantic_anchor_distiller.py`, `tests/test_semantic_anchor_distiller.py`, `index.html` | `6197920` |
+| **Cycle 98** | 2026-09-11 11:22 | Autonomous Cognitive Spatial Multi-Scale Semantic Anchor Distillation & Visual Indexer | `scripts/semantic_anchor_distiller.py`, `tests/test_semantic_anchor_distiller.py`, `index.html` | `fb809fe` |
+| **Cycle 99** | 2026-09-11 11:32 | Autonomous Cognitive Spatial Dynamic Foveal Horizon & Context Anchor Restorer | `scripts/foveal_horizon_tracker.py`, `tests/test_foveal_horizon_tracker.py`, `index.html` | `ed2c795` |

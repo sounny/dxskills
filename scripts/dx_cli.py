@@ -836,6 +836,17 @@ def main():
     p_distiller.add_argument("--json", "-j", action="store_true", help="Output raw JSON distillation telemetry")
     p_distiller.add_argument("--demo", action="store_true", help="Run with demonstration multi-cluster spatial canvas nodes")
 
+    # foveal-horizon / foveal-drift / breadcrumb-restorer / zoom-horizon
+    p_fhorizon = subparsers.add_parser("foveal-horizon", aliases=["foveal-drift", "breadcrumb-restorer", "zoom-horizon"], help="Autonomous cognitive spatial dynamic foveal horizon and context anchor restorer")
+    p_fhorizon.add_argument("input", nargs="?", default="", help="Input transition JSON filepath")
+    p_fhorizon.add_argument("--source-zoom", type=float, default=0.35, help="Source zoom scale level (default: 0.35)")
+    p_fhorizon.add_argument("--target-zoom", type=float, default=3.20, help="Target zoom scale level (default: 3.20)")
+    p_fhorizon.add_argument("--displacement", type=float, default=1800.0, help="Pan linear displacement in pixels (default: 1800.0)")
+    p_fhorizon.add_argument("--css", default="", help="Output restorative transition CSS filepath")
+    p_fhorizon.add_argument("--svg", default="", help="Output foveal horizon SVG diagram filepath")
+    p_fhorizon.add_argument("--json", "-j", action="store_true", help="Output raw JSON horizon telemetry")
+    p_fhorizon.add_argument("--demo", action="store_true", help="Run with demonstration deep zoom transition")
+
     args = parser.parse_args()
 
 
@@ -3754,6 +3765,55 @@ def main():
         if args.svg:
             distiller.export_svg(result, args.svg)
             print(f"[DxSkills] Visual indexer radar SVG written to: {args.svg}")
+    elif args.command in ["foveal-horizon", "foveal-drift", "breadcrumb-restorer", "zoom-horizon"]:
+        import scripts.foveal_horizon_tracker as fht_mod
+
+        tracker = fht_mod.FovealHorizonTracker()
+
+        source_state = {}
+        target_state = {}
+        landmarks_input = None
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            source_state = raw_data.get("source", {})
+            target_state = raw_data.get("target", {})
+            landmarks_input = raw_data.get("landmarks", None)
+        elif args.demo or not args.input:
+            source_state = {
+                "zoom_level": args.source_zoom,
+                "pan_x": 100.0,
+                "pan_y": 150.0,
+                "focal_node_title": "Global System Overview",
+            }
+            target_state = {
+                "zoom_level": args.target_zoom,
+                "pan_x": 100.0 + args.displacement,
+                "pan_y": 150.0 + (args.displacement * 0.7),
+                "focal_node_title": "Deep Memory Detail Spec",
+            }
+            landmarks_input = [
+                {"title": "Core Domain Cluster"},
+                {"title": "Execution Unit Interface"},
+                {"title": "Microcode Memory Bank"},
+            ]
+
+        result = tracker.track_transition(source_state, target_state, landmarks=landmarks_input)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + tracker.generate_ascii_report(result))
+
+        if args.css:
+            with open(args.css, "w", encoding="utf-8") as f:
+                f.write(result.restorative_css)
+            print(f"[DxSkills] Restorative transition CSS written to: {args.css}")
+
+        if args.svg:
+            tracker.export_svg(result, args.svg)
+            print(f"[DxSkills] Foveal horizon SVG written to: {args.svg}")
     else:
         parser.print_help()
 
