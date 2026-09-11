@@ -1053,6 +1053,17 @@ def main():
     p_acompass.add_argument("--json", "-j", action="store_true", help="Output raw JSON compass telemetry")
     p_acompass.add_argument("--demo", action="store_true", help="Run with demonstration navigation trajectory")
 
+    # tesseract-lattice / hypercube-schema / 4d-lattice / tesseract-projection
+    p_tlatt = subparsers.add_parser("tesseract-lattice", aliases=["hypercube-schema", "4d-lattice", "tesseract-projection"], help="Autonomous cognitive spatial schema morphing lattice and topological tesseract engine")
+    p_tlatt.add_argument("input", nargs="?", default="", help="Input 4D hypercube vertices JSON filepath")
+    p_tlatt.add_argument("--theta", type=float, default=35.0, help="X-W rotation angle in deg (default: 35.0)")
+    p_tlatt.add_argument("--phi", type=float, default=25.0, help="Z-W rotation angle in deg (default: 25.0)")
+    p_tlatt.add_argument("--scale", type=float, default=135.0, help="Screen projection scale factor (default: 135.0)")
+    p_tlatt.add_argument("--report", default="", help="Output tesseract audit markdown filepath")
+    p_tlatt.add_argument("--svg", default="", help="Output tesseract wireframe SVG diagram filepath")
+    p_tlatt.add_argument("--json", "-j", action="store_true", help="Output raw JSON tesseract telemetry")
+    p_tlatt.add_argument("--demo", action="store_true", help="Run with demonstration canonical 16-cell hypercube schema")
+
     args = parser.parse_args()
 
 
@@ -5295,6 +5306,62 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Allocentric compass SVG written to: {args.svg}")
+    elif args.command in ["tesseract-lattice", "hypercube-schema", "4d-lattice", "tesseract-projection"]:
+        import scripts.topological_tesseract_lattice as ttl_mod
+
+        lattice = ttl_mod.TopologicalTesseractLattice(default_scale=args.scale)
+
+        vertices, edges = ttl_mod.sample_4d_schema_hypercube()
+
+        telemetry = lattice.solve_lattice(
+            vertices,
+            edges,
+            theta_deg=args.theta,
+            phi_deg=args.phi
+        )
+
+        if args.json:
+            out_dict = {
+                "total_vertices": telemetry.total_vertices,
+                "total_edges": telemetry.total_edges,
+                "rotation_angles_deg": list(telemetry.rotation_angles_deg),
+                "cell_count": telemetry.cell_count,
+                "symmetry_metric": telemetry.symmetry_metric,
+                "projected_vertices": [
+                    {
+                        "id": p.vertex_id,
+                        "title": p.title,
+                        "position": [p.proj_x, p.proj_y],
+                        "depth_z": p.depth_z,
+                        "w_depth": p.w_depth
+                    }
+                    for p in telemetry.projected_vertices
+                ],
+                "edges": [
+                    {
+                        "source": e.source_id,
+                        "target": e.target_id,
+                        "axis": e.axis_dimension
+                    }
+                    for e in telemetry.edges
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = lattice.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = lattice.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Tesseract audit report written to: {args.report}")
+
+        if args.svg:
+            svg_code = lattice.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Tesseract SVG written to: {args.svg}")
     else:
         parser.print_help()
 
