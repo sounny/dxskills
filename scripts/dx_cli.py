@@ -530,7 +530,21 @@ def main():
     p_evict.add_argument("--json", "-j", action="store_true", help="Output raw JSON compaction telemetry")
     p_evict.add_argument("--demo", action="store_true", help="Run with demonstration working memory node cluster")
     
+    # interleave / dampener
+    p_damp = subparsers.add_parser("interleave", aliases=["dampener", "bookmark"], help="Autonomous cognitive spatial schema interleaving and context switch dampener")
+    p_damp.add_argument("project", nargs="?", default="Strategic Workstream", help="Project or active context title")
+    p_damp.add_argument("--thread", "-t", default="Core Architecture Modeling", help="Active sub-thread or task description")
+    p_damp.add_argument("--focus", "-f", type=float, default=8.0, help="Depth of focus 1.0 to 10.0 (default: 8.0)")
+    p_damp.add_argument("--completion", "-c", type=float, default=0.5, help="Task completion ratio 0.0 to 1.0 (default: 0.5)")
+    p_damp.add_argument("--minutes", "-m", type=float, default=35.0, help="Minutes spent in continuous flow (default: 35.0)")
+    p_damp.add_argument("--next-step", "-n", default="Run integration benchmark against edge cluster", help="Immediate first action on return")
+    p_damp.add_argument("--loops", "-l", nargs="*", default=["Uncommitted state buffer", "Pending race condition test"], help="Unresolved open loops or tensions")
+    p_damp.add_argument("--canvas", default="", help="Output Obsidian .canvas filepath")
+    p_damp.add_argument("--svg", "-s", default="", help="Output attention residue gauge SVG filepath")
+    p_damp.add_argument("--json", "-j", action="store_true", help="Output raw JSON interleaving telemetry")
+    
     args = parser.parse_args()
+
 
 
 
@@ -2056,8 +2070,41 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Buffer Telemetry SVG exported to: {args.svg}")
+    elif args.command in ["interleave", "dampener", "bookmark"]:
+        import scripts.context_dampener as cd
+        dampener = cd.ContextSwitchDampener()
+        state = cd.ContextState(
+            project_name=args.project,
+            active_thread=args.thread,
+            depth_of_focus=args.focus,
+            completion_ratio=args.completion,
+            time_in_flow_min=args.minutes,
+            unresolved_tensions=args.loops,
+            immediate_next_step=args.next_step,
+        )
+        telemetry = dampener.evaluate_switch(state)
+
+        if args.json:
+            out = {
+                "state": state.to_dict(),
+                "telemetry": telemetry.to_dict(),
+            }
+            print(json.dumps(out, indent=2))
+        else:
+            print("\n" + dampener.export_summary_markdown(state, telemetry))
+
+        if args.canvas:
+            dampener.export_canvas(state, telemetry, output_path=args.canvas)
+            print(f"\n[DxSkills] Context Bookmark .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = dampener.export_svg_gauge(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Attention Residue Gauge SVG exported to: {args.svg}")
     else:
         parser.print_help()
+
 
 
 
