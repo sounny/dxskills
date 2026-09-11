@@ -1500,6 +1500,15 @@ def main():
     p_floer.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_floer.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_floer.add_argument("--demo", action="store_true", help="Run with demonstration Lagrangian intersections and Stasheff associahedra")
+    # non-abelian-hodge / hitchin-fibration / higgs-bundle / simpson-correspondence
+    p_hodge = subparsers.add_parser("non-abelian-hodge", aliases=["hitchin-fibration", "higgs-bundle", "simpson-correspondence"], help="Autonomous cognitive spatial Non-Abelian Hodge Theory and Hitchin-Simpson Loom")
+    p_hodge.add_argument("--genus", "-g", type=int, default=2, help="Riemann surface genus (default: 2)")
+    p_hodge.add_argument("--rank", "-r", type=int, default=2, help="Lie group rank r for SL(r, C) (default: 2)")
+    p_hodge.add_argument("--group", default="SL(2, C) Special Linear Group", choices=["SL(2, C) Special Linear Group", "SL(3, C) Special Linear Group", "GL(2, C) General Linear Group", "PGL(2, C) Projective Linear Group"], help="Complex reductive Lie group")
+    p_hodge.add_argument("--theta", type=float, default=0.0, help="Twistor phase angle theta in radians for hyperkahler rotation")
+    p_hodge.add_argument("--svg", default="", help="Output moduli spaces and Hitchin fibration SVG filepath")
+    p_hodge.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_hodge.add_argument("--demo", action="store_true", help="Run with demonstration Higgs bundle and Simpson correspondence")
     args = parser.parse_args()
 
 
@@ -8470,6 +8479,49 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Symplectic Floer interactive HTML written to: {args.html}")
+    elif args.command in ["non-abelian-hodge", "hitchin-fibration", "higgs-bundle", "simpson-correspondence"]:
+        from scripts.non_abelian_hodge_loom import (
+            NonAbelianHodgeLoom,
+            ModuliComponent,
+            GaugeGroup,
+            StabilityClassification,
+        )
+        loom = NonAbelianHodgeLoom(
+            genus=args.genus,
+            rank=args.rank,
+            group=args.group,
+        )
+        b1 = loom.create_higgs_bundle("HB-DEMO-01", degree=0)
+        m1 = loom.solve_harmonic_metric(b1.bundle_id)
+        c1 = loom.compute_simpson_correspondence("SIMP-DEMO", theta=args.theta)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            base = loom.hitchin_base
+            print("=================================================================")
+            print("  Non-Abelian Hodge Theory & Hitchin-Simpson Corlette Loom")
+            print("=================================================================")
+            print(f"Riemann Surface Genus g:       {loom.genus}")
+            print(f"Gauge Group:                   {loom.group} (Rank {loom.rank})")
+            print(f"Hitchin Base Dimension:        {base.base_dimension if base else 0}")
+            print(f"Moduli Space Dimension:        {base.moduli_dimension if base else 0}")
+            print(f"Spectral Curve Genus:          {base.spectral_curve_genus if base else 0}")
+            print(f"Prym Variety Dimension:        {base.prym_variety_dimension if base else 0}")
+            print(f"Twistor Phase Theta:           {c1.twistor_parameter_theta:.4f} rad")
+            print(f"Active Moduli Regime:          {c1.complex_structure}")
+            print(f"Harmonic Metric Status:        {'VERIFIED (Defect < 1e-5)' if m1.is_harmonic else 'NON-HARMONIC'}")
+            print(f"Hitchin Defect Norm:           {m1.hitchin_defect:.6f}")
+            print(f"Character Variety Trace:       {c1.character_variety_trace:.4f}")
+            print("Monodromy Generators:")
+            for gen_name, gen_mat in c1.monodromy_generators.items():
+                print(f"  * {gen_name}: {gen_mat}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_moduli_svg())
+            print(f"[DxSkills] Non-Abelian Hodge moduli SVG written to: {args.svg}")
     else:
         parser.print_help()
 
