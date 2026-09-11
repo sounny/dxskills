@@ -36,27 +36,22 @@ class TestCognitiveFatigue(unittest.TestCase):
         self.assertEqual(saturated["status"], "Phonological Saturation")
         self.assertIn("Red", saturated["zone"])
 
-    def test_html_stamina_elements(self):
-        """Verifies UI elements for stamina indicator and spatial reset modal."""
+    def test_html_stamina_elements_decommissioned(self):
+        """Verifies UI elements for stamina indicator and spatial reset modal are removed."""
         self.assertTrue(os.path.isfile(INDEX_PATH), "index.html must exist")
         with open(INDEX_PATH, "r", encoding="utf-8") as f:
             html = f.read()
 
-        required_elements = [
+        decommissioned_elements = [
             'id="cognitive-stamina-btn"',
-            'id="stamina-icon"',
-            'id="stamina-label"',
             'id="spatial-reset-modal"',
-            'id="reset-session-timer"',
-            'id="breathing-circle"',
-            'id="breathing-phase-text"',
             'openSpatialResetModal()',
             'closeSpatialResetModal()',
             'snoozeSpatialReset(',
             'updateCognitiveStamina()',
         ]
-        for elem in required_elements:
-            self.assertIn(elem, html, f"Expected stamina/reset element missing: {elem}")
+        for elem in decommissioned_elements:
+            self.assertNotIn(elem, html, f"Spatial reset element should be removed: {elem}")
 
     def test_zero_em_dashes(self):
         """Verifies zero em dashes in fatigue script and test files."""
