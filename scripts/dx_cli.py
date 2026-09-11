@@ -1823,6 +1823,14 @@ def main():
     p_tw.add_argument("--svg", default="", help="Output Taylor-Wiles SVG filepath")
     p_tw.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_tw.add_argument("--demo", action="store_true", help="Run with demonstration Selmer groups, Taylor-Wiles primes, and R = T proof")
+    # paramodular-conjecture / abelian-surface / paramodular-loom / brumer-kramer
+    p_pm = subparsers.add_parser("paramodular-conjecture", aliases=["abelian-surface", "paramodular-loom", "brumer-kramer"], help="Autonomous cognitive spatial Paramodular Conjecture and Modularity of Abelian Surfaces Loom")
+    p_pm.add_argument("--conductor", "-c", type=int, default=277, help="Conductor N of abelian surface (default: 277)")
+    p_pm.add_argument("--precision", type=float, default=0.01, help="Spectral precision (default: 0.01)")
+    p_pm.add_argument("--archetype", default="n277", choices=["n277", "n587", "lift", "bcgp"], help="Paramodular archetype (default: n277)")
+    p_pm.add_argument("--svg", default="", help="Output Paramodular Conjecture SVG filepath")
+    p_pm.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_pm.add_argument("--demo", action="store_true", help="Run with demonstration abelian surface, paramodular cusp form, and Spinor Euler factors")
     args = parser.parse_args()
 
 
@@ -10614,6 +10622,57 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_svg())
             print(f"[DxSkills] Taylor-Wiles SVG written to: {out_path}")
+    elif args.command in ["paramodular-conjecture", "abelian-surface", "paramodular-loom", "brumer-kramer"]:
+        from scripts.paramodular_conjecture_loom import (
+            ParamodularConjectureLoom,
+            ParamodularArchetype,
+        )
+        arch_map = {
+            "n277": ParamodularArchetype.PARAMODULAR_N277_MINIMAL.value,
+            "n587": ParamodularArchetype.PARAMODULAR_N587_JACOBIAN.value,
+            "lift": ParamodularArchetype.GRITSENKO_LIFT_BOUNDARY.value,
+            "bcgp": ParamodularArchetype.BCGP_OVERCONVERGENT_GSP4.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, ParamodularArchetype.PARAMODULAR_N277_MINIMAL.value)
+
+        loom = ParamodularConjectureLoom(
+            conductor_input=args.conductor,
+            spectral_precision=args.precision,
+            default_archetype=chosen_arch,
+        )
+        ev = loom.evaluate_paramodular_conjecture()
+        ab = loom.abelian_surface
+        pf = loom.paramodular_form
+
+        if args.json:
+            import json
+            print(json.dumps(loom.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Paramodular Conjecture & Modularity of Abelian Surfaces Loom")
+            print("=================================================================")
+            print(f"Setting Archetype:             {loom.archetype_str}")
+            if ab:
+                print(f"Abelian Surface A/Q:           {ab.surface_label[:40]} (Conductor N = {ab.conductor_n})")
+                print(f"Polarization & Endomorphisms:  Degree {ab.polarization_degree} | {ab.endomorphism_ring}")
+                print(f"Genus 2 Curve Equation:        {ab.genus2_curve_equation[:45]}")
+            if pf:
+                print(f"Paramodular Form S_2(K(N)):    {pf.form_label[:40]}")
+                print(f"Hecke Eigenvalues:             T(2) = {pf.hecke_eigenvalue_t2} | T(3) = {pf.hecke_eigenvalue_t3}")
+                print(f"Genuine Non-Lift Form:         {ev.is_genuine_non_lift} (CAP Lift: {pf.is_gritsenko_lift})")
+            print(f"Spinor L-Function Degree:      {ev.spinor_l_degree} (Euler Factors: {len(loom.euler_factors)} primes)")
+            print(f"Paramodular Modularity Holds:  {ev.modularity_conjecture_verified}")
+            print(f"Cognitive Resonance Score:     {ev.cognitive_resonance_score:.4f}")
+            print(f"Spatial Stability Index:       {ev.spatial_stability_index:.4f}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "paramodular_conjecture_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_svg())
+            print(f"[DxSkills] Paramodular SVG written to: {out_path}")
     else:
         parser.print_help()
 
