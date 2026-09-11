@@ -1453,6 +1453,18 @@ def main():
     p_fact.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_fact.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_fact.add_argument("--demo", action="store_true", help="Run with demonstration Torus T^2 and braided E_2 algebra")
+    # tqft-axiomatic / atiyah-segal / cobordism-loom / frobenius-state-sum
+    p_tqft = subparsers.add_parser("tqft-axiomatic", aliases=["atiyah-segal", "cobordism-loom", "frobenius-state-sum"], help="Autonomous cognitive spatial Topological Quantum Field Theory and Atiyah-Segal Axiomatic Loom")
+    p_tqft.add_argument("input", nargs="?", default="", help="Input TQFT spacetime configuration JSON filepath")
+    p_tqft.add_argument("--name", default="Cognitive Spacetime Field Z", help="Spacetime identifier")
+    p_tqft.add_argument("--dim", default="2D TQFT (Commutative Frobenius Algebra / String Worldsheets)", choices=["2D TQFT (Commutative Frobenius Algebra / String Worldsheets)", "1D TQFT (Finite-Dimensional Vector Space / Super-Traces)", "3D TQFT (Modular Tensor Category / Chern-Simons & Witten-Reshetikhin-Turaev)", "4D TQFT (Donaldson-Witten / Crane-Yetter Categorified State Sums)"], help="Spacetime dimension classification")
+    p_tqft.add_argument("--algebra-dim", type=int, default=3, help="Frobenius algebra dimension")
+    p_tqft.add_argument("--algebra-name", default="Cohomology Ring H^*(CP^2; C)", help="Frobenius algebra name")
+    p_tqft.add_argument("--report", default="", help="Output TQFT telemetry markdown filepath")
+    p_tqft.add_argument("--svg", default="", help="Output cobordism surface and operator SVG filepath")
+    p_tqft.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_tqft.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_tqft.add_argument("--demo", action="store_true", help="Run with demonstration 2D Frobenius algebra and pants cobordisms")
     args = parser.parse_args()
 
 
@@ -8194,6 +8206,63 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Factorization homology interactive HTML written to: {args.html}")
+    elif args.command in ["tqft-axiomatic", "atiyah-segal", "cobordism-loom", "frobenius-state-sum"]:
+        from scripts.tqft_axiomatic_loom import (
+            TQFTAxiomaticLoom,
+            TQFTDimension,
+            CobordismType,
+        )
+        loom = TQFTAxiomaticLoom(
+            schema_name=args.name,
+            spacetime_dim=args.dim,
+            algebra_dim=args.algebra_dim,
+            algebra_name=args.algebra_name,
+        )
+        if not (args.demo or not args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loom.schema_name = data.get("schema_name", args.name)
+            loom.spacetime_dim = data.get("spacetime_dim", args.dim)
+            loom.algebra_dim = int(data.get("algebra_dim", args.algebra_dim))
+            loom.algebra_name = data.get("algebra_name", args.algebra_name)
+
+        result = loom.evaluate_tqft()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Topological Quantum Field Theory & Atiyah-Segal Axiomatic Loom")
+            print("=================================================================")
+            print(f"Target Spacetime:              {result.schema_name}")
+            print(f"Spacetime Classification:      {result.spacetime_dimension}")
+            print(f"Classifying Frobenius Algebra: {result.frobenius_algebra.algebra_name} (Dim={result.frobenius_algebra.dimension})")
+            print(f"Closed Spacetime Invariant:    Z(T^2) = {result.closed_spacetime_invariant:.1f}")
+            print(f"Gluing Composition Axiom:      {'VERIFIED' if result.gluing_axiom_verified else 'FAILED'}")
+            print(f"Monoidal Disjoint Union:       {'VERIFIED' if result.monoidal_axiom_verified else 'FAILED'}")
+            print(f"Cylinder Identity Axiom:       {'VERIFIED' if result.cylinder_axiom_verified else 'FAILED'}")
+            print("Spatial Boundary State Spaces H_Sigma:")
+            for ss in result.state_spaces:
+                print(f"  * {ss.manifold_label}: Dim={ss.dimension} | Basis: {', '.join(ss.basis_vectors[:2])}...")
+            print("Cobordism Linear Operators Z(W):")
+            for c in result.cobordisms:
+                print(f"  * {c.cobordism_id} ({c.cobordism_type[:24]}): Operator='{c.operator_label}' | Rank={c.operator_rank} | Trace={c.operator_trace:.1f}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] TQFT report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] TQFT SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] TQFT interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
