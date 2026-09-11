@@ -131,89 +131,125 @@
   </div>
 
   <!-- NAVIGATION -->
-  <nav class="sticky top-0 z-50 border-b border-mono-200 dark:border-mono-800/80 bg-white/80 dark:bg-mono-950/80 backdrop-blur-lg transition-colors duration-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+  <nav class="sticky top-0 z-50 border-b border-mono-200/80 dark:border-mono-800/80 bg-white/85 dark:bg-mono-950/85 backdrop-blur-xl transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
       
-      <!-- Brand Logo -->
-      <a href="#" class="flex items-center gap-3 group">
-        <img src="icons/icon-192.svg" alt="DxSkills Logo" class="w-8 h-8 rounded-lg shadow-sm border border-mono-200/80 dark:border-mono-800/80 group-hover:scale-105 transition-transform flex-shrink-0">
-        <div class="flex flex-col justify-center">
-          <div class="flex items-center gap-1.5 leading-none">
-            <span class="font-bold tracking-tight text-mono-950 dark:text-mono-100 text-sm sm:text-base">DxSkills</span>
-            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-mono-100 dark:bg-mono-900 text-mono-600 dark:text-mono-400 border border-mono-200 dark:border-mono-800 whitespace-nowrap shrink-0">D-MODE</span>
-          </div>
-          <span class="text-[10px] font-mono text-mono-500 uppercase tracking-wider mt-0.5">Cognitive Scaffolding</span>
+      <!-- Brand Logo (Adobe-Style Black Square with Dx) -->
+      <a href="#" class="flex items-center gap-2.5 group shrink-0" title="DxSkills Home">
+        <div class="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-extrabold text-sm tracking-tight border border-zinc-800 shadow-sm group-hover:scale-105 transition-transform shrink-0">
+          Dx
         </div>
+        <span class="font-bold tracking-tight text-mono-950 dark:text-mono-100 text-base leading-none">DxSkills</span>
       </a>
 
-      <!-- Nav Links -->
-      <div class="hidden md:flex items-center gap-7 text-xs font-mono text-mono-600 dark:text-mono-400">
-        <a href="#philosophy" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Philosophy</a>
-        <a href="#skills" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Skills Suite</a>
-        <a href="#simulator" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Live Demo</a>
-        <a href="#d-mode" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Presets</a>
-        <a href="#install" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Install & Sync</a>
-        <a href="#benchmarks" class="hover:text-mono-950 dark:hover:text-mono-100 transition">Benchmarks</a>
-        <a href="https://github.com/sounny/dxskills/blob/main/RESEARCH.md" target="_blank" class="hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center gap-1">Science <i data-lucide="external-link" class="w-3 h-3"></i></a>
-        <button onclick="openBundleModal()" class="px-2.5 py-1 rounded bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center gap-1 font-bold">Bundle (.zip) <i data-lucide="download" class="w-3 h-3"></i></button>
+      <!-- Primary Navigation Links -->
+      <div class="hidden lg:flex items-center gap-7 text-xs font-mono text-mono-600 dark:text-mono-400">
+        <a href="#philosophy" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Philosophy</a>
+        <a href="#skills" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Skills</a>
+        <a href="#simulator" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Live Demo</a>
+        <a href="#d-mode" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Presets</a>
+        <a href="#install" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Install</a>
+        <a href="#benchmarks" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Benchmarks</a>
       </div>
 
-      <!-- Actions (Search + Theme Toggle + Copy Button) -->
-      <div class="flex items-center gap-3">
+      <!-- Actions & Controls (Cleared Up & Minimalist) -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         
-        <!-- Command Palette / Search Button -->
-        <button onclick="openSearchModal()" class="px-2.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1.5 text-xs font-mono" title="Quick Search (Ctrl+K or /)">
-          <i data-lucide="search" class="w-3.5 h-3.5"></i>
-          <span class="hidden xl:inline text-mono-400 dark:text-mono-500">Search</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 text-[9px] bg-mono-200 dark:bg-mono-800 text-mono-600 dark:text-mono-400 rounded">⌘K</kbd>
-        </button>
-
-        <!-- PWA Install Button -->
-        <button id="pwa-install-btn" onclick="installPWA()" class="hidden px-2.5 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 text-xs font-mono font-bold hover:opacity-90 transition flex items-center gap-1.5" title="Install App">
-          <i data-lucide="download" class="w-3.5 h-3.5"></i>
-          <span class="hidden sm:inline">Install</span>
+        <!-- Search Button -->
+        <button onclick="openSearchModal()" class="h-8 w-8 flex items-center justify-center rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition" title="Quick Search (Ctrl+K or /)">
+          <i data-lucide="search" class="w-4 h-4"></i>
         </button>
 
         <!-- Theme Toggle Button -->
-        <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1.5 text-xs font-mono" title="Toggle Theme">
-          <span id="theme-icon-light" class="inline dark:hidden flex items-center gap-1">
-            <i data-lucide="moon" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Dark</span>
+        <button id="theme-toggle" onclick="toggleTheme()" class="h-8 w-8 flex items-center justify-center rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition" title="Toggle Theme">
+          <span id="theme-icon-light" class="inline dark:hidden flex items-center justify-center">
+            <i data-lucide="moon" class="w-4 h-4"></i>
           </span>
-          <span id="theme-icon-dark" class="hidden dark:flex items-center gap-1">
-            <i data-lucide="sun" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Light</span>
+          <span id="theme-icon-dark" class="hidden dark:flex items-center justify-center">
+            <i data-lucide="sun" class="w-4 h-4"></i>
           </span>
         </button>
 
-        <!-- Language Toggle Button -->
-        <button id="lang-toggle-btn" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1 text-xs font-mono font-bold" title="Toggle Language (EN / FR)">
-          <span id="lang-label">FR</span>
-        </button>
-
-        <!-- Dyslexic Font Toggle Button -->
-        <button id="font-toggle-btn" onclick="toggleDyslexicFont()" class="px-2.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1 text-xs font-mono font-bold" title="Toggle OpenDyslexic Font and Spacing">
-          <span id="font-toggle-label">Aa</span>
-        </button>
-
-        <!-- Cognitive Stamina & Spatial Reset Button -->
-        <button id="cognitive-stamina-btn" onclick="openSpatialResetModal()" class="px-2.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1.5 text-xs font-mono font-bold" title="Cognitive Stamina & Spatial Reset">
-          <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-500" id="stamina-icon"></i>
-          <span id="stamina-label" class="hidden md:inline">100% Focus</span>
-        </button>
-
-        <a href="#d-mode" class="px-3 py-1.5 text-xs font-mono font-medium rounded-lg bg-mono-100 dark:bg-mono-900 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-900 dark:text-mono-200 border border-mono-300 dark:border-mono-700 transition flex items-center gap-1.5">
-          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-          <span>Copy D-Mode</span>
+        <!-- Primary CTA: Get D-Mode -->
+        <a href="#d-mode" class="h-8 px-3.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 hover:bg-mono-800 dark:hover:bg-white text-xs font-mono font-bold transition flex items-center gap-1.5 shadow-sm shrink-0">
+          <span>Get D-Mode</span>
         </a>
 
-        <a href="https://github.com/sounny/dxskills" target="_blank" class="p-1.5 text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-mono-100 transition rounded-lg hover:bg-mono-100 dark:hover:bg-mono-900">
-          <i data-lucide="github" class="w-4 h-4"></i>
-        </a>
+        <!-- Mobile Menu Toggle Button (Visible below LG) -->
+        <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition shrink-0" title="Toggle Navigation Menu">
+          <i data-lucide="menu" id="mobile-menu-icon" class="w-4 h-4"></i>
+        </button>
+
       </div>
 
     </div>
+
+    <!-- MOBILE NAVIGATION DRAWER -->
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-mono-200/80 dark:border-mono-800/80 bg-white/95 dark:bg-mono-950/95 backdrop-blur-2xl transition-all duration-200 px-4 py-4 space-y-3">
+      <!-- Quick Mobile Actions -->
+      <div class="pb-2 border-b border-mono-200/80 dark:border-mono-800/80 flex items-center gap-2">
+        <a href="#d-mode" onclick="toggleMobileMenu()" class="flex-1 py-2.5 px-3 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold text-xs font-mono flex items-center justify-center gap-2 shadow-sm">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i> Get Universal D-Mode
+        </a>
+        <button onclick="toggleLanguage()" class="py-2.5 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-xs font-mono font-bold flex items-center gap-1 text-mono-700 dark:text-mono-300">
+          <i data-lucide="globe" class="w-3.5 h-3.5"></i> <span id="mobile-lang-label">FR</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+        <a href="#philosophy" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+          <i data-lucide="compass" class="w-3.5 h-3.5 text-mono-500"></i> Philosophy
+        </a>
+        <a href="#skills" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-mono-500"></i> Skills Suite
+        </a>
+        <a href="#simulator" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+          <i data-lucide="play" class="w-3.5 h-3.5 text-mono-500"></i> Live Demo
+        </a>
+        <a href="#d-mode" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-mono-500"></i> Presets
+        </a>
+        <a href="#install" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+          <i data-lucide="terminal" class="w-3.5 h-3.5 text-mono-500"></i> Install & Sync
+        </a>
+        <a href="#benchmarks" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
+          <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-mono-500"></i> Benchmarks
+        </a>
+      </div>
+      <div class="pt-2 border-t border-mono-200/80 dark:border-mono-800/80 flex items-center justify-between gap-2 text-xs font-mono">
+        <button onclick="toggleMobileMenu(); openBundleModal();" class="flex-1 py-2 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center justify-center gap-1.5 font-semibold">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Bundle (.zip)
+        </button>
+        <a href="https://github.com/sounny/dxskills" target="_blank" class="flex-1 py-2 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 hover:text-mono-950 dark:hover:text-mono-100 transition flex items-center justify-center gap-1.5 font-semibold">
+          <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub <i data-lucide="external-link" class="w-3 h-3 opacity-60"></i>
+        </a>
+      </div>
+    </div>
   </nav>
+
+  <!-- FLOATING COGNITIVE & ACCESSIBILITY DOCK -->
+  <aside aria-label="Cognitive Accessibility Controls" class="fixed bottom-5 right-5 z-40 hidden sm:flex items-center p-1 rounded-full bg-white/90 dark:bg-mono-900/90 backdrop-blur-xl border border-mono-200/80 dark:border-mono-800/80 shadow-lg shadow-mono-950/5 dark:shadow-black/40 gap-1 text-xs font-mono">
+    <!-- Dyslexic Font Toggle Button -->
+    <button id="font-toggle-btn" onclick="toggleDyslexicFont()" class="h-7 px-2.5 rounded-full bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1 font-bold" title="Toggle OpenDyslexic Font and Spacing">
+      <span id="font-toggle-label">Aa</span>
+      <span class="text-[10px] opacity-70 font-normal hidden md:inline">Dyslexic</span>
+    </button>
+
+    <span class="w-px h-3.5 bg-mono-200 dark:bg-mono-800"></span>
+
+    <!-- Language Toggle Button -->
+    <button id="lang-toggle-btn" onclick="toggleLanguage()" class="h-7 px-2.5 rounded-full bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center font-bold" title="Toggle Language (EN / FR)">
+      <span id="lang-label">FR</span>
+    </button>
+
+    <span class="w-px h-3.5 bg-mono-200 dark:bg-mono-800"></span>
+
+    <!-- Cognitive Stamina / Spatial Reset Button -->
+    <button id="cognitive-stamina-btn" onclick="openSpatialResetModal()" class="h-7 px-2.5 rounded-full bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition flex items-center gap-1.5" title="Cognitive Stamina & Spatial Reset">
+      <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-500" id="stamina-icon"></i>
+      <span id="stamina-label" class="text-[11px] font-bold hidden md:inline">100% Focus</span>
+    </button>
+  </aside>
 
   <!-- HERO SECTION -->
   <section class="relative pt-20 pb-16 md:pt-28 md:pb-24 border-b border-mono-200 dark:border-mono-800/80 bg-grid overflow-hidden">
@@ -1119,10 +1155,10 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
 - Accept rapid brain dumps, sentence fragments, rough voice-to-text dictations, and phonetic spelling without comment or pedantry.
 - Never ask the user to fix spelling, grammar, or phrasing. Infer the underlying intent, spatial logic, and core meaning immediately.
 
-2. ANTI-WALL-OF-TEXT (VISUAL SCAFFOLDING):
-- Never output dense, uniform, unbroken paragraphs of text.
-- Lead with a 1-2 sentence "Bottom Line Up Front" (BLUF).
-- Maximize visual hierarchy: use bold topic signposts, clean bulleted lists, generous white space, and side-by-side comparison tables.
+2. ANTI-WALL-OF-TEXT (BREATHING ROOM WITHOUT FORCED BULLETS):
+- Never output dense, uniform, unbroken walls of text.
+- Lead substantive responses with a 1-2 sentence "Bottom Line Up Front" (BLUF).
+- Prose vs Structure Distinction: For conversational writing, emails, and discussion replies, use short 1-3 sentence paragraphs with clean line breaks. NEVER turn natural dialogue into artificial bullet lists or bold topic outlines. Reserve bullet hierarchies, matrices, and tables for technical documentation, step-by-step tasks, and multi-option comparisons.
 
 3. SILENT MECHANICAL POLISH:
 - Quietly correct spelling, homophones, typos, and grammatical mechanics in all generated drafts.
@@ -1130,6 +1166,7 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
 
 4. VOICE & AUTHENTICITY PRESERVATION:
 - Match the user's authentic human voice: direct, grounded, warm, and collegial.
+- Dyslexic thinkers communicate with authentic relational warmth, speed, and real-world clarity. Never sterilize interpersonal writing into robotic slide-deck outlines.
 - Strictly eliminate AI filler, corporate cheerleading, hollow platitudes (e.g., "I hope this finds you well", "delve", "testament"), and all em dashes.
 
 5. SPATIAL & SYSTEMS-FIRST PRESENTATION:
@@ -1672,6 +1709,18 @@ mindmap
       }
     }
 
+    // Mobile Navigation Drawer Toggle
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('mobile-menu-icon');
+      if (!menu) return;
+      const isHidden = menu.classList.toggle('hidden');
+      if (icon) {
+        icon.setAttribute('data-lucide', isHidden ? 'menu' : 'x');
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
     // Simulator Switch
     function switchDemo(mode) {
       const viewDx = document.getElementById('view-dx');
@@ -1711,10 +1760,10 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
 - Accept rapid brain dumps, sentence fragments, rough voice-to-text dictations, and phonetic spelling without comment or pedantry.
 - Never ask the user to fix spelling, grammar, or phrasing. Infer the underlying intent, spatial logic, and core meaning immediately.
 
-2. ANTI-WALL-OF-TEXT (VISUAL SCAFFOLDING):
-- Never output dense, uniform, unbroken paragraphs of text.
-- Lead with a 1-2 sentence "Bottom Line Up Front" (BLUF).
-- Maximize visual hierarchy: use bold topic signposts, clean bulleted lists, generous white space, and side-by-side comparison tables.
+2. ANTI-WALL-OF-TEXT (BREATHING ROOM WITHOUT FORCED BULLETS):
+- Never output dense, uniform, unbroken walls of text.
+- Lead substantive responses with a 1-2 sentence "Bottom Line Up Front" (BLUF).
+- Prose vs Structure Distinction: For conversational writing, emails, and discussion replies, use short 1-3 sentence paragraphs with clean line breaks. NEVER turn natural dialogue into artificial bullet lists or bold topic outlines. Reserve bullet hierarchies, matrices, and tables for technical documentation, step-by-step tasks, and multi-option comparisons.
 
 3. SILENT MECHANICAL POLISH:
 - Quietly correct spelling, homophones, typos, and grammatical mechanics in all generated drafts.
@@ -1722,6 +1771,7 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
 
 4. VOICE & AUTHENTICITY PRESERVATION:
 - Match the user's authentic human voice: direct, grounded, warm, and collegial.
+- Dyslexic thinkers communicate with authentic relational warmth, speed, and real-world clarity. Never sterilize interpersonal writing into robotic slide-deck outlines.
 - Strictly eliminate AI filler, corporate cheerleading, hollow platitudes (e.g., "I hope this finds you well", "delve", "testament"), and all em dashes.
 
 5. SPATIAL & SYSTEMS-FIRST PRESENTATION:
@@ -1768,7 +1818,7 @@ You are pair programming with a non-linear, spatial engineer.
 2. Visual Scaffolding:
 - Never output dense, uniform paragraphs.
 - Lead with a 1-2 sentence Bottom Line Up Front (BLUF).
-- Use bold section headers, clean bullet hierarchies, and Markdown comparison tables.
+- For conversational writing, emails, and discussion replies, use short 1-3 sentence paragraphs without forced bullets. Use bold headers and comparison tables for structured documentation.
 
 3. Artifacts First:
 - For long documents, design specifications, or code files, always generate them inside Claude Artifacts.
@@ -1779,7 +1829,7 @@ You are pair programming with a non-linear, spatial engineer.
 
 5. Silent Polish & Tone:
 - Quietly fix spelling, typos, and homophones in the background without annotations.
-- Match authentic conversational warmth and directness. Eliminate corporate cheerleading.
+- Match authentic conversational warmth and directness. Avoid artificial bullet lists.
 - Strictly NO em dashes: Never output em dashes. Use hyphens, commas, or parentheses instead.`
       },
       chatgpt: {
@@ -1789,9 +1839,9 @@ You are pair programming with a non-linear, spatial engineer.
 Operate in D-Mode (Cognitive Scaffolding):
 
 1. Zero-Friction Input: Accept my rough notes, bullet fragments, voice transcripts, and typos without comment. Infer my intent and core ideas immediately.
-2. Anti-Wall-of-Text: Never output dense, uniform paragraphs. Always lead with a 1-2 sentence Bottom Line Up Front (BLUF). Use bold signposts, bullet hierarchies, tables, and white space.
+2. Anti-Wall-of-Text: Never output dense, uniform paragraphs. Always lead with a 1-2 sentence Bottom Line Up Front (BLUF). For conversational writing and replies, use short 1-3 sentence paragraphs without forced bullets. Reserve bullet hierarchies and tables for structured documentation.
 3. Silent Mechanical Polish: Quietly fix spelling, homophones, and grammar in your outputs. Never lecture or call out my typos.
-4. Voice & Tone: Keep your tone authentic, direct, warm, and grounded. Eliminate all generic AI filler, corporate cheerleading, and hollow platitudes.
+4. Voice & Tone: Keep your tone authentic, direct, warm, and grounded. Sound like a real person having a conversation, not a slide deck. Eliminate all generic AI filler, corporate cheerleading, and hollow platitudes.
 5. Systems Presentation: Use Markdown tables and Mermaid.js diagrams for workflows and processes instead of long text explanations.
 6. Strict Rule: Never use em dashes anywhere. Use commas, hyphens, or parentheses instead.`
       },
@@ -1810,14 +1860,15 @@ Core Operational Rules:
 2. Visual Anti-Wall-of-Text:
 - Never generate long, unbroken walls of text.
 - Start with a 1-2 sentence Bottom Line Up Front (BLUF).
-- Use clear visual hierarchies: bold thematic signposts, clean bullet tiers, and Markdown tables.
+- For conversational writing and replies, use short 1-3 sentence paragraphs without forced bullets.
+- Use clear visual hierarchies and tables for structured documentation.
 
 3. Silent Mechanical Polish:
 - Quietly correct spelling, homophones, and grammatical mechanics in all deliverables.
 - Do not list or highlight what was corrected.
 
 4. Authentic Voice:
-- Match the user's authentic conversational warmth, directness, and momentum.
+- Match the user's authentic conversational warmth, directness, and momentum. Sound like a real person, not an AI summary deck.
 - Avoid robotic AI clichés ("delve", "testament", "beacon", "I hope this finds you well").
 - Zero Em Dashes: Never use em dashes anywhere. Use commas, hyphens, or parentheses instead.
 
@@ -1840,14 +1891,15 @@ Directives Operationnelles Majeures:
 2. Presentation Anti-Mur-de-Texte:
 - Ne genere jamais de longs paragraphes denses.
 - Commencez toujours par 1 ou 2 phrases sous la banniere L'Essentiel d'Abord (BLUF - Bottom Line Up Front).
-- Segmentez avec des balises en gras, des puces aerees et des tableaux Markdown.
+- Pour les reponses et ecrits relationnels, utilisez de courts paragraphes aeres (1 a 3 phrases) sans listes a puces forcees.
+- Reservez les puces et tableaux aux specifications techniques et plans d'action.
 
 3. Polissage Mecanique Silencieux:
 - Corrigez discretement l'orthographe, les accords grammaticaux et les homophones (e/er, a/a, et/est, son/sont).
 - Ne signalez jamais les fautes corrigees. Aucune remarque condescendante.
 
 4. Voix Authentique & Directe:
-- Conservez une tonalite humaine, directe et collegiale.
+- Conservez une tonalite humaine, directe et collegiale. Les penseurs dyslexiques excellent dans l'authenticite et la clarte; ne sterilisez jamais leurs ecrits en listes robotiques.
 - Eliminez les cliches generiques de l'IA ("dans le paysage actuel", "force est de constater", "veritable catalyseur").
 - Zero Tiret Cadratin: N'utilisez jamais de tirets cadratins. Utilisez des virgules, des traits d'union (-) ou des parentheses.
 
@@ -3675,7 +3727,6 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       { title: "Bi-Directional Hyper-Link Resonance Weaver", category: "CLI", desc: "Associative semantic proximity engine discovering latent cross-domain bridges and non-destructive bi-directional resonance edges", link: "https://github.com/sounny/dxskills/blob/main/scripts/resonance_weaver.py", action: "Open" },
       { title: "Saccade Velocity & Gaze Path Calibrator", category: "CLI", desc: "Rayner Optimal Viewing Position (OVP) micro-anchor synthesis and ballistic saccade trajectory friction dampener", link: "https://github.com/sounny/dxskills/blob/main/scripts/saccade_calibrator.py", action: "Open" },
       { title: "Schema Morphing & Cross-Scale Projection Engine", category: "CLI", desc: "Triadic multi-scale projection across macro, meso, and micro abstraction planes with allocentric coordinate invariant tracking", link: "https://github.com/sounny/dxskills/blob/main/scripts/schema_projection_engine.py", action: "Open" },
-      { title: "Cross-Scale Associative Constellation & Galois Lattice Engine", category: "CLI", desc: "Formal Concept Analysis (FCA) Galois lattice mapping, hierarchical intent discovery, and cross-cluster resonance bridges", link: "https://github.com/sounny/dxskills/blob/main/scripts/galois_lattice_engine.py", action: "Open" },
       { title: "Saccadic Fatigue Meter & Dynamic Contrast Damper", category: "CLI", desc: "Carpenter main sequence saccadic velocity decay tracking, attentional blink risk estimation, and adaptive contrast ramp dampening", link: "https://github.com/sounny/dxskills/blob/main/scripts/saccadic_fatigue_meter.py", action: "Open" },
       { title: "Syntactic Lexical Stress-Tester & Stepping Stones", category: "CLI", desc: "Capacity Theory of Comprehension (Just & Carpenter), syntactic friction scoring, and non-intrusive micro-fixation stepping stones", link: "https://github.com/sounny/dxskills/blob/main/scripts/lexical_stress_tester.py", action: "Open" },
       { title: "Semantic Anchor Distiller & Visual Indexer", category: "CLI", desc: "Rosch Prototype Theory semantic clustering, high-salience landmark distillation, and interactive thumbnail radar maps", link: "https://github.com/sounny/dxskills/blob/main/scripts/semantic_anchor_distiller.py", action: "Open" },
@@ -3686,7 +3737,6 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       { title: "Working Memory Anchor Consolidation & Snapshot Vault", category: "CLI", desc: "Burgess allocentric cognitive mapping, Cowan limit compaction, and immutable cryptographic sub-canvas rehydration", link: "https://github.com/sounny/dxskills/blob/main/scripts/anchor_consolidation_vault.py", action: "Open" },
       { title: "Schema Isomorphism & Analogy Transfer Engine", category: "CLI", desc: "Gentner structure-mapping graph homomorphisms, systematicity calculation, and cross-domain hypothesis projection", link: "https://github.com/sounny/dxskills/blob/main/scripts/schema_isomorphism_engine.py", action: "Open" },
       { title: "Multiscale Narrative Branching & Divergence Reconciler", category: "CLI", desc: "Arthur path-dependent divergence detection, non-linear thematic bifurcation tracking, and Hegelian architectural synthesis bridges", link: "https://github.com/sounny/dxskills/blob/main/scripts/narrative_branch_reconciler.py", action: "Open" },
-      { title: "Topological Invariant & Homotopy Visualizer", category: "CLI", desc: "Poincaré continuous algebraic topology invariants, Betti number verification, and Hermite smoothstep homotopic path deformation", link: "https://github.com/sounny/dxskills/blob/main/scripts/topological_homotopy_engine.py", action: "Open" },
       { title: "Dynamic Lexical Compression & Semantic Gist Synthesizer", category: "CLI", desc: "Fuzzy-trace gist distillation, Cowan limit spatial shorthand tokens, and semantic load compaction", link: "https://github.com/sounny/dxskills/blob/main/scripts/lexical_gist_compressor.py", action: "Open" },
       { title: "Attentional Saccade Saliency Filter & Noise Gate", category: "CLI", desc: "Itti-Koch conspicuity mapping, radial Gaussian spatial frequency attenuation, and peripheral margin noise gating", link: "https://github.com/sounny/dxskills/blob/main/scripts/saccade_saliency_filter.py", action: "Open" },
       { title: "Working Memory Drift Compensator & Re-Centering Harness", category: "CLI", desc: "Burgess allocentric cognitive mapping, path integration error detection, and magnetic attractor restore vectors", link: "https://github.com/sounny/dxskills/blob/main/scripts/drift_compensator.py", action: "Open" },
@@ -3714,82 +3764,13 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       { title: "Gaze Corridor Resonator & Dynamic Attentional Funnel", category: "CLI", desc: "Keith Rayner parafoveal preview synchronization, ocular scanpath velocity scaling, and adaptive focal conduits", link: "https://github.com/sounny/dxskills/blob/main/scripts/gaze_corridor_resonator.py", action: "Open" },
       { title: "Allocentric Kinematic Horizon & Inertial Frame Calibrator", category: "CLI", desc: "Vestibular-ocular reflex biology, 3-axis drift-free orientation frames, and gimbal lock singularity avoidance", link: "https://github.com/sounny/dxskills/blob/main/scripts/allocentric_kinematic_horizon.py", action: "Open" },
       { title: "Morphological Semantic Lens & Granularity Zoom Engine", category: "CLI", desc: "Continuous scale semantic zoom, multi-resolution focus rings, and Cowan capacity preservation across hierarchical topographies", link: "https://github.com/sounny/dxskills/blob/main/scripts/morphological_semantic_lens.py", action: "Open" },
-      { title: "Topological Manifold Unfolder & Polytope Net Weaver", category: "CLI", desc: "Riemannian curvature flattening, Salvador Dali hypercube cross unfolding, and 4D polytope net isometric projection", link: "https://github.com/sounny/dxskills/blob/main/scripts/topological_manifold_unfolder.py", action: "Open" },
       { title: "Saccadic Saliency Conductor & Attentional Trajectory Guide", category: "CLI", desc: "Itti-Koch visual saliency gradients, Carpenter LATER ballistic saccade dynamics, and ocular regression prevention", link: "https://github.com/sounny/dxskills/blob/main/scripts/saccadic_saliency_conductor.py", action: "Open" },
       { title: "Working Memory Saccadic Drift Dampener & Retinal Latch", category: "CLI", desc: "Shepard-Metzler mental rotation stabilization, Rucci fixational drift dampening, and visuospatial sketchpad retention", link: "https://github.com/sounny/dxskills/blob/main/scripts/saccadic_drift_dampener.py", action: "Open" },
-      { title: "Topological Fiber Bundle & Polytope Holonomy Weaver", category: "CLI", desc: "Differential geometry fiber bundles, Mobius and Hopf fibrations, and parallel transport geometric phase holonomy", link: "https://github.com/sounny/dxskills/blob/main/scripts/topological_fiber_bundle.py", action: "Open" },
       { title: "Chrono-Spatial Replay Loom & Episodic Trajectory Synthesizer", category: "CLI", desc: "Hippocampal sharp-wave ripple compression, forward planning rollouts, and reverse credit assignment sweeps", link: "https://github.com/sounny/dxskills/blob/main/scripts/chrono_spatial_replay_loom.py", action: "Open" },
       { title: "Topographic Contour Morph & Iso-Semantic Isocline Tracer", category: "CLI", desc: "Digital elevation model interpolation, marching squares isocline tracing, and cartographic relief visualization", link: "https://github.com/sounny/dxskills/blob/main/scripts/topographic_contour_morph.py", action: "Open" },
       { title: "Tensegrity Cable-Strut Lattice & Dynamic Equilibrium Balancer", category: "CLI", desc: "Self-stress tensegrity mechanics, continuous tension networks, and discontinuous floating compression struts", link: "https://github.com/sounny/dxskills/blob/main/scripts/tensegrity_equilibrium_lattice.py", action: "Open" },
       { title: "Iso-Chronous Voronoi Isochrone Tessellator & Proximity Loom", category: "CLI", desc: "Voronoi territorial partitions, travel-time wavefront isochrones, and Delaunay dual adjacency networks", link: "https://github.com/sounny/dxskills/blob/main/scripts/isochronous_voronoi_tessellator.py", action: "Open" },
       { title: "Hyperbolic Poincaré Disk Projector & Non-Euclidean Concept Loom", category: "CLI", desc: "Non-Euclidean conformal hyperbolic embedding, Poincare disk tree layout, and isometric Mobius translation", link: "https://github.com/sounny/dxskills/blob/main/scripts/hyperbolic_poincare_projector.py", action: "Open" },
-      { title: "Symplectic Phase Space Integrator & Hamiltonian Concept Orbit Loom", category: "CLI", desc: "Symplectic leapfrog numerical integration, dual position-momentum orbits, and Liouville phase volume preservation", link: "https://github.com/sounny/dxskills/blob/main/scripts/symplectic_hamiltonian_integrator.py", action: "Open" },
-      { title: "Hyper-Dimensional Grassmannian Manifold Projector & Subspace Angle Loom", category: "CLI", desc: "Grassmannian manifold projection, canonical principal angles, and Riemannian geodesic subspace distance", link: "https://github.com/sounny/dxskills/blob/main/scripts/grassmannian_subspace_loom.py", action: "Open" },
-      { title: "Contact Geometry Reeb Vector Field & Legendrian Submanifold Loom", category: "CLI", desc: "Contact 1-form differential geometry, characteristic Reeb vector field orbits, and Legendrian front projection cusps", link: "https://github.com/sounny/dxskills/blob/main/scripts/contact_reeb_loom.py", action: "Open" },
-      { title: "Calabi-Yau Compactification & Multi-Dimensional Flux Vacuum Loom", category: "CLI", desc: "6D Ricci-flat Kaehler manifolds, Hodge diamond symmetries, Fermat quintic threefold cross-sections, and moduli flux vacua", link: "https://github.com/sounny/dxskills/blob/main/scripts/calabi_yau_compactification.py", action: "Open" },
-      { title: "Sheaf-Theoretic Cohomology & Epistemic Gluing Loom", category: "CLI", desc: "Cech nerve complexes, coboundary operators, 0-cocycle consensus, and 1-cocycle gluing obstructions", link: "https://github.com/sounny/dxskills/blob/main/scripts/sheaf_cohomology_loom.py", action: "Open" },
-      { title: "Non-Commutative Spectral Triple & Connes Distance Loom", category: "CLI", desc: "Dirac eigenspectra, noncommutative concept commutators, framing contextuality, and Connes geodesic distances", link: "https://github.com/sounny/dxskills/blob/main/scripts/noncommutative_spectral_loom.py", action: "Open" },
-      { title: "Geometric Quantization & Kostant-Souriau Prequantum Loom", category: "CLI", desc: "Kostant-Souriau prequantum bundles, symplectic curvature forms, Lagrangian polarizations, and Bohr-Sommerfeld quantized leaves", link: "https://github.com/sounny/dxskills/blob/main/scripts/geometric_quantization_loom.py", action: "Open" },
-      { title: "Atiyah-Singer Index Theorem & Topological Anomaly Loom", category: "CLI", desc: "Analytical vs topological indices, Dirac zero-mode spectral flows, Todd and A-roof genera, and chiral anomalies", link: "https://github.com/sounny/dxskills/blob/main/scripts/atiyah_singer_index_loom.py", action: "Open" },
-      { title: "Topological K-Theory & Vector Bundle Classification Loom", category: "CLI", desc: "Grothendieck group K_0(X), Bott periodicity recurrence, clutching function winding degrees, and stable vector bundle equivalence", link: "https://github.com/sounny/dxskills/blob/main/scripts/k_theory_bundle_loom.py", action: "Open" },
-      { title: "Homological Mirror Symmetry & Kontsevich Dual Loom", category: "CLI", desc: "Fukaya A-model Lagrangian intersections, Floer cohomology, derived category B-model coherent sheaf Ext groups, and Hodge diamond transposition", link: "https://github.com/sounny/dxskills/blob/main/scripts/homological_mirror_loom.py", action: "Open" },
-      { title: "Derived Algebraic Geometry & Higher Stacks Loom", category: "CLI", desc: "Artin and Deligne-Mumford stacks, cotangent complexes L_X, deformation Lie algebras, and virtual fundamental classes", link: "https://github.com/sounny/dxskills/blob/main/scripts/derived_stack_loom.py", action: "Open" },
-      { title: "Perverse Sheaves & Intersection Cohomology Loom", category: "CLI", desc: "Stratified pseudomanifolds, perversity functions, Poincare-Verdier self-duality, and BBDG direct sum decomposition", link: "https://github.com/sounny/dxskills/blob/main/scripts/perverse_sheaves_loom.py", action: "Open" },
-      { title: "Motivic Homotopy & Voevodsky Slice Filtration Loom", category: "CLI", desc: "A^1-homotopy categories, bi-graded spheres S^(p, q), Nisnevich sheaves with transfers, and Voevodsky slice towers for algebraic K-theory", link: "https://github.com/sounny/dxskills/blob/main/scripts/motivic_homotopy_loom.py", action: "Open" },
-      { title: "Condensed Mathematics & Clausen-Scholze Analytic Loom", category: "CLI", desc: "Profinite Stone test sets, solid abelian groups, liquid vector spaces R_liq, and exact abelian category foundations", link: "https://github.com/sounny/dxskills/blob/main/scripts/condensed_mathematics_loom.py", action: "Open" },
-      { title: "Prismatic Cohomology & Bhatt-Scholze Prism Loom", category: "CLI", desc: "Bhatt-Scholze prisms (A, I), delta-rings, Nygaard filtration stages, and universal specializations for de Rham, Hodge-Tate, crystalline, and etale cohomologies", link: "https://github.com/sounny/dxskills/blob/main/scripts/prismatic_cohomology_loom.py", action: "Open" },
-      { title: "Factorization Homology & Topological Chiral Homology Loom", category: "CLI", desc: "Little n-disks E_n-algebras, disk configuration categories Disk_n(M), chiral bar simplicial complexes, and non-abelian Poincare duality", link: "https://github.com/sounny/dxskills/blob/main/scripts/factorization_homology_loom.py", action: "Open" },
-      { title: "Topological Quantum Field Theory & Atiyah-Segal Axiomatic Loom", category: "CLI", desc: "Atiyah-Segal TQFT functors, symmetric monoidal cobordism categories Bord_n, 2D commutative Frobenius algebras, and quantum partition invariants", link: "https://github.com/sounny/dxskills/blob/main/scripts/tqft_axiomatic_loom.py", action: "Open" },
-      { title: "Higher Category Theory & Lurie (infinity, 1)-Topos Loom", category: "CLI", desc: "Joyal quasi-categories, inner horn fillers Lambda^n_k, Lurie-Giraud higher topos axioms, and hypercomplete descent", link: "https://github.com/sounny/dxskills/blob/main/scripts/higher_topos_loom.py", action: "Open" },
-      { title: "Differential Cohomology & Cheeger-Simons Characters Loom", category: "CLI", desc: "Cheeger-Simons differential characters, smooth curvature forms, Deligne cohomology, and the exact commutative hexagon", link: "https://github.com/sounny/dxskills/blob/main/scripts/differential_cohomology_loom.py", action: "Open" },
-      { title: "Symplectic Floer Homology & Fukaya A-Infinity Loom", category: "CLI", desc: "Lagrangian submanifolds, pseudo-holomorphic Whitney disks, Floer differential m_1^2 = 0, and Stasheff associahedra A-infinity relations", link: "https://github.com/sounny/dxskills/blob/main/scripts/symplectic_floer_loom.py", action: "Open" },
-      { title: "Non-Abelian Hodge & Hitchin-Simpson Loom", category: "CLI", desc: "Higgs bundles, harmonic metrics, Hitchin fibration integrable systems, spectral curves, and hyperkahler rotation", link: "https://github.com/sounny/dxskills/blob/main/scripts/non_abelian_hodge_loom.py", action: "Open" },
-      { title: "Geometric Langlands & Hecke Eigensheaf Loom", category: "CLI", desc: "Categorical Langlands duality, automorphic D-modules on Bun_G, Galois local systems on Loc_LG, and Hecke functors", link: "https://github.com/sounny/dxskills/blob/main/scripts/geometric_langlands_loom.py", action: "Open" },
-      { title: "Perfectoid Spaces & Fargues-Fontaine Curve Loom", category: "CLI", desc: "Peter Scholze perfectoid spaces, tilting equivalence, Huber adic spectra, and Fargues-Fontaine vector bundle classification", link: "https://github.com/sounny/dxskills/blob/main/scripts/perfectoid_space_loom.py", action: "Open" },
-      { title: "Arithmetic Geometry & Langlands-Shimura Variety Loom", category: "CLI", desc: "Deligne Shimura data (G, X), canonical reflex fields, PEL polarized abelian moduli, Baily-Borel cusps, and automorphic Galois representations", link: "https://github.com/sounny/dxskills/blob/main/scripts/shimura_variety_loom.py", action: "Open" },
-      { title: "Motivic Cohomology & Beilinson-Soule Regulators Loom", category: "CLI", desc: "Bloch higher Chow groups CH^p(X, m), Deligne intermediate Jacobians, Beilinson regulators, and special L-values", link: "https://github.com/sounny/dxskills/blob/main/scripts/motivic_cohomology_loom.py", action: "Open" },
-      { title: "Arithmetic Dynamics & Post-Critically Finite Julia-Fatou Loom", category: "CLI", desc: "Rational map bifurcation loci, Misiurewicz critical orbits, Call-Silverman canonical heights, and Berkovich P^1 tree spaces", link: "https://github.com/sounny/dxskills/blob/main/scripts/arithmetic_dynamics_loom.py", action: "Open" },
-      { title: "Arithmetic Topology & Knots-Primes Kapranov-Reznikov Loom", category: "CLI", desc: "Mazur dictionary, primes as knots in 3-manifolds, Legendre linking numbers, Alexander-Iwasawa duality, and Borromean primes", link: "https://github.com/sounny/dxskills/blob/main/scripts/arithmetic_topology_loom.py", action: "Open" },
-      { title: "Anabelian Geometry & Grothendieck Section Conjecture Loom", category: "CLI", desc: "Hyperbolic curve moduli, arithmetic fundamental exact sequence, outer Galois representations, and Section Conjecture rational point splittings", link: "https://github.com/sounny/dxskills/blob/main/scripts/anabelian_geometry_loom.py", action: "Open" },
-      { title: "Derived Algebraic Geometry & Lurie Spectral Schemes Loom", category: "CLI", desc: "Connective E_infty-ring spectra, Postnikov truncation towers, relative cotangent complexes, and TMF elliptic sheaves", link: "https://github.com/sounny/dxskills/blob/main/scripts/derived_geometry_loom.py", action: "Open" },
-      { title: "Inter-Universal Teichmuller Theory & Mochizuki Hodge Theatre Loom", category: "CLI", desc: "Hodge theatres HT^Theta, log-theta lattice Z x Z, theta-link packet deformations, and multiradial Szpiro height bounds", link: "https://github.com/sounny/dxskills/blob/main/scripts/iut_theory_loom.py", action: "Open" },
-      { title: "Non-Commutative Geometry & Connes Spectral Triples Loom", category: "CLI", desc: "Spectral triples (A, H, D), Dirac eigenvalue ladders, Chamseddine-Connes action, and Connes geodesic distance", link: "https://github.com/sounny/dxskills/blob/main/scripts/non_commutative_geometry_loom.py", action: "Open" },
-      { title: "Arithmetic Quantum Field Theory & Dijkgraaf-Witten Loom", category: "CLI", desc: "Artin-Verdier 3-manifolds Spec(O_K), finite gauge groups, 3-cocycle twists in H^3(G, U(1)), and Dijkgraaf-Witten partition functions", link: "https://github.com/sounny/dxskills/blob/main/scripts/arithmetic_qft_loom.py", action: "Open" },
-      { title: "p-Adic Hodge Theory & Fontaine Period Rings Loom", category: "CLI", desc: "Fontaine period rings B_cris, B_st, B_dR, filtered (phi, N)-modules, and Newton-Hodge polygon weak admissibility", link: "https://github.com/sounny/dxskills/blob/main/scripts/padic_hodge_loom.py", action: "Open" },
-      { title: "Geometric Satake Equivalence & Mirkovic-Vilonen Loom", category: "CLI", desc: "Affine Grassmannian Gr_G, spherical perverse sheaves, Mirkovic-Vilonen cycles, and Langlands dual group G^vee representation categories", link: "https://github.com/sounny/dxskills/blob/main/scripts/geometric_satake_loom.py", action: "Open" },
-      { title: "Categorical Langlands & Ind-Coherent Sheaves on Bun_G Loom", category: "CLI", desc: "D-modules on Bun_G, IndCoh_Nilp(LocSys_{G^vee}) with nilpotent singular support, Hecke eigensheaves, and Arinkin-Gaitsgory equivalence", link: "https://github.com/sounny/dxskills/blob/main/scripts/categorical_langlands_loom.py", action: "Open" },
-      { title: "Chromatic Homotopy Theory & Morava K-Theory Loom", category: "CLI", desc: "Height n formal group laws, Morava K(n) periodicity ladder, Lubin-Tate deformation rings, and chromatic fracture square", link: "https://github.com/sounny/dxskills/blob/main/scripts/chromatic_homotopy_loom.py", action: "Open" },
-      { title: "Geometric Class Field Theory & Langlands Duality for Function Fields Loom", category: "CLI", desc: "Rosenlicht-Serre generalized Jacobians, Deligne Hecke eigensheaves on Pic_X via Abel-Jacobi descent, and Weil Riemann hypothesis L-functions", link: "https://github.com/sounny/dxskills/blob/main/scripts/geometric_cft_loom.py", action: "Open" },
-      { title: "Grothendieck Dessins d'Enfants & Belyi Map Galois Ramification Loom", category: "CLI", desc: "Belyi functions f: X -> P^1 ramified over {0, 1, infty}, bipartite ribbon graphs, cartographic monodromy triad in S_d, and faithful Gal(Q-bar/Q) action", link: "https://github.com/sounny/dxskills/blob/main/scripts/dessins_enfants_loom.py", action: "Open" },
-      { title: "Non-Abelian Chabauty & Kim Motivic Fundamental Group Loom", category: "CLI", desc: "Minhyong Kim Selmer varieties, unipotent fundamental groups, p-adic iterated Coleman integrals, and Diophantine rational point bounds", link: "https://github.com/sounny/dxskills/blob/main/scripts/non_abelian_chabauty_loom.py", action: "Open" },
-      { title: "Hodge-Tate Spectral Sequences & Hyodo-Kato Cohomology Loom", category: "CLI", desc: "Semistable log-crystalline cohomology H_HK^m(Y), log-Frobenius and log-monodromy N phi = p phi N, and weight filtration", link: "https://github.com/sounny/dxskills/blob/main/scripts/hyodo_kato_loom.py", action: "Open" },
-      { title: "Motives & Beilinson Conjectures on Special Values Loom", category: "CLI", desc: "Chow motives, realization functors Betti/de Rham, Beilinson regulator maps into Deligne cohomology, and L-function leading coefficients", link: "https://github.com/sounny/dxskills/blob/main/scripts/motives_beilinson_loom.py", action: "Open" },
-      { title: "Tamagawa Numbers & Bloch-Kato Exponential Map Loom", category: "CLI", desc: "Local Selmer conditions H_e^1 subset H_f^1 subset H_g^1, Bloch-Kato exponential map exp_BK, and motivic Tamagawa numbers Tam(M)", link: "https://github.com/sounny/dxskills/blob/main/scripts/bloch_kato_loom.py", action: "Open" },
-      { title: "Euler Systems & Kolyvagin Derivatives Loom", category: "CLI", desc: "Norm-compatible cohomology towers c_m, Kolyvagin derivative operators D_ell, Chebotarev localization, and Shafarevich-Tate bounds", link: "https://github.com/sounny/dxskills/blob/main/scripts/euler_systems_loom.py", action: "Open" },
-      { title: "Iwasawa Main Conjecture & p-Adic L-Functions Loom", category: "CLI", desc: "Lambda-module decomposition, invariants (mu, lambda, nu), Kubota-Leopoldt p-adic L-functions, and Mazur-Wiles Main Conjecture", link: "https://github.com/sounny/dxskills/blob/main/scripts/iwasawa_theory_loom.py", action: "Open" },
-      { title: "Hida Families & Ordinary Modular Deformations Loom", category: "CLI", desc: "Ordinary Hecke algebra h^ord over Lambda = Z_p[[T]], weight space fibrations, big Galois representations, and congruence ideals", link: "https://github.com/sounny/dxskills/blob/main/scripts/hida_family_loom.py", action: "Open" },
-      { title: "Coleman Families & Overconvergent Modular Forms Loom", category: "CLI", desc: "Banach spaces of r-overconvergent modular forms, compact U_p operator, Fredholm series det(1 - T*U_p), Newton polygons, slope decompositions, Coleman classicality, and Coleman-Mazur eigencurve", link: "https://github.com/sounny/dxskills/blob/main/scripts/coleman_family_loom.py", action: "Open" },
-      { title: "Fontaine-Mazur Conjecture & Geometric Galois Representations Loom", category: "CLI", desc: "Local p-adic Hodge theory, Fontaine period rings (B_HT, B_dR, B_cris, B_st), Hodge-Tate weights, Sen polynomials, and Taylor-Wiles-Kisin modularity deformation rings R = T", link: "https://github.com/sounny/dxskills/blob/main/scripts/fontaine_mazur_loom.py", action: "Open" },
-      { title: "Serre's Modularity Conjecture & Odd Galois Representations Loom", category: "CLI", desc: "Continuous irreducible odd mod p representations rho_bar, Serre invariants (N, k, epsilon), tame inertia characters, companion forms, and Khare-Wintenberger modularity lifting", link: "https://github.com/sounny/dxskills/blob/main/scripts/serre_modularity_loom.py", action: "Open" },
-      { title: "Perfectoid Spaces & Scholze Tilting Equivalence Loom", category: "CLI", desc: "Characteristic 0 / p tilting bridge K -> K^flat, adic spectra Spa(R, R^+), topological homeomorphism |X| = |X^flat|, Almost Purity Theorem, and Shimura variety torsion vanishing", link: "https://github.com/sounny/dxskills/blob/main/scripts/perfectoid_spaces_loom.py", action: "Open" },
-      { title: "Fargues-Scholze Geometrization of Local Langlands Loom", category: "CLI", desc: "Bun_G stacks on Fargues-Fontaine curve, moduli of local shtukas Sht(G, b, mu), Lafforgue excursion operators, and semisimple Langlands parameters", link: "https://github.com/sounny/dxskills/blob/main/scripts/fargues_scholze_loom.py", action: "Open" },
-      { title: "Kudla Program Arithmetic Intersection Loom", category: "CLI", desc: "Orthogonal and unitary Shimura varieties, arithmetic special cycles Z_hat(T, v), Kudla-Green functions, Kudla-Rapoport intersection multiplicities, and incoherent Eisenstein derivative generating series", link: "https://github.com/sounny/dxskills/blob/main/scripts/kudla_program_loom.py", action: "Open" },
-      { title: "Colmez Conjecture & Faltings Heights Loom", category: "CLI", desc: "Abelian varieties with complex multiplication, CM types Phi, Faltings arithmetic heights, Taguchi-Smith normalization, and Artin L-function logarithmic derivatives", link: "https://github.com/sounny/dxskills/blob/main/scripts/colmez_conjecture_loom.py", action: "Open" },
-      { title: "Gross-Stark Conjecture & p-Adic Stark Units Loom", category: "CLI", desc: "Totally real number fields, leading derivatives of p-adic L-functions at s=0, algebraic Stark units u_chi, p-adic regulators, and Shintani cone decompositions", link: "https://github.com/sounny/dxskills/blob/main/scripts/gross_stark_loom.py", action: "Open" },
-      { title: "Langlands-Shahidi Method & Automorphic L-Functions Loom", category: "CLI", desc: "Quasi-split reductive groups G, maximal parabolics P = MN, local Shahidi gamma-factors, meromorphic continuation, unitary axis non-vanishing, and functorial transfers", link: "https://github.com/sounny/dxskills/blob/main/scripts/langlands_shahidi_loom.py", action: "Open" },
-      { title: "Arthur-Selberg Trace Formula & Endoscopic Classification Loom", category: "CLI", desc: "Invariant trace formula I_geom = I_spec, elliptic endoscopic groups H, Langlands-Shelstad transfer factors, stable trace formulas, and Arthur packets Pi_psi", link: "https://github.com/sounny/dxskills/blob/main/scripts/arthur_trace_loom.py", action: "Open" },
-      { title: "Relative Trace Formula & Gan-Gross-Prasad Conjectures Loom", category: "CLI", desc: "Spherical varieties H \\ G, period integrals, Ichino-Ikeda central L-values, local GGP multiplicity one, and Arithmetic AGGP Heegner heights", link: "https://github.com/sounny/dxskills/blob/main/scripts/relative_trace_ggp_loom.py", action: "Open" },
-      { title: "Beyond Endoscopy & Langlands Functoriality Loom", category: "CLI", desc: "Dual group representations r, automorphic L-function pole residues at s=1, Poisson summation on geometric orbits, and Altug unipotent smoothing", link: "https://github.com/sounny/dxskills/blob/main/scripts/beyond_endoscopy_loom.py", action: "Open" },
-      { title: "Taylor-Wiles Patching & Modularity Lifting Loom", category: "CLI", desc: "Residual Galois representations, Selmer Euler balance, Taylor-Wiles auxiliary primes, Auslander-Buchsbaum freeness, and R = T modularity isomorphism", link: "https://github.com/sounny/dxskills/blob/main/scripts/taylor_wiles_patching_loom.py", action: "Open" },
-      { title: "Paramodular Conjecture & Modularity of Abelian Surfaces Loom", category: "CLI", desc: "Abelian surfaces A/Q, paramodular group K(N) subset Sp_4(Q), degree 4 Spinor L-functions, and non-lift filtration", link: "https://github.com/sounny/dxskills/blob/main/scripts/paramodular_conjecture_loom.py", action: "Open" },
-      { title: "Calabi-Yau Modularity & Attractor Mechanism Loom", category: "CLI", desc: "Mirror symmetry, Picard-Fuchs differential equations, extremal black hole attractor flows, and weight 4 modular forms S_4(Gamma_0(N))", link: "https://github.com/sounny/dxskills/blob/main/scripts/calabi_yau_modularity_loom.py", action: "Open" },
-      { title: "K3 Surfaces Modularity & Borcherds Automorphic Products Loom", category: "CLI", desc: "Cohomology lattices E_8(-1)^2 + U^3, Shioda-Inose singular K3 CM modularity in S_3(Gamma_0(|D|)), and Borcherds infinite products", link: "https://github.com/sounny/dxskills/blob/main/scripts/k3_modularity_loom.py", action: "Open" },
-                                    { title: "Borcherds Lift & Singular Theta Correspondence Loom", category: "CLI", desc: "Weakly holomorphic modular forms, singular theta lifts, Borcherds infinite products, and meromorphic automorphic forms on orthogonal domains", link: "https://github.com/sounny/dxskills/blob/main/scripts/borcherds_lift_loom.py", action: "Open" },
-      { title: "Kudla-Millson Forms & Arithmetic Cohomology Loom", category: "CLI", desc: "Differential forms with values in cohomology, Kudla-Millson theta series, and Poincare duality between algebraic cycles and modular forms", link: "https://github.com/sounny/dxskills/blob/main/scripts/kudla_millson_loom.py", action: "Open" },
-      { title: "Kudla Program & Arithmetic Siegel-Weil Formula Loom", category: "CLI", desc: "Orthogonal Shimura varieties, Kudla-Rapoport special cycles, Green functions, central derivative Eisenstein series, and Faltings heights", link: "https://github.com/sounny/dxskills/blob/main/scripts/arithmetic_siegel_weil_loom.py", action: "Open" },
-      { title: "Gross-Kohnen-Zagier (GKZ) Theorem & Higher Modular Forms Loom", category: "CLI", desc: "Kohnen plus space S_{3/2}^+(4N), Shimura-Kohnen correspondence, Heegner point heights vs Fourier coefficients, and modular generating series", link: "https://github.com/sounny/dxskills/blob/main/scripts/gross_kohnen_zagier_loom.py", action: "Open" },
-      { title: "Beilinson-Flach Elements & Asymmetric Euler Systems Loom", category: "CLI", desc: "Rankin-Selberg products of modular forms, Kings-Loeffler-Zerbes Euler systems, Coleman-de Shalit p-adic regulators, and Bloch-Kato Selmer bounding", link: "https://github.com/sounny/dxskills/blob/main/scripts/beilinson_flach_loom.py", action: "Open" },
-      { title: "Birch-Swinnerton-Dyer (BSD) Conjecture & Heegner Points Loom", category: "CLI", desc: "Mordell-Weil ranks, Gross-Zagier Heegner points on X_0(N), Kolyvagin Euler systems, Sha(E) finiteness, and BSD exact formula balances", link: "https://github.com/sounny/dxskills/blob/main/scripts/bsd_conjecture_loom.py", action: "Open" }
     ];
 
 
@@ -5046,17 +5027,6 @@ This curriculum eliminates passive lecture memorization. Students learn through 
             <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
           </a>
 
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/galois_lattice_engine.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="network" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Galois Lattice Constellation</span>
-                <span class="text-[10px] text-mono-500">Formal Concept Analysis, Galois connections, and cross-cluster resonance bridges</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
           <a href="https://github.com/sounny/dxskills/blob/main/scripts/saccadic_fatigue_meter.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
             <div class="flex items-center gap-3">
               <i data-lucide="sun-dim" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
@@ -5162,17 +5132,6 @@ This curriculum eliminates passive lecture memorization. Students learn through 
               <div class="text-left">
                 <span class="font-bold text-mono-950 dark:text-white block">Narrative Branch Reconciler</span>
                 <span class="text-[10px] text-mono-500">Arthur path dependence, thematic bifurcation tracking, and synthesis bridges</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/topological_homotopy_engine.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="orbit" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Topological Homotopy Visualizer</span>
-                <span class="text-[10px] text-mono-500">Algebraic topological invariants, Betti numbers, and smooth homotopy deformation tracks</span>
               </div>
             </div>
             <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
@@ -5475,17 +5434,6 @@ This curriculum eliminates passive lecture memorization. Students learn through 
             <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
           </a>
 
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/topological_manifold_unfolder.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="box" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Topological Manifold Unfolder</span>
-                <span class="text-[10px] text-mono-500">4D polytope net unfolding, Dali hypercube cross, and Euler characteristic invariants</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
           <a href="https://github.com/sounny/dxskills/blob/main/scripts/saccadic_saliency_conductor.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
             <div class="flex items-center gap-3">
               <i data-lucide="navigation" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
@@ -5503,17 +5451,6 @@ This curriculum eliminates passive lecture memorization. Students learn through 
               <div class="text-left">
                 <span class="font-bold text-mono-950 dark:text-white block">Saccadic Drift Dampener &amp; Retinal Latch</span>
                 <span class="text-[10px] text-mono-500">Mental rotation drift dampening, deadband tremor suppression, and retinal anchor locks</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/topological_fiber_bundle.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="orbit" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Topological Fiber Bundle &amp; Holonomy Weaver</span>
-                <span class="text-[10px] text-mono-500">Parallel transport on closed loops, Mobius ribbon twisting, and geometric phase calculation</span>
               </div>
             </div>
             <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
@@ -5569,738 +5506,6 @@ This curriculum eliminates passive lecture memorization. Students learn through 
               <div class="text-left">
                 <span class="font-bold text-mono-950 dark:text-white block">Hyperbolic Poincaré Disk Projector</span>
                 <span class="text-[10px] text-mono-500">Conformal non-Euclidean taxonomy embedding, geodesic arcs, and Mobius isometry</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/symplectic_hamiltonian_integrator.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="orbit" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Symplectic Phase Space Integrator</span>
-                <span class="text-[10px] text-mono-500">Hamiltonian concept orbits, invariant tori, Poincaré sections, and Liouville volume</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/grassmannian_subspace_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Grassmannian Subspace Loom</span>
-                <span class="text-[10px] text-mono-500">Gr(k, n) canonical principal angles, chordal metrics, and geodesic subspace interpolation</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/contact_reeb_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="compass" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Contact Geometry Reeb Loom</span>
-                <span class="text-[10px] text-mono-500">Contact form α = dz - y dx, Reeb vector field R_α, and Legendrian cusp invariants</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/calabi_yau_compactification.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="box" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Calabi-Yau Compactification Loom</span>
-                <span class="text-[10px] text-mono-500">6D Ricci-flat Fermat quintic slices, Hodge diamond moduli, and stabilized flux vacua</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/sheaf_cohomology_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Sheaf Cohomology &amp; Epistemic Loom</span>
-                <span class="text-[10px] text-mono-500">Cech nerve complexes, coboundaries, H^0 consensus, and H^1 gluing obstructions</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/noncommutative_spectral_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="activity" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Non-Commutative Spectral Loom</span>
-                <span class="text-[10px] text-mono-500">Dirac operator spectrum, noncommutative framing commutators, and Connes geodesic metrics</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/geometric_quantization_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="circle-dot" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Geometric Quantization Loom</span>
-                <span class="text-[10px] text-mono-500">Kostant-Souriau line bundles, symplectic foliation, and Bohr-Sommerfeld quantized quanta</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/atiyah_singer_index_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="scale" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Atiyah-Singer Index Loom</span>
-                <span class="text-[10px] text-mono-500">Analytical vs topological index equality, Dirac spectral flow, and chiral anomalies</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/k_theory_bundle_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="git-merge" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Topological K-Theory Loom</span>
-                <span class="text-[10px] text-mono-500">Grothendieck K_0(X), Bott periodicity cycles, and stable bundle equivalence</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/homological_mirror_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="flip-horizontal" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Homological Mirror Symmetry Loom</span>
-                <span class="text-[10px] text-mono-500">Kontsevich dual, Fukaya Floer cohomology, Ext sheaf groups, and Hodge mirror</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/derived_stack_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Derived Stacks Loom</span>
-                <span class="text-[10px] text-mono-500">Artin/DM stacks, simplicial nerves, cotangent complex, and virtual class</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/perverse_sheaves_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="shield" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Perverse Sheaves Loom</span>
-                <span class="text-[10px] text-mono-500">Stratified spaces, perversity filtration, Poincare duality, and BBDG</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/motivic_homotopy_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="compass" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Motivic Homotopy Loom</span>
-                <span class="text-[10px] text-mono-500">A^1-invariance, bi-graded spheres S^(p,q), and Voevodsky slice tower</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/condensed_mathematics_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="box" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Condensed Mathematics Loom</span>
-                <span class="text-[10px] text-mono-500">Profinite Stone probes, solid Z^solid, liquid R_liq, and exact abelian math</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/prismatic_cohomology_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="gem" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Prismatic Cohomology Loom</span>
-                <span class="text-[10px] text-mono-500">Bhatt-Scholze prisms (A, I), delta-rings, and universal p-adic specializations</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/factorization_homology_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="disc" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Factorization Homology Loom</span>
-                <span class="text-[10px] text-mono-500">Little n-disks E_n-algebras, chiral bar complexes, and non-abelian Poincare duality</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/tqft_axiomatic_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="orbit" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Topological Quantum Field Theory Loom</span>
-                <span class="text-[10px] text-mono-500">Atiyah-Segal cobordism functors, 2D Frobenius algebras, and pants surfaces</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/higher_topos_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="triangle" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Higher Topos Loom</span>
-                <span class="text-[10px] text-mono-500">Joyal quasi-categories, simplicial horn fillers, and Lurie-Giraud axioms</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/differential_cohomology_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="hexagon" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Differential Cohomology Loom</span>
-                <span class="text-[10px] text-mono-500">Cheeger-Simons characters, curvature forms, and exact hexagon diagrams</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/symplectic_floer_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="waves" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Symplectic Floer Loom</span>
-                <span class="text-[10px] text-mono-500">Lagrangian intersections, Whitney disks, and Fukaya A-infinity relations</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/non_abelian_hodge_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="triangle" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Non-Abelian Hodge Loom</span>
-                <span class="text-[10px] text-mono-500">Higgs bundles, Hitchin fibration, spectral curves, and Simpson correspondence</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/geometric_langlands_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="split" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Geometric Langlands Loom</span>
-                <span class="text-[10px] text-mono-500">Automorphic D-modules, Galois local systems, and Hecke eigensheaf relations</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/perfectoid_space_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="orbit" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Perfectoid Spaces Loom</span>
-                <span class="text-[10px] text-mono-500">Scholze tilting equivalence, adic spaces, and Fargues-Fontaine curve</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/shimura_variety_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="gem" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Shimura Variety Loom</span>
-                <span class="text-[10px] text-mono-500">Deligne Shimura data, reflex fields, PEL moduli, and Hecke orbits</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/motivic_cohomology_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="scale" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Motivic Cohomology Loom</span>
-                <span class="text-[10px] text-mono-500">Bloch higher Chow cycles, Deligne Jacobians, and Beilinson regulators</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/arithmetic_dynamics_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="orbit" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Arithmetic Dynamics Loom</span>
-                <span class="text-[10px] text-mono-500">Post-critically finite orbits, Call-Silverman heights, and Julia sets</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/arithmetic_topology_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="lasso" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Arithmetic Topology Loom</span>
-                <span class="text-[10px] text-mono-500">Primes as knots, Legendre linking, Alexander-Iwasawa duality, and Borromean links</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/anabelian_geometry_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="split" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Anabelian Geometry Loom</span>
-                <span class="text-[10px] text-mono-500">Section conjecture, outer Galois representations, and hyperbolic curves</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/derived_geometry_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Derived Geometry Loom</span>
-                <span class="text-[10px] text-mono-500">Postnikov towers, cotangent complexes, and TMF spectral schemes</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/iut_theory_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="network" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">IUT Theory Loom</span>
-                <span class="text-[10px] text-mono-500">Hodge theatres, theta-links, log-theta lattice, and Szpiro bounds</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/non_commutative_geometry_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="sparkles" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Non-Commutative Geometry Loom</span>
-                <span class="text-[10px] text-mono-500">Connes spectral triples, Dirac ladders, and spectral action principle</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/arithmetic_qft_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="orbit" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Arithmetic QFT Loom</span>
-                <span class="text-[10px] text-mono-500">Dijkgraaf-Witten invariants, arithmetic Chern-Simons, and prime knots</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/padic_hodge_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="binary" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">p-Adic Hodge Loom</span>
-                <span class="text-[10px] text-mono-500">Fontaine period rings, Newton-Hodge polygons, and filtered modules</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/geometric_satake_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Geometric Satake Loom</span>
-                <span class="text-[10px] text-mono-500">Affine Grassmannian, Mirkovic-Vilonen cycles, and Langlands dual</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/categorical_langlands_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="git-merge" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Categorical Langlands Loom</span>
-                <span class="text-[10px] text-mono-500">D(Bun_G) and IndCoh on LocSys_{G^vee} with nilpotent cone</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/chromatic_homotopy_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="sparkles" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Chromatic Homotopy Loom</span>
-                <span class="text-[10px] text-mono-500">Morava K(n), Lubin-Tate deformation, and chromatic fracture tower</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/geometric_cft_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="compass" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Geometric CFT Loom</span>
-                <span class="text-[10px] text-mono-500">Rosenlicht-Serre generalized Jacobians, Deligne Hecke descent, and L-functions</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/dessins_enfants_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="git-branch" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Dessins d'Enfants Loom</span>
-                <span class="text-[10px] text-mono-500">Bipartite ribbon graphs, S_d monodromy triad, and Galois orbits</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/non_abelian_chabauty_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="target" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Non-Abelian Chabauty Loom</span>
-                <span class="text-[10px] text-mono-500">Minhyong Kim Selmer varieties, p-adic iterated integrals, and point bounds</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/hyodo_kato_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="cpu" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Hyodo-Kato Loom</span>
-                <span class="text-[10px] text-mono-500">Log-crystalline cohomology, monodromy weight filtrations, and Hodge-Tate</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/motives_beilinson_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="award" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Beilinson Motives Loom</span>
-                <span class="text-[10px] text-mono-500">Chow motives, Deligne-Beilinson regulators, and L-function special values</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/bloch_kato_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Bloch-Kato Loom</span>
-                <span class="text-[10px] text-mono-500">Tamagawa numbers, Selmer subspace towers, and p-adic exponential maps</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/euler_systems_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="git-branch" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Euler Systems Loom</span>
-                <span class="text-[10px] text-mono-500">Norm towers, Kolyvagin derivatives, and Selmer bounding lattices</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/iwasawa_theory_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="infinity" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Iwasawa Theory Loom</span>
-                <span class="text-[10px] text-mono-500">Lambda-modules, characteristic ideals, and p-adic L-functions</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/hida_family_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="activity" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Hida Families Loom</span>
-                <span class="text-[10px] text-mono-500">Lambda-adic forms, ordinary Hecke spectra, and big Galois representations</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/coleman_family_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="trending-up" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Coleman Families Loom</span>
-                <span class="text-[10px] text-mono-500">Overconvergent Banach spaces, Fredholm series, slope decompositions, and eigencurves</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/fontaine_mazur_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="shield-check" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Fontaine-Mazur Loom</span>
-                <span class="text-[10px] text-mono-500">Geometric Galois representations, period rings, Sen polynomials, and R = T modularity</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/serre_modularity_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="target" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Serre's Modularity Loom</span>
-                <span class="text-[10px] text-mono-500">Residual odd Galois representations, Serre invariants (N, k, epsilon), and Khare-Wintenberger lifting</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/perfectoid_spaces_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="sparkles" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Perfectoid Spaces Loom</span>
-                <span class="text-[10px] text-mono-500">Characteristic 0 / p tilting bridge, adic spectra Spa(R, R^+), and almost purity</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/fargues_scholze_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="network" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Fargues-Scholze Loom</span>
-                <span class="text-[10px] text-mono-500">Bun_G on X_FF, local shtukas, excursion operators, and local Langlands</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/kudla_program_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Kudla Program Loom</span>
-                <span class="text-[10px] text-mono-500">Shimura varieties, special cycles, Kudla-Rapoport intersections, and Eisenstein series</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/colmez_conjecture_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="scale" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Colmez Conjecture Loom</span>
-                <span class="text-[10px] text-mono-500">CM abelian varieties, Faltings heights, and Artin L-derivatives</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/gross_stark_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="compass" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Gross-Stark Loom</span>
-                <span class="text-[10px] text-mono-500">Totally real fields, Stark units, p-adic regulators, and Shintani cones</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/langlands_shahidi_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="split" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Langlands-Shahidi Loom</span>
-                <span class="text-[10px] text-mono-500">Parabolics, intertwining operators, gamma-factors, and L-functions</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/arthur_trace_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Arthur-Selberg Trace Loom</span>
-                <span class="text-[10px] text-mono-500">Trace formula, endoscopic classification, and Arthur packets</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/relative_trace_ggp_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="git-merge" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Relative Trace &amp; GGP Loom</span>
-                <span class="text-[10px] text-mono-500">Spherical varieties, period integrals, Ichino-Ikeda, and AGGP</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/beyond_endoscopy_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="radio" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Beyond Endoscopy Loom</span>
-                <span class="text-[10px] text-mono-500">Functoriality extraction, Poisson summation, and L-poles</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/taylor_wiles_patching_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="git-commit" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Taylor-Wiles Loom (R = T)</span>
-                <span class="text-[10px] text-mono-500">Deformation rings, auxiliary primes, patching, and modularity</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/paramodular_conjecture_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="box" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Paramodular Conjecture Loom</span>
-                <span class="text-[10px] text-mono-500">Abelian surfaces, Sp_4 paramodular forms, and Spinor L-series</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/calabi_yau_modularity_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="sparkles" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Calabi-Yau Modularity Loom</span>
-                <span class="text-[10px] text-mono-500">Mirror quintic, Picard-Fuchs monodromy, and black hole attractor flows</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/k3_modularity_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="layers" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">K3 Modularity & Borcherds Loom</span>
-                <span class="text-[10px] text-mono-500">K3 lattices, Shioda-Inose CM modularity, and Borcherds products</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/borcherds_lift_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="sparkles" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Borcherds Lift Loom</span>
-                <span class="text-[10px] text-mono-500">Singular theta correspondence, infinite products, and Kac-Moody Lie algebras</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/kudla_millson_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="waves" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Kudla-Millson Loom</span>
-                <span class="text-[10px] text-mono-500">Differential forms in cohomology, theta series, and cycle duality</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/arithmetic_siegel_weil_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="compass" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Kudla Siegel-Weil Loom</span>
-                <span class="text-[10px] text-mono-500">Shimura varieties, Kudla-Rapoport cycles, and Eisenstein derivatives</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/gross_kohnen_zagier_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="infinity" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Gross-Kohnen-Zagier Loom</span>
-                <span class="text-[10px] text-mono-500">Weight 3/2 Kohnen forms, Heegner heights, and modular series</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/beilinson_flach_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="git-merge" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">Beilinson-Flach Loom</span>
-                <span class="text-[10px] text-mono-500">Rankin-Selberg modular products, KLZ Euler systems, and Selmer bounds</span>
-              </div>
-            </div>
-            <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
-          </a>
-          <a href="https://github.com/sounny/dxskills/blob/main/scripts/bsd_conjecture_loom.py" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <i data-lucide="scale" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
-              <div class="text-left">
-                <span class="font-bold text-mono-950 dark:text-white block">BSD Conjecture Loom</span>
-                <span class="text-[10px] text-mono-500">Mordell-Weil rank, Gross-Zagier Heegner points, and BSD balance</span>
               </div>
             </div>
             <i data-lucide="external-link" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>

@@ -28,6 +28,11 @@ The `dx-write` skill solves a persistent tension for dyslexic professionals: the
    - Eliminate corporate filler: "I hope this email finds you well", "In today's fast-paced world", "delve", "testament", "beacon", "orchestrate", "leverage" (when used as a cliché).
    - **Zero Em Dashes:** Never generate em dashes (Unicode U+2014) anywhere. Use commas, hyphens, colons, or parentheses instead.
 
+4. **Natural Paragraphs Over Forced Lists & Bullets:**
+   - **No Artificial Lists:** NEVER convert natural human prose, discussion board replies, emails, peer feedback, or conversational messages into bulleted lists, bold topic prefixes, or slide-deck outlines.
+   - **Anti-Wall-of-Text for Prose:** Use short, scannable paragraphs (1 to 3 sentences maximum) separated by clean paragraph breaks. Whitespace provides visual breathing room and reduces visual crowding without stripping away human warmth or sounding like an AI outline.
+   - **Authentic Conversational Voice:** Dyslexic professionals often excel in direct narrative momentum, authentic warmth, and big-picture clarity. Communicate like a genuine person in natural conversational flow, not an automated summary or corporate slide deck. Reserve bullet points and tables strictly for technical documentation, step-by-step checklists, or multi-option trade-off evaluations where explicitly requested.
+
 ---
 
 ## 📋 Trigger & Usage
