@@ -603,7 +603,17 @@ def main():
     p_scanpath.add_argument("--svg", "-s", default="", help="Output scanpath trajectory SVG filepath")
     p_scanpath.add_argument("--json", "-j", action="store_true", help="Output raw JSON scanpath telemetry")
     p_scanpath.add_argument("--demo", action="store_true", help="Run with demonstration technical specification prose")
-    
+
+    # visual-metronome / metronome / pace-reading
+    p_metronome = subparsers.add_parser("visual-metronome", aliases=["metronome", "pace-reading"], help="Autonomous cognitive spatial visual pacing rhythm and bionic fixation metronome")
+    p_metronome.add_argument("input", nargs="?", default="", help="Target text or markdown filepath to pace")
+    p_metronome.add_argument("--wpm", "-w", type=float, default=200.0, help="Target reading words per minute (default: 200)")
+    p_metronome.add_argument("--mode", "-m", choices=["isochronic", "syllable_adaptive", "morphological", "accelerative"], default="syllable_adaptive", help="Pacing rhythm mode (default: syllable_adaptive)")
+    p_metronome.add_argument("--canvas", default="", help="Output Obsidian .canvas filepath")
+    p_metronome.add_argument("--svg", "-s", default="", help="Output visual metronome strip SVG filepath")
+    p_metronome.add_argument("--json", "-j", action="store_true", help="Output raw JSON metronome telemetry")
+    p_metronome.add_argument("--demo", action="store_true", help="Run with demonstration technical specification prose")
+
     args = parser.parse_args()
 
 
@@ -2430,6 +2440,37 @@ def main():
         if args.svg:
             svg_code = compressor.export_svg_scanpath(telemetry, output_path=args.svg)
             print(f"[DxSkills] Saccadic trajectory SVG exported to: {args.svg}")
+    elif args.command in ["visual-metronome", "metronome", "pace-reading"]:
+        import scripts.visual_metronome as vpm
+
+        p_mode = vpm.PacingMode(args.mode)
+        metronome = vpm.VisualPacingMetronome(base_wpm=args.wpm, mode=p_mode)
+
+        raw_text = ""
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8", errors="ignore") as f:
+                raw_text = f.read()
+        elif args.demo or not args.input:
+            raw_text = (
+                "Distributed asynchronous state machines coordinate deterministic state across multiple "
+                "geographic regions. Consensus protocols eliminate split-brain synchronization anomalies "
+                "during partition degradation."
+            )
+
+        telemetry = metronome.synthesize_pacing_timeline(raw_text)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + metronome.render_ascii_cadence(telemetry))
+
+        if args.canvas:
+            metronome.export_canvas(telemetry, args.canvas)
+            print(f"[DxSkills] Visual pacing .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            metronome.export_svg_strip(telemetry, args.svg)
+            print(f"[DxSkills] Metronome strip SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
