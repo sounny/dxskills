@@ -1815,6 +1815,14 @@ def main():
     p_be.add_argument("--svg", default="", help="Output Beyond Endoscopy SVG filepath")
     p_be.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_be.add_argument("--demo", action="store_true", help="Run with demonstration Poisson summation, L-pole residue isolation, and Altug smoothing")
+    # taylor-wiles / modularity-lifting / patching-loom / r-equals-t
+    p_tw = subparsers.add_parser("taylor-wiles", aliases=["modularity-lifting", "patching-loom", "r-equals-t"], help="Autonomous cognitive spatial Taylor-Wiles Patching and Modularity Lifting Loom")
+    p_tw.add_argument("--prime", "-p", type=int, default=5, choices=[3, 5, 7, 11], help="Prime p (default: 5)")
+    p_tw.add_argument("--level", "-l", type=int, default=2, help="Patching level N (default: 2)")
+    p_tw.add_argument("--archetype", default="fermat", choices=["fermat", "ordinary", "kisin", "unitary"], help="Modularity archetype (default: fermat)")
+    p_tw.add_argument("--svg", default="", help="Output Taylor-Wiles SVG filepath")
+    p_tw.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_tw.add_argument("--demo", action="store_true", help="Run with demonstration Selmer groups, Taylor-Wiles primes, and R = T proof")
     args = parser.parse_args()
 
 
@@ -10554,6 +10562,58 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_svg())
             print(f"[DxSkills] Beyond Endoscopy SVG written to: {out_path}")
+    elif args.command in ["taylor-wiles", "modularity-lifting", "patching-loom", "r-equals-t"]:
+        from scripts.taylor_wiles_patching_loom import (
+            TaylorWilesPatchingLoom,
+            TaylorWilesArchetype,
+        )
+        arch_map = {
+            "fermat": TaylorWilesArchetype.FERMAT_FREY_CURVE.value,
+            "ordinary": TaylorWilesArchetype.TAYLOR_WILES_ORDINARY.value,
+            "kisin": TaylorWilesArchetype.KISIN_POTENTIALLY_BARSOTTI_TATE.value,
+            "unitary": TaylorWilesArchetype.UNITARY_CALEGARI_GERAGHTY.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, TaylorWilesArchetype.FERMAT_FREY_CURVE.value)
+
+        loom = TaylorWilesPatchingLoom(
+            prime_p=args.prime,
+            patching_level=args.level,
+            default_archetype=chosen_arch,
+        )
+        ev = loom.evaluate_modularity_lifting()
+        rr = loom.residual_rep
+        sg = loom.selmer_group
+        pm = loom.patched_module
+
+        if args.json:
+            import json
+            print(json.dumps(loom.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Taylor-Wiles Patching & Modularity Lifting Loom (R = T)")
+            print("=================================================================")
+            print(f"Setting Archetype:             {loom.archetype_str}")
+            if rr:
+                print(f"Residual Representation:       {rr.representation_label[:40]}")
+                print(f"Prime & Conductor Level:       p = {rr.prime_p} | N = {rr.conductor_level_n} (Weight k = {rr.serre_weight_k})")
+            if sg:
+                print(f"Selmer Groups:                 dim H^1_f = {sg.selmer_dimension_h1} | dim H^1_perp = {sg.dual_selmer_dimension_h1_perp}")
+            print(f"Taylor-Wiles Primes:           {len(loom.tw_primes)} auxiliary primes in Q_{loom.patching_level}")
+            if pm:
+                print(f"Patched Module M_infty:        Free over S_infty = Z_p[[x_1..x_{pm.patching_depth_g}]] (Rank = {pm.module_rank_over_s_infty})")
+            print(f"Modularity Isomorphism:        R_D ~= T_D is {ev.is_r_equals_t_isomorphism} (Ratio = {ev.numerical_criterion_ratio})")
+            print(f"Multiplicity One Verified:     {ev.multiplicity_one_verified}")
+            print(f"Cognitive Resonance Score:     {ev.cognitive_resonance_score:.4f}")
+            print(f"Spatial Stability Index:       {ev.spatial_stability_index:.4f}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "taylor_wiles_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_svg())
+            print(f"[DxSkills] Taylor-Wiles SVG written to: {out_path}")
     else:
         parser.print_help()
 
