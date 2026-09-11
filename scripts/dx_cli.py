@@ -730,6 +730,15 @@ def main():
     p_saliency.add_argument("--json", "-j", action="store_true", help="Output raw JSON saliency telemetry")
     p_saliency.add_argument("--demo", action="store_true", help="Run with demonstration multi-tier spatial chatter field")
 
+    # resonance-weaver / resonance / hyperlink-weaver / associative-bridge
+    p_weaver = subparsers.add_parser("resonance-weaver", aliases=["resonance", "hyperlink-weaver", "associative-bridge"], help="Autonomous cognitive spatial bi-directional hyper-link resonance weaver")
+    p_weaver.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or nodes JSON file")
+    p_weaver.add_argument("--threshold", "-t", type=float, default=0.20, help="Minimum Jaccard resonance affinity threshold (default: 0.20)")
+    p_weaver.add_argument("--output-canvas", "-o", default="", help="Output enriched Obsidian .canvas filepath")
+    p_weaver.add_argument("--svg", default="", help="Output resonance bridge SVG diagram filepath")
+    p_weaver.add_argument("--json", "-j", action="store_true", help="Output raw JSON resonance telemetry")
+    p_weaver.add_argument("--demo", action="store_true", help="Run with demonstration cross-domain knowledge nodes")
+
     args = parser.parse_args()
 
 
@@ -3155,6 +3164,45 @@ def main():
         if args.svg:
             matrix.to_svg(focal_node_id=focal_id, output_path=args.svg)
             print(f"[DxSkills] Saliency matrix SVG written to: {args.svg}")
+    elif args.command in ["resonance-weaver", "resonance", "hyperlink-weaver", "associative-bridge"]:
+        import scripts.resonance_weaver as rweav
+
+        weaver = rweav.HyperLinkResonanceWeaver(min_resonance_threshold=args.threshold)
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data and isinstance(raw_data["nodes"], list):
+                weaver.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                weaver.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_canvas = {
+                "nodes": [
+                    {"id": "node_bio", "text": "Biomimetic architectural airflow and passive cooling ventilation thermodynamic loop", "x": 100, "y": 100, "width": 260, "height": 140},
+                    {"id": "node_urban", "text": "Urban microclimate mitigation and bioclimatic wind corridors in dense street canyons", "x": 600, "y": 120, "width": 260, "height": 140},
+                    {"id": "node_db", "text": "Relational PostgreSQL database index caching and memory compaction b-tree buffer pool", "x": 100, "y": 450, "width": 260, "height": 140},
+                    {"id": "node_cache", "text": "Distributed Redis memory cache eviction buffer and latency dampening", "x": 600, "y": 470, "width": 260, "height": 140},
+                    {"id": "node_meta", "text": "Metacognitive executive working memory load shedding and attention anchoring", "x": 350, "y": 280, "width": 260, "height": 140}
+                ],
+                "edges": []
+            }
+            weaver.load_canvas(demo_canvas)
+
+        bridges, telemetry = weaver.weave_bridges()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + weaver.render_ascii_bridges(telemetry))
+
+        if args.output_canvas:
+            weaver.to_canvas(args.output_canvas, canvas_title="Resonance Weaved Canvas")
+            print(f"[DxSkills] Resonance-weaved canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            weaver.to_svg(args.svg)
+            print(f"[DxSkills] Resonance bridge SVG written to: {args.svg}")
     else:
         parser.print_help()
 
