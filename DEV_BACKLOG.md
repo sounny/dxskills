@@ -640,12 +640,16 @@
 - [x] **Task 151.2:** Cech cohomology visualizer rendering nerve complexes and sheaf stalk consistency diagrams in dark titanium SVG.
 
 ### Phase 152: Autonomous Cognitive Spatial Non-Commutative Spectral Triple & Connes Distance Loom
-- [ ] **Task 152.1:** Spectral triple (A, H, D) Dirac operator solver computing Connes geodesic distance on non-commutative concept algebras.
-- [ ] **Task 152.2:** Non-commutative spectral visualizer rendering Dirac eigenvalue spectra and quantum metric fluctuations in dark titanium SVG.
+- [x] **Task 152.1:** Spectral triple (A, H, D) Dirac operator solver computing Connes geodesic distance on non-commutative concept algebras.
+- [x] **Task 152.2:** Non-commutative spectral visualizer rendering Dirac eigenvalue spectra and quantum metric fluctuations in dark titanium SVG.
 
 ### Phase 153: Autonomous Cognitive Spatial Geometric Quantization & Kostant-Souriau Prequantum Loom
 - [ ] **Task 153.1:** Kostant-Souriau prequantum line bundle and polarization solver mapping classical cognitive observables to quantum operators.
 - [ ] **Task 153.2:** Geometric quantization visualizer rendering symplectic curvature forms and Bohr-Sommerfeld leaf foliation in dark titanium SVG.
+
+### Phase 154: Autonomous Cognitive Spatial Atiyah-Singer Index Theorem & Topological Anomaly Loom
+- [ ] **Task 154.1:** Atiyah-Singer analytical vs topological index solver evaluating elliptic differential operators on cognitive manifolds.
+- [ ] **Task 154.2:** Topological anomaly visualizer rendering Todd genus, Chern characters, and Dirac zero-mode spectral flows in dark titanium SVG.
 
 ---
 
@@ -800,7 +804,8 @@
 | **Cycle 144** | 2026-09-11 19:02 | Autonomous Cognitive Spatial Hyper-Dimensional Grassmannian Manifold Projector & Subspace Angle Loom | `scripts/grassmannian_subspace_loom.py`, `tests/test_grassmannian_subspace_loom.py`, `scripts/dx_cli.py`, `index.html` | `e31abce` |
 | **Cycle 145** | 2026-09-11 19:12 | Autonomous Cognitive Spatial Contact Geometry Reeb Vector Field & Legendrian Submanifold Loom | `scripts/contact_reeb_loom.py`, `tests/test_contact_reeb_loom.py`, `scripts/dx_cli.py`, `index.html` | `3a34a37` |
 | **Cycle 146** | 2026-09-11 19:22 | Autonomous Cognitive Spatial Calabi-Yau Compactification & Multi-Dimensional Flux Vacuum Loom | `scripts/calabi_yau_compactification.py`, `tests/test_calabi_yau_compactification.py`, `scripts/dx_cli.py`, `index.html` | `fa5feb6` |
-| **Cycle 147** | 2026-09-11 19:32 | Autonomous Cognitive Spatial Sheaf-Theoretic Cohomology & Epistemic Gluing Loom | `scripts/sheaf_cohomology_loom.py`, `tests/test_sheaf_cohomology_loom.py`, `scripts/dx_cli.py`, `index.html` | `pending` |
+| **Cycle 147** | 2026-09-11 19:32 | Autonomous Cognitive Spatial Sheaf-Theoretic Cohomology & Epistemic Gluing Loom | `scripts/sheaf_cohomology_loom.py`, `tests/test_sheaf_cohomology_loom.py`, `scripts/dx_cli.py`, `index.html` | `e50491d` |
+| **Cycle 148** | 2026-09-11 19:42 | Autonomous Cognitive Spatial Non-Commutative Spectral Triple & Connes Distance Loom | `scripts/noncommutative_spectral_loom.py`, `tests/test_noncommutative_spectral_loom.py`, `scripts/dx_cli.py`, `index.html` | pending |
 
 
 

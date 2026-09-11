@@ -1328,6 +1328,15 @@ def main():
     p_sheaf.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_sheaf.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_sheaf.add_argument("--demo", action="store_true", help="Run with demonstration 5-lens epistemic cover")
+
+    # spectral-triple / connes-spectral / connes-distance / noncommutative-loom
+    p_spec = subparsers.add_parser("spectral-triple", aliases=["connes-spectral", "connes-distance", "noncommutative-loom"], help="Autonomous cognitive spatial Non-Commutative Spectral Triple and Connes Distance Loom")
+    p_spec.add_argument("input", nargs="?", default="", help="Input spectral triple configuration JSON filepath")
+    p_spec.add_argument("--report", default="", help="Output spectral analysis diagnostic markdown filepath")
+    p_spec.add_argument("--svg", default="", help="Output spectral triple and Connes distance SVG filepath")
+    p_spec.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_spec.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_spec.add_argument("--demo", action="store_true", help="Run with demonstration 4D cognitive spectral triple")
     args = parser.parse_args()
 
 
@@ -7428,6 +7437,75 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Sheaf interactive HTML written to: {args.html}")
+    elif args.command in ["spectral-triple", "connes-spectral", "connes-distance", "noncommutative-loom"]:
+        from scripts.noncommutative_spectral_loom import (
+            NonCommutativeSpectralLoom,
+            ConceptState,
+            ConceptObservable,
+        )
+        if args.demo or not args.input:
+            loom = NonCommutativeSpectralLoom.create_default_cognitive_spectral_triple()
+        else:
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            h_dim = data.get("hilbert_dim", 4)
+            loom = NonCommutativeSpectralLoom(hilbert_dim=h_dim)
+            if "dirac_operator" in data:
+                loom.set_dirac_operator(data["dirac_operator"])
+            for obs_data in data.get("observables", []):
+                loom.add_observable(
+                    ConceptObservable(
+                        name=obs_data.get("name", "A"),
+                        label=obs_data.get("label", "Observable"),
+                        matrix=obs_data.get("matrix", []),
+                        description=obs_data.get("description", ""),
+                    )
+                )
+            for st_data in data.get("states", []):
+                loom.add_state(
+                    ConceptState(
+                        state_id=st_data.get("state_id", "S"),
+                        label=st_data.get("label", "State"),
+                        description=st_data.get("description", ""),
+                        vector=st_data.get("vector", []),
+                    )
+                )
+
+        result = loom.compute_spectral_analysis()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Non-Commutative Spectral Triple & Connes Distance Loom")
+            print("=================================================================")
+            print(f"Hilbert Space Dimension:       {result.hilbert_dim}")
+            print(f"Observables in Algebra A:      {result.num_observables}")
+            print(f"Concept States in H:           {result.num_states}")
+            ev_str = ", ".join(f"{ev:+.3f}" for ev in result.dirac_eigenvalues)
+            print(f"Dirac Eigenspectrum (lambda):  [{ev_str}]")
+            print(f"Spectral Dimension (d_s):      {result.spectral_dimension:.3f}")
+            print(f"Spectral Action S[D]:          {result.spectral_action:.4f}")
+            print(f"Framing Non-Commutativity:     {result.framing_noncommutativity_index:.4f}")
+            print(f"Connes Distance Pairs:         {len(result.connes_distances)}")
+            for cd in result.connes_distances[:4]:
+                print(f"  d_D({cd.state_id_a}, {cd.state_id_b}) = {cd.connes_distance:.4f} (Euc: {cd.euclidean_distance:.3f}, Obs: {cd.optimal_observable})")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Spectral triple report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Spectral triple SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Spectral interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
