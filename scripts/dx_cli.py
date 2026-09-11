@@ -1517,6 +1517,14 @@ def main():
     p_langlands.add_argument("--svg", default="", help="Output Langlands duality and SYZ mirror symmetry SVG filepath")
     p_langlands.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_langlands.add_argument("--demo", action="store_true", help="Run with demonstration Galois local system and Hecke eigensheaf")
+    # perfectoid-space / fargues-fontaine / tilting-equivalence / adic-space
+    p_perf = subparsers.add_parser("perfectoid-space", aliases=["fargues-fontaine", "tilting-equivalence", "adic-space"], help="Autonomous cognitive spatial Perfectoid Spaces and Fargues-Fontaine Loom")
+    p_perf.add_argument("--prime", "-p", type=int, default=2, help="Prime p for non-archimedean field (default: 2)")
+    p_perf.add_argument("--field", default="C_p (p-Adic Complex Completion)", help="Base perfectoid field name")
+    p_perf.add_argument("--slopes", default="2.0,1.0,0.5,0.0", help="Comma-separated vector bundle slopes on Fargues-Fontaine curve")
+    p_perf.add_argument("--svg", default="", help="Output perfectoid spaces and Fargues-Fontaine curve SVG filepath")
+    p_perf.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_perf.add_argument("--demo", action="store_true", help="Run with demonstration perfectoid field, adic space, and slope polygon")
     args = parser.parse_args()
 
 
@@ -8568,6 +8576,47 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_langlands_svg())
             print(f"[DxSkills] Geometric Langlands SVG written to: {args.svg}")
+    elif args.command in ["perfectoid-space", "fargues-fontaine", "tilting-equivalence", "adic-space"]:
+        from scripts.perfectoid_space_loom import (
+            PerfectoidSpaceLoom,
+            PerfectoidCharacteristic,
+            FontainePeriodRing,
+            HarderNarasimhanClassification,
+        )
+        loom = PerfectoidSpaceLoom(
+            prime_p=args.prime,
+            base_field_name=args.field,
+        )
+        spa = loom.construct_adic_space("SPA-DEMO-01", huber_pair=f"({args.field}, O_{args.field[:3]})")
+        parsed_slopes = [float(s.strip()) for s in args.slopes.split(",") if s.strip()]
+        curve = loom.synthesize_fargues_fontaine_curve("X-FF-DEMO", bundle_slopes=parsed_slopes)
+        tilting = loom.compute_tilting_equivalence("TILT-DEMO")
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            f = loom.fields[0]
+            print("=================================================================")
+            print("  Perfectoid Spaces & Fargues-Fontaine Curve Loom")
+            print("=================================================================")
+            print(f"Prime p:                       {loom.prime_p}")
+            print(f"Base Perfectoid Field:         {f.name} ({f.characteristic_type})")
+            print(f"Tilted Field K^flat:           {f.tilt_field_name}")
+            print(f"Adic Space Spa(R, R^+):        {spa.space_id} [Huber Pair={spa.huber_pair}]")
+            print(f"Fargues-Fontaine Curve:        {curve.curve_id} (Period Ring={curve.period_ring})")
+            print(f"Vector Bundle Slopes:          {curve.slopes}")
+            print(f"Harder-Narasimhan Polygon:     {curve.hn_polygon_points}")
+            print(f"Tilting Equivalence Status:    {'VERIFIED (Perf(K) ~= Perf(K^flat))' if tilting.category_equivalence_verified else 'FAILED'}")
+            print(f"Almost Math Defect:            {tilting.almost_mathematics_defect:.6f}")
+            print("Vector Bundles on X_FF:")
+            for b in curve.vector_bundles:
+                print(f"  * {b['bundle_label']}: Slope={b['slope']} | Rank={b['rank']} | Deg={b['degree']} | Status={b['classification']}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_perfectoid_svg())
+            print(f"[DxSkills] Perfectoid Spaces SVG written to: {args.svg}")
     else:
         parser.print_help()
 
