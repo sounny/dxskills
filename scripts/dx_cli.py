@@ -1601,6 +1601,14 @@ def main():
     p_ncg.add_argument("--svg", default="", help="Output Non-Commutative Geometry and Spectral Triples SVG filepath")
     p_ncg.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_ncg.add_argument("--demo", action="store_true", help="Run with demonstration spectral triple, Dirac ladder, and Connes distance")
+    # arithmetic-qft / dijkgraaf-witten / arithmetic-chern-simons / aqft-loom
+    p_aqft = subparsers.add_parser("arithmetic-qft", aliases=["dijkgraaf-witten", "arithmetic-chern-simons", "aqft-loom"], help="Autonomous cognitive spatial Arithmetic Quantum Field Theory and Dijkgraaf-Witten Invariants Loom")
+    p_aqft.add_argument("--group", default="cyclic_z3", choices=["cyclic_z3", "cyclic_z4", "klein_four", "dihedral_d6", "heisenberg_p"], help="Finite gauge group G (default: cyclic_z3)")
+    p_aqft.add_argument("--manifold", default="gaussian", choices=["gaussian", "eisenstein", "imaginary_d5", "cyclotomic_z5"], help="Arithmetic 3-manifold number ring Spec(O_K) (default: gaussian)")
+    p_aqft.add_argument("--twist", type=int, default=1, help="Cohomology twist level in H^3(G, U(1)) (default: 1)")
+    p_aqft.add_argument("--svg", default="", help="Output Arithmetic QFT and Dijkgraaf-Witten SVG filepath")
+    p_aqft.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_aqft.add_argument("--demo", action="store_true", help="Run with demonstration prime knot link, gauge holonomies, and partition phasor")
     args = parser.parse_args()
 
 
@@ -9049,6 +9057,62 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_ncg_svg())
             print(f"[DxSkills] Non-Commutative Geometry SVG written to: {args.svg}")
+    elif args.command in ["arithmetic-qft", "dijkgraaf-witten", "arithmetic-chern-simons", "aqft-loom"]:
+        from scripts.arithmetic_qft_loom import (
+            ArithmeticQFTLoom,
+            ArithmeticGaugeGroupType,
+            ArithmeticManifoldType,
+        )
+        group_map = {
+            "cyclic_z3": ArithmeticGaugeGroupType.CYCLIC_Z3.value,
+            "cyclic_z4": ArithmeticGaugeGroupType.CYCLIC_Z4.value,
+            "klein_four": ArithmeticGaugeGroupType.KLEIN_FOUR.value,
+            "dihedral_d6": ArithmeticGaugeGroupType.DIHEDRAL_D6.value,
+            "heisenberg_p": ArithmeticGaugeGroupType.HEISENBERG_P.value,
+        }
+        man_map = {
+            "gaussian": ArithmeticManifoldType.GAUSSIAN_INTEGERS.value,
+            "eisenstein": ArithmeticManifoldType.EISENSTEIN_INTEGERS.value,
+            "imaginary_d5": ArithmeticManifoldType.IMAGINARY_QUADRATIC_D5.value,
+            "cyclotomic_z5": ArithmeticManifoldType.CYCLOTOMIC_FIELD_Q_Z5.value,
+        }
+        chosen_group = group_map.get(args.group, ArithmeticGaugeGroupType.CYCLIC_Z3.value)
+        chosen_man = man_map.get(args.manifold, ArithmeticManifoldType.GAUSSIAN_INTEGERS.value)
+
+        loom = ArithmeticQFTLoom(
+            default_group=chosen_group,
+            default_manifold=chosen_man,
+            twist_level=args.twist,
+        )
+        grp = loom.groups[0]
+        man = loom.manifolds[0]
+        conns = loom.evaluate_gauge_connections()
+        part = loom.compute_dijkgraaf_witten_partition("DW-RUN-01")
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Arithmetic Quantum Field Theory & Dijkgraaf-Witten Loom")
+            print("=================================================================")
+            print(f"Number Ring M^3:               {man.ring_label}")
+            print(f"Ring Discriminant & Class No:  Delta_K = {man.discriminant} | Class Number h_K = {man.class_number}")
+            print(f"Ramified Prime Knots S:        {man.ramified_primes}")
+            print(f"Artin-Verdier Euler Char:      chi(Spec(O_K)) = {man.artin_verdier_euler_char}")
+            print(f"Gauge Group G & Order:         {grp.group_type} | Order |G| = {grp.group_order}")
+            print(f"3-Cohomology Twist Level:      k = {grp.selected_twist_level} in H^3(G, U(1)) (Order {grp.cohomology_h3_order})")
+            print(f"Gauge Connections |Hom(pi1,G)|: Count = {len(conns)}")
+            print(f"Sample Chern-Simons S_CS(rho): {[round(c.chern_simons_invariant, 3) for c in conns[:5]]}")
+            print(f"Partition Amplitude Z:         Real = {part.partition_amplitude_real:.4f} | Imag = {part.partition_amplitude_imag:.4f}")
+            print(f"Partition Function Norm |Z|:   |Z(O_K, alpha)| = {part.partition_norm:.4f}")
+            print(f"Topological Phase arg(Z):      arg(Z) = {part.topological_phase_rad:.4f} rad")
+            print(f"Wilson Loop Expectations:      {part.wilson_loop_expectations}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_aqft_svg())
+            print(f"[DxSkills] Arithmetic QFT SVG written to: {args.svg}")
     else:
         parser.print_help()
 
