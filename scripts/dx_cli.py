@@ -521,7 +521,17 @@ def main():
     p_horizon.add_argument("--json", "-j", action="store_true", help="Output raw JSON horizon telemetry")
     p_horizon.add_argument("--demo", action="store_true", help="Run with demonstration multi-scale horizon items")
     
+    # evict / compactor
+    p_evict = subparsers.add_parser("evict", aliases=["compactor"], help="Autonomous cognitive spatial working memory anchor eviction and FIFO buffer compactor")
+    p_evict.add_argument("input", nargs="?", default="", help="Optional JSON file with working memory nodes")
+    p_evict.add_argument("--capacity", type=int, default=5, help="Maximum active working memory buffer slots (default: 5)")
+    p_evict.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_evict.add_argument("--svg", "-s", default="", help="Output buffer compaction telemetry SVG filepath")
+    p_evict.add_argument("--json", "-j", action="store_true", help="Output raw JSON compaction telemetry")
+    p_evict.add_argument("--demo", action="store_true", help="Run with demonstration working memory node cluster")
+    
     args = parser.parse_args()
+
 
 
     
@@ -2003,8 +2013,52 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Concentric Horizon Radar SVG exported to: {args.svg}")
+    elif args.command in ["evict", "compactor"]:
+        import scripts.anchor_eviction as ae
+        compactor = ae.MemoryBufferCompactor(capacity_limit=args.capacity)
+        nodes = []
+        if args.input:
+            raw_text = read_input(args.input)
+            data = json.loads(raw_text)
+            for d in data:
+                nodes.append(ae.WorkingMemoryNode(
+                    id=d.get("id", str(len(nodes) + 1)),
+                    label=d.get("label", "Node"),
+                    base_importance=float(d.get("base_importance", 5.0)),
+                    idle_minutes=float(d.get("idle_minutes", 0.0)),
+                    reference_count=int(d.get("reference_count", 0)),
+                    decay_rate=float(d.get("decay_rate", 0.08)),
+                ))
+        else:
+            nodes = [
+                ae.WorkingMemoryNode("n1", "Critical Thread: Raft Leader Election", 9.5, idle_minutes=1.0, reference_count=4),
+                ae.WorkingMemoryNode("n2", "Active Thread: WAL Log Compaction", 8.0, idle_minutes=3.0, reference_count=2),
+                ae.WorkingMemoryNode("n3", "Secondary Thread: RPC Timeout Retry", 7.0, idle_minutes=8.0, reference_count=1),
+                ae.WorkingMemoryNode("n4", "Tertiary Thread: Client Telemetry Ping", 5.5, idle_minutes=12.0, reference_count=1),
+                ae.WorkingMemoryNode("n5", "Dormant Thread: S3 Snapshot Multipart Upload", 4.0, idle_minutes=25.0, reference_count=0),
+                ae.WorkingMemoryNode("n6", "Stale Thread: Legacy TLS Handshake Fallback", 3.0, idle_minutes=45.0, reference_count=0),
+                ae.WorkingMemoryNode("n7", "Forgotten Thread: Deprecated V1 Config Parser", 2.0, idle_minutes=90.0, reference_count=0),
+            ]
+
+        audit = compactor.compact_buffer(nodes)
+
+        if args.json:
+            print(json.dumps(audit.to_dict(), indent=2))
+        else:
+            print("\n" + compactor.export_summary_markdown(audit))
+
+        if args.canvas:
+            compactor.export_canvas(audit, output_path=args.canvas)
+            print(f"\n[DxSkills] Compacted Memory Buffer .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            svg_code = compactor.export_svg_telemetry(audit)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Buffer Telemetry SVG exported to: {args.svg}")
     else:
         parser.print_help()
+
 
 
 
