@@ -1278,6 +1278,18 @@ def main():
     p_poin.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_poin.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_poin.add_argument("--demo", action="store_true", help="Run with demonstration cognitive taxonomy tree")
+    # symplectic-orbit / hamiltonian-loom / phase-space / symplectic-integrator
+    p_symp = subparsers.add_parser("symplectic-orbit", aliases=["hamiltonian-loom", "phase-space", "symplectic-integrator"], help="Autonomous cognitive spatial symplectic phase space integrator and Hamiltonian concept orbit loom")
+    p_symp.add_argument("input", nargs="?", default="", help="Input semantic attractors JSON filepath")
+    p_symp.add_argument("--steps", type=int, default=750, help="Number of symplectic leapfrog time steps (default: 750)")
+    p_symp.add_argument("--dt", type=float, default=0.03, help="Time step size dt (default: 0.03)")
+    p_symp.add_argument("--mass", type=float, default=1.0, help="Cognitive mass / mental inertia parameter (default: 1.0)")
+    p_symp.add_argument("--k", type=float, default=0.55, help="Restoring stiffness parameter (default: 0.55)")
+    p_symp.add_argument("--report", default="", help="Output Hamiltonian diagnostic markdown filepath")
+    p_symp.add_argument("--svg", default="", help="Output symplectic dual-panel SVG filepath")
+    p_symp.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_symp.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_symp.add_argument("--demo", action="store_true", help="Run with demonstration cognitive orbit simulation")
     args = parser.parse_args()
 
 
@@ -6987,6 +6999,84 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(projector.to_html())
             print(f"[DxSkills] Poincare interactive HTML written to: {args.html}")
+    elif args.command in ["symplectic-orbit", "hamiltonian-loom", "phase-space", "symplectic-integrator"]:
+        from scripts.symplectic_hamiltonian_integrator import (
+            create_cognitive_orbit_simulation,
+            SymplecticHamiltonianIntegrator,
+        )
+        if args.demo or not args.input:
+            integrator = create_cognitive_orbit_simulation()
+        else:
+            integrator = SymplecticHamiltonianIntegrator(mass=args.mass, restoring_k=args.k)
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for att_data in data.get("attractors", []):
+                integrator.add_attractor(
+                    attractor_id=att_data["attractor_id"],
+                    label=att_data["label"],
+                    cx=att_data["cx"],
+                    cy=att_data["cy"],
+                    depth=att_data.get("depth", 1.2),
+                    radius=att_data.get("radius", 0.8),
+                    color=att_data.get("color", "#38bdf8")
+                )
+            q0 = tuple(data.get("q0", (1.0, 0.0)))
+            p0 = tuple(data.get("p0", (0.0, 1.0)))
+            integrator.simulate(q0=q0, p0=p0, steps=args.steps, dt=args.dt)
+
+        metrics = integrator.calculate_metrics()
+
+        if args.json:
+            print(json.dumps(integrator.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Symplectic Phase Space Integrator & Hamiltonian Concept Loom")
+            print("=================================================================")
+            print(f"Total Simulation Steps: {metrics.get('total_steps', 0)}")
+            print(f"Initial Hamiltonian Energy: {metrics.get('initial_hamiltonian', 0.0)}")
+            print(f"Max Energy Drift: {metrics.get('max_energy_drift', 0.0):.6f}")
+            print(f"Energy Conservation: {metrics.get('energy_conservation_pct', 100.0)}%")
+            print(f"Liouville Phase Volume Retention: {metrics.get('liouville_phase_volume_retention_pct', 100.0)}%")
+            print(f"Poincare Section Crossings: {metrics.get('poincare_surface_crossings', 0)}")
+            print(f"Total Semantic Attractors: {metrics.get('total_attractors', 0)}")
+            print("Symplectic 2-Form (dq ^ dp): CONSERVED")
+
+        if args.report:
+            md_lines = [
+                "# Symplectic Phase Space Integrator Diagnostic Report",
+                "",
+                "## Hamiltonian Conservation Telemetry",
+                f"- **Symplectic 2-Form:** Conserved (analytic dq ^ dp preservation)",
+                f"- **Total Leapfrog Steps:** {metrics.get('total_steps', 0)}",
+                f"- **Initial Energy H0:** {metrics.get('initial_hamiltonian', 0.0)}",
+                f"- **Maximum Energy Drift:** {metrics.get('max_energy_drift', 0.0):.6f}",
+                f"- **Energy Conservation Percentage:** {metrics.get('energy_conservation_pct', 100.0)}%",
+                f"- **Liouville Phase Volume Retention:** {metrics.get('liouville_phase_volume_retention_pct', 100.0)}%",
+                f"- **Poincare Surface of Section Crossings:** {metrics.get('poincare_surface_crossings', 0)}",
+                "",
+                "## Semantic Attractors",
+                "",
+                "| Attractor ID | Label | Center (q1, q2) | Depth | Radius | Color |",
+                "| :--- | :--- | :--- | :--- | :--- | :--- |",
+            ]
+            for att in integrator.attractors:
+                md_lines.append(
+                    f"| `{att.attractor_id}` | {att.label} | ({att.cx:.2f}, {att.cy:.2f}) | "
+                    f"{att.depth:.2f} | {att.radius:.2f} | `{att.color}` |"
+                )
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write("\n".join(md_lines) + "\n")
+            print(f"[DxSkills] Hamiltonian report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(integrator.to_svg())
+            print(f"[DxSkills] Symplectic SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(integrator.to_html())
+            print(f"[DxSkills] Symplectic interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
