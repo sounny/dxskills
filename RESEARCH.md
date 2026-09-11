@@ -64,3 +64,16 @@ Standard computing interfaces and corporate text formats generate massive extran
 4. **Vygotsky, L. S. (1978).** *Mind in society: The development of higher psychological processes.* Harvard University Press. (Concept of the Zone of Proximal Development and cultural cognitive scaffolding).
 5. **Schneps, M. H., Thomson, J. M., Chen, C., Sonnert, G., & Pomplun, M. (2013).** *E-Readers Are More Effective than Paper for Some with Dyslexia.* PLoS ONE, 8(9), e75634.
 6. **West, T. G. (1997).** *In the Mind's Eye: Visual Thinkers, Gifted People with Dyslexia and Other Learning Difficulties, Computer Images and the Ironies of Creativity.* Prometheus Books.
+---
+
+## 5. Linguistic Anti-Clutter & Natural Voice Baselines (Wikipedia: Signs of AI Writing)
+
+> **Reference:** [Wikipedia: Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
+
+Cognitive load research demonstrates that formulaic, repetitive, or synthetic prose introduces severe extraneous cognitive drag for non-linear and dyslexic readers. When language is bloated with predictable statistical artifacts, readers must expend working memory decoding low-information filler rather than substantive concepts.
+
+DxSkills adopts the empirical observations from the Wikipedia community study on AI writing tells as an active design constraint across all text processing:
+1. **Lexical De-noising:** Eliminating statistical buzzwords ("delve", "tapestry", "beacon", "testament", "pivotal", "fostering", "crucial", "holistic", "seamlessly") that dilute meaning.
+2. **Syntactic Directness:** Eliminating decorative participial tails ("...underscoring the importance of...") and formulaic negative parallelisms ("Not only X, but also Y") in favor of grounded, active statements.
+3. **Copulative Simplicity:** Using direct verbs ("is", "are") instead of inflationary substitutes ("serves as", "stands as").
+4. **Zero Structural Clutter:** Strictly banning em dashes (unicode 8212), decorative vertical list headers, and repetitive triads of adjectives.

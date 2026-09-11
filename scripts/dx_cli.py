@@ -1183,6 +1183,17 @@ def main():
     p_mlens.add_argument("--svg", default="", help="Output semantic lens interactive SVG filepath")
     p_mlens.add_argument("--json", "-j", action="store_true", help="Output raw JSON semantic lens telemetry")
     p_mlens.add_argument("--demo", action="store_true", help="Run with demonstration software architecture hierarchy")
+    # manifold-unfolder / polytope-net / tesseract-unfolder / riemannian-manifold
+    p_munf = subparsers.add_parser("manifold-unfolder", aliases=["polytope-net", "tesseract-unfolder", "riemannian-manifold"], help="Autonomous cognitive spatial topological manifold unfolder and polytope net weaver engine")
+    p_munf.add_argument("input", nargs="?", default="", help="Input polytope specification JSON filepath")
+    p_munf.add_argument("--polytope", "-p", default="TESSERACT_8_CELL", choices=["TESSERACT_8_CELL", "HYPERSIMPLEX_5_CELL", "ORTHOPLEX_16_CELL"], help="Target regular 4-polytope geometry (default: TESSERACT_8_CELL)")
+    p_munf.add_argument("--factor", "-f", type=float, default=1.0, help="Unfolding progression factor 0.0 to 1.0 (default: 1.0)")
+    p_munf.add_argument("--iso-angle", type=float, default=30.0, help="Isometric projection angle in degrees (default: 30.0)")
+    p_munf.add_argument("--spacing", type=float, default=75.0, help="Cell spacing in pixels (default: 75.0)")
+    p_munf.add_argument("--report", default="", help="Output topological manifold diagnostic markdown filepath")
+    p_munf.add_argument("--svg", default="", help="Output topological manifold interactive SVG filepath")
+    p_munf.add_argument("--json", "-j", action="store_true", help="Output raw JSON manifold net telemetry")
+    p_munf.add_argument("--demo", action="store_true", help="Run with demonstration unfolded Salvador Dali tesseract cross")
     args = parser.parse_args()
 
 
@@ -6243,6 +6254,38 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Morphological semantic lens SVG written to: {args.svg}")
+    elif args.command in ["manifold-unfolder", "polytope-net", "tesseract-unfolder", "riemannian-manifold"]:
+        import scripts.topological_manifold_unfolder as tmu_mod
+        unfolder = tmu_mod.TopologicalManifoldUnfolder(
+            isometric_angle_deg=args.iso_angle,
+            cell_spacing_px=args.spacing,
+        )
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                ptype = str(data.get("polytope_type", args.polytope))
+                factor = float(data.get("unfolding_factor", args.factor))
+                telemetry = unfolder.unfold_polytope(polytope_type=ptype, unfolding_factor=factor)
+        else:
+            telemetry = unfolder.unfold_polytope(polytope_type=args.polytope, unfolding_factor=args.factor)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            report_md = unfolder.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = unfolder.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Topological manifold report written to: {args.report}")
+
+        if args.svg:
+            svg_code = unfolder.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Topological manifold SVG written to: {args.svg}")
     else:
         parser.print_help()
 
