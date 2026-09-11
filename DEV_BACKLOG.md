@@ -480,12 +480,16 @@
 - [x] **Task 111.2:** Dynamic lexical compressor transforming multi-clause prose into spatial shorthand glyph tokens.
 
 ### Phase 112: Autonomous Cognitive Spatial Attentional Saccade Saliency Filter & Noise Gate
-- [ ] **Task 112.1:** Low-level visual saliency filter attenuating high-spatial-frequency noise across canvas margins.
-- [ ] **Task 112.2:** Dynamic noise gating threshold adjusting visual contrast to protect working memory headroom.
+- [x] **Task 112.1:** Low-level visual saliency filter attenuating high-spatial-frequency noise across canvas margins.
+- [x] **Task 112.2:** Dynamic noise gating threshold adjusting visual contrast to protect working memory headroom.
 
 ### Phase 113: Autonomous Cognitive Spatial Working Memory Drift Compensator & Re-Centering Harness
 - [ ] **Task 113.1:** Working memory drift estimator measuring conceptual displacement over extended spatial navigation.
 - [ ] **Task 113.2:** Allocentric re-centering harness projecting magnetic restore vectors toward primary epistemic anchors.
+
+### Phase 114: Autonomous Cognitive Spatial Multimodal Phonological Loop Bridge & Grapheme Resonator
+- [ ] **Task 114.1:** Grapheme-to-phoneme spatial dissonance detector measuring phonetic friction on visual reading paths.
+- [ ] **Task 114.2:** Sub-vocalization pacer generating rhythmic multi-sensory resonance cues for complex technical terms.
 
 ---
 
@@ -600,6 +604,8 @@
 | **Cycle 104** | 2026-09-11 12:22 | Autonomous Cognitive Spatial Schema Isomorphism & Analogy Transfer Engine | `scripts/schema_isomorphism_engine.py`, `tests/test_schema_isomorphism_engine.py`, `index.html` | `4c998ff` |
 | **Cycle 105** | 2026-09-11 12:32 | Autonomous Cognitive Spatial Multiscale Narrative Branching & Divergence Reconciler | `scripts/narrative_branch_reconciler.py`, `tests/test_narrative_branch_reconciler.py`, `index.html` | `7a459fa` |
 | **Cycle 106** | 2026-09-11 12:42 | Autonomous Cognitive Spatial Topological Invariant & Homotopy Visualizer | `scripts/topological_homotopy_engine.py`, `tests/test_topological_homotopy_engine.py`, `index.html` | `05e5045` |
-| **Cycle 107** | 2026-09-11 12:52 | Autonomous Cognitive Spatial Dynamic Lexical Compression & Semantic Gist Synthesizer | `scripts/lexical_gist_compressor.py`, `tests/test_lexical_gist_compressor.py`, `index.html` | `4b8c4c6` |
+| **Cycle 107** | 2026-09-11 12:52 | Autonomous Cognitive Spatial Dynamic Lexical Compression & Semantic Gist Synthesizer | `scripts/lexical_gist_compressor.py`, `tests/test_lexical_gist_compressor.py`, `index.html` | `f9297d2` |
+| **Cycle 108** | 2026-09-11 13:02 | Autonomous Cognitive Spatial Attentional Saccade Saliency Filter & Noise Gate | `scripts/saccade_saliency_filter.py`, `tests/test_saccade_saliency_filter.py`, `index.html` | `0ae2b78` |
+
 
 

@@ -931,6 +931,17 @@ def main():
     p_gist.add_argument("--json", "-j", action="store_true", help="Output raw JSON gist telemetry")
     p_gist.add_argument("--demo", action="store_true", help="Run with demonstration cognitive architecture prose")
 
+    # saccade-filter / noise-gate / saliency-gate / saccade-gate
+    p_sfilter = subparsers.add_parser("saccade-filter", aliases=["noise-gate", "saliency-gate", "saccade-gate"], help="Autonomous cognitive spatial attentional saccade saliency filter and noise gate")
+    p_sfilter.add_argument("input", nargs="?", default="", help="Input nodes layout JSON filepath or Obsidian .canvas file")
+    p_sfilter.add_argument("--threshold", "-t", type=float, default=0.35, help="Saliency noise gate threshold (default: 0.35)")
+    p_sfilter.add_argument("--cutoff", "-c", type=float, default=600.0, help="Peripheral margin cutoff distance in px (default: 600.0)")
+    p_sfilter.add_argument("--foveal", "-f", type=float, default=250.0, help="Central foveal focus radius in px (default: 250.0)")
+    p_sfilter.add_argument("--report", default="", help="Output noise gate audit markdown filepath")
+    p_sfilter.add_argument("--svg", default="", help="Output saccade saliency map SVG filepath")
+    p_sfilter.add_argument("--json", "-j", action="store_true", help="Output raw JSON filter telemetry")
+    p_sfilter.add_argument("--demo", action="store_true", help="Run with demonstration spatial nodes layout")
+
     args = parser.parse_args()
 
 
@@ -4360,6 +4371,51 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(result.spatial_glyph_diagram)
             print(f"[DxSkills] Spatial shorthand SVG diagram written to: {args.svg}")
+    elif args.command in ["saccade-filter", "noise-gate", "saliency-gate", "saccade-gate"]:
+        import scripts.saccade_saliency_filter as ssf_mod
+
+        filter_obj = ssf_mod.SaccadeSaliencyFilter(
+            threshold=args.threshold,
+            margin_cutoff=args.cutoff,
+            foveal_radius=args.foveal
+        )
+
+        nodes = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                if isinstance(raw_data, dict):
+                    nodes = raw_data.get("nodes", [])
+                elif isinstance(raw_data, list):
+                    nodes = raw_data
+            except json.JSONDecodeError:
+                nodes = [{"id": f"n_{idx+1}", "label": line.strip()} for idx, line in enumerate(content.splitlines()) if line.strip()]
+        elif args.demo or not args.input:
+            nodes = [
+                {"id": "n1", "label": "Core Epistemic Anchor", "x": 380, "y": 280, "width": 160, "height": 80},
+                {"id": "n2", "label": "Primary Synthesis Nexus", "x": 420, "y": 320, "width": 180, "height": 90},
+                {"id": "n3", "label": "Marginal Metadata Clutter Fragment", "x": 100, "y": 80, "width": 120, "height": 60},
+                {"id": "n4", "label": "Peripheral Note Boundary Clutter", "x": 750, "y": 550, "width": 140, "height": 70},
+            ]
+
+        result = filter_obj.apply_filter(nodes)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print(result.noise_gate_report_md)
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(result.noise_gate_report_md)
+            print(f"[DxSkills] Noise gate report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(result.saliency_map_svg)
+            print(f"[DxSkills] Saccade saliency map SVG written to: {args.svg}")
     else:
         parser.print_help()
 
