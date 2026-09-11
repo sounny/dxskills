@@ -500,12 +500,16 @@
 - [x] **Task 116.2:** Continuous spatial density equalizer redistributing high-entropy clusters into uniform visual layouts.
 
 ### Phase 117: Autonomous Cognitive Spatial Bifurcation Radar & Path-Dependency Loom
-- [ ] **Task 117.1:** Arthur lock-in threshold estimator measuring path dependency and conceptual irreversibility.
-- [ ] **Task 117.2:** Multiverse bifurcation canvas visualizer rendering branch alternative timelines in dark titanium SVG.
+- [x] **Task 117.1:** Arthur lock-in threshold estimator measuring path dependency and conceptual irreversibility.
+- [x] **Task 117.2:** Multiverse bifurcation canvas visualizer rendering branch alternative timelines in dark titanium SVG.
 
 ### Phase 118: Autonomous Cognitive Spatial Working Memory Saccadic Drift Compensator & Foveal Re-Centering Loom
 - [ ] **Task 118.1:** Dynamic foveal drift tracker measuring ocular displacement error during prolonged technical synthesis.
 - [ ] **Task 118.2:** Adaptive peripheral anchor re-centering loom generating magnetic restorative visual guides across wide spatial canvases.
+
+### Phase 119: Autonomous Cognitive Spatial Dynamic Attentional Funnel & Saccadic Boundary Gasket
+- [ ] **Task 119.1:** Peripheral distractibility threshold analyzer measuring visual boundary leakage across dense workspace canvases.
+- [ ] **Task 119.2:** Dynamic attentional funnel synthesizer rendering adaptive vignetted foveal conduits in dark titanium SVG.
 
 ---
 
@@ -626,6 +630,7 @@
 | **Cycle 110** | 2026-09-11 13:22 | Autonomous Cognitive Spatial Multimodal Phonological Loop Bridge & Grapheme Resonator | `scripts/phonological_bridge.py`, `tests/test_phonological_bridge.py`, `index.html` | `81b8cbb` |
 | **Cycle 111** | 2026-09-11 13:32 | Autonomous Cognitive Spatial Working Memory Saccade Fatigue Predictor & Kinetic Pacer | `scripts/saccade_fatigue_pacer.py`, `tests/test_saccade_fatigue_pacer.py`, `index.html` | `ceb1dfb` |
 | **Cycle 112** | 2026-09-11 13:42 | Autonomous Cognitive Spatial Semantic Entropy Gate & Topological Density Equalizer | `scripts/semantic_entropy_gate.py`, `tests/test_semantic_entropy_gate.py`, `index.html` | `6fedf6d` |
+| **Cycle 113** | 2026-09-11 13:52 | Autonomous Cognitive Spatial Bifurcation Radar & Path-Dependency Loom | `scripts/bifurcation_radar.py`, `tests/test_bifurcation_radar.py`, `index.html` | `eea1d26` |
 
 
 

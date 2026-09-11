@@ -980,6 +980,16 @@ def main():
     p_egate.add_argument("--json", "-j", action="store_true", help="Output raw JSON entropy telemetry")
     p_egate.add_argument("--demo", action="store_true", help="Run with demonstration clustered canvas nodes")
 
+    # bifurcation-radar / path-dependency / lock-in-loom / multiverse-fork
+    p_bradar = subparsers.add_parser("bifurcation-radar", aliases=["path-dependency", "lock-in-loom", "multiverse-fork"], help="Autonomous cognitive spatial bifurcation radar and path-dependency loom")
+    p_bradar.add_argument("input", nargs="?", default="", help="Input bifurcation forks JSON filepath")
+    p_bradar.add_argument("--threshold", "-t", type=float, default=120.0, help="Switching friction threshold S_threshold (default: 120.0)")
+    p_bradar.add_argument("--coupling", "-c", type=float, default=0.25, help="Coupling lambda coefficient for dependencies (default: 0.25)")
+    p_bradar.add_argument("--report", default="", help="Output bifurcation audit markdown filepath")
+    p_bradar.add_argument("--svg", default="", help="Output multiverse bifurcation SVG diagram filepath")
+    p_bradar.add_argument("--json", "-j", action="store_true", help="Output raw JSON multiverse telemetry")
+    p_bradar.add_argument("--demo", action="store_true", help="Run with demonstration architectural bifurcation forks")
+
     args = parser.parse_args()
 
 
@@ -4669,6 +4679,89 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Density equalization SVG written to: {args.svg}")
+    elif args.command in ["bifurcation-radar", "path-dependency", "lock-in-loom", "multiverse-fork"]:
+        import scripts.bifurcation_radar as br_mod
+
+        loom = br_mod.BifurcationRadarLoom(
+            s_threshold=args.threshold,
+            coupling_lambda=args.coupling
+        )
+
+        forks = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                raw_forks = raw_data if isinstance(raw_data, list) else raw_data.get("forks", [])
+                for item in raw_forks:
+                    decisions = [
+                        br_mod.BifurcationDecision(
+                            decision_id=d.get("id", f"d-{idx}"),
+                            title=d.get("title", f"Decision {idx}"),
+                            branch_id=d.get("branch", "primary"),
+                            depth=int(d.get("depth", idx)),
+                            complexity=float(d.get("complexity", 5.0)),
+                            downstream_deps=int(d.get("downstream_deps", 1)),
+                            reversible=bool(d.get("reversible", True))
+                        )
+                        for idx, d in enumerate(item.get("decisions", []), 1)
+                    ]
+                    forks.append(br_mod.BifurcationFork(
+                        fork_id=item.get("id", item.get("fork_id", "fork-1")),
+                        title=item.get("title", "Fork Point"),
+                        root_concept=item.get("root_concept", item.get("root", "Root")),
+                        primary_branch=item.get("primary_branch", "primary"),
+                        counterfactual_branches=item.get("counterfactual_branches", ["alternative"]),
+                        decisions=decisions
+                    ))
+            except json.JSONDecodeError:
+                pass
+        elif args.demo or not args.input:
+            forks = br_mod.sample_bifurcation_forks()
+
+        telemetry = loom.evaluate_multiverse(forks)
+
+        if args.json:
+            out_dict = {
+                "total_forks": telemetry.total_forks,
+                "total_decisions": telemetry.total_decisions,
+                "mean_lock_in_score": telemetry.mean_lock_in_score,
+                "max_lock_in_score": telemetry.max_lock_in_score,
+                "primary_status": telemetry.primary_status,
+                "total_switching_cost": telemetry.total_switching_cost,
+                "counterfactual_entropy": telemetry.counterfactual_entropy,
+                "forks": [
+                    {
+                        "id": f.fork_id,
+                        "title": f.title,
+                        "root": f.root_concept,
+                        "primary": f.primary_branch,
+                        "counterfactuals": f.counterfactual_branches,
+                        "lock_in": f.lock_in_score,
+                        "status": f.status,
+                        "switching_cost": f.switching_cost,
+                        "decisions_count": len(f.decisions)
+                    }
+                    for f in telemetry.forks
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = loom.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = loom.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Bifurcation radar report written to: {args.report}")
+
+        if args.svg:
+            svg_code = loom.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Multiverse bifurcation SVG written to: {args.svg}")
     else:
         parser.print_help()
 
