@@ -1034,6 +1034,16 @@ def main():
     p_zlens.add_argument("--json", "-j", action="store_true", help="Output raw JSON zoom telemetry")
     p_zlens.add_argument("--demo", action="store_true", help="Run with demonstration knowledge hierarchy")
 
+    # concept-constellation / starburst / synesthetic-starburst / asterism-weaver
+    p_cstar = subparsers.add_parser("concept-constellation", aliases=["starburst", "synesthetic-starburst", "asterism-weaver"], help="Autonomous cognitive spatial multimodal concept constellation and synesthetic starburst engine")
+    p_cstar.add_argument("input", nargs="?", default="", help="Input concept stars JSON filepath")
+    p_cstar.add_argument("--tether-distance", type=float, default=240.0, help="Maximum asterism tether distance in px (default: 240.0)")
+    p_cstar.add_argument("--min-resonance", type=float, default=0.35, help="Minimum tether resonance threshold (default: 0.35)")
+    p_cstar.add_argument("--report", default="", help="Output constellation audit markdown filepath")
+    p_cstar.add_argument("--svg", default="", help="Output constellation SVG diagram filepath")
+    p_cstar.add_argument("--json", "-j", action="store_true", help="Output raw JSON constellation telemetry")
+    p_cstar.add_argument("--demo", action="store_true", help="Run with demonstration concept star clusters")
+
     args = parser.parse_args()
 
 
@@ -5122,6 +5132,85 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Zoom lens SVG written to: {args.svg}")
+    elif args.command in ["concept-constellation", "starburst", "synesthetic-starburst", "asterism-weaver"]:
+        import scripts.concept_constellation_starburst as ccs_mod
+
+        engine = ccs_mod.ConceptConstellationStarburst(
+            max_asterism_tether_dist_px=args.tether_distance,
+            min_resonance_threshold=args.min_resonance
+        )
+
+        concepts = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+            try:
+                raw_data = json.loads(raw_text)
+                concepts = raw_data if isinstance(raw_data, list) else raw_data.get("concepts", [])
+            except json.JSONDecodeError:
+                pass
+
+        if not concepts or args.demo:
+            concepts = ccs_mod.sample_concept_stars()
+
+        telemetry = engine.synthesize_constellation(concepts)
+
+        if args.json:
+            out_dict = {
+                "total_stars": telemetry.total_stars,
+                "total_asterisms": telemetry.total_asterisms,
+                "mean_resonance": telemetry.mean_resonance,
+                "cowan_compliant": telemetry.cowan_compliant,
+                "spectral_distribution": telemetry.spectral_distribution,
+                "stars": [
+                    {
+                        "id": s.concept_id,
+                        "title": s.title,
+                        "magnitude": s.magnitude,
+                        "spectral_class": s.spectral_class,
+                        "frequency_hz": s.frequency_hz,
+                        "cluster_id": s.cluster_id,
+                        "position": [s.pos_x, s.pos_y]
+                    }
+                    for s in telemetry.stars
+                ],
+                "asterisms": [
+                    {
+                        "cluster_id": a.cluster_id,
+                        "name": a.name,
+                        "luminaries": a.luminary_count,
+                        "base_frequency_hz": a.harmonic_base_hz,
+                        "chromatic_hex": a.chromatic_hex,
+                        "bounding_box": list(a.bounding_box)
+                    }
+                    for a in telemetry.asterisms
+                ],
+                "edges": [
+                    {
+                        "source": e.source_id,
+                        "target": e.target_id,
+                        "resonance": e.resonance_weight,
+                        "is_primary": e.is_primary_asterism
+                    }
+                    for e in telemetry.edges
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = engine.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = engine.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Concept constellation report written to: {args.report}")
+
+        if args.svg:
+            svg_code = engine.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Concept constellation SVG written to: {args.svg}")
     else:
         parser.print_help()
 
