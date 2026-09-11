@@ -1108,6 +1108,15 @@ def main():
     p_edec.add_argument("--svg", default="", help="Output entropy spectrum SVG filepath")
     p_edec.add_argument("--json", "-j", action="store_true", help="Output raw JSON entropy telemetry")
     p_edec.add_argument("--demo", action="store_true", help="Run with demonstration noisy text nodes")
+    # polyhedral-crystallizer / schema-folder / polyhedral-net / concept-crystallizer
+    p_polyc = subparsers.add_parser("polyhedral-crystallizer", aliases=["schema-folder", "polyhedral-net", "concept-crystallizer"], help="Autonomous cognitive spatial polyhedral schema crystallizer and dimensionality folder")
+    p_polyc.add_argument("input", nargs="?", default="", help="Input concepts JSON filepath")
+    p_polyc.add_argument("--type", choices=["auto", "tetrahedron", "cube", "octahedron"], default="auto", help="Polyhedron geometry type (default: auto)")
+    p_polyc.add_argument("--scale", type=float, default=70.0, help="Geometric net scale in pixels (default: 70.0)")
+    p_polyc.add_argument("--report", default="", help="Output polyhedral schema audit markdown filepath")
+    p_polyc.add_argument("--svg", default="", help="Output polyhedral net blueprint SVG filepath")
+    p_polyc.add_argument("--json", "-j", action="store_true", help="Output raw JSON crystallizer telemetry")
+    p_polyc.add_argument("--demo", action="store_true", help="Run with demonstration modular concept set")
     args = parser.parse_args()
 
 
@@ -5754,6 +5763,66 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Semantic entropy SVG written to: {args.svg}")
+    elif args.command in ["polyhedral-crystallizer", "schema-folder", "polyhedral-net", "concept-crystallizer"]:
+        import scripts.polyhedral_schema_crystallizer as psc_mod
+        crystallizer = psc_mod.PolyhedralSchemaCrystallizer(default_scale_px=args.scale)
+
+        concepts = []
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                items = data.get("concepts", data) if isinstance(data, dict) else data
+                if isinstance(items, list):
+                    for item in items:
+                        concepts.append({
+                            "title": str(item.get("title", "Concept")),
+                            "text": str(item.get("text", item.get("summary", ""))),
+                        })
+        else:
+            concepts = psc_mod.sample_crystallizer_concepts()
+
+        telemetry = crystallizer.crystallize_schema(concepts, polyhedron_type=args.type)
+
+        if args.json:
+            out_dict = {
+                "input_concepts_count": telemetry.input_concepts_count,
+                "selected_polyhedron": telemetry.selected_polyhedron,
+                "face_coverage_ratio": telemetry.face_coverage_ratio,
+                "mean_dihedral_angle_deg": telemetry.mean_dihedral_angle_deg,
+                "spatial_crystallization_score": telemetry.spatial_crystallization_score,
+                "net": {
+                    "polyhedron_type": telemetry.polyhedral_net.polyhedron_type,
+                    "face_count": telemetry.polyhedral_net.face_count,
+                    "faces": [
+                        {
+                            "face_id": f.face_id,
+                            "title": f.title,
+                            "summary": f.concept_summary,
+                            "adjacent_face_ids": f.adjacent_face_ids,
+                            "center_x": f.center_x,
+                            "center_y": f.center_y,
+                            "dihedral_angle_deg": f.dihedral_angle_deg,
+                        }
+                        for f in telemetry.polyhedral_net.faces
+                    ]
+                }
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = crystallizer.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = crystallizer.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Polyhedral schema report written to: {args.report}")
+
+        if args.svg:
+            svg_code = crystallizer.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Polyhedral net blueprint SVG written to: {args.svg}")
     else:
         parser.print_help()
 
