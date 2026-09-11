@@ -1690,6 +1690,14 @@ def main():
     p_bk.add_argument("--svg", default="", help="Output Bloch-Kato SVG filepath")
     p_bk.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_bk.add_argument("--demo", action="store_true", help="Run with demonstration Selmer conditions, exponential map, and Tamagawa numbers")
+    # euler-systems / kolyvagin-derivatives / heegner-system / selmer-bound-loom
+    p_es = subparsers.add_parser("euler-systems", aliases=["kolyvagin-derivatives", "heegner-system", "selmer-bound-loom"], help="Autonomous cognitive spatial Euler Systems and Kolyvagin Derivatives Loom")
+    p_es.add_argument("--conductor", "-m", type=int, default=7, help="Conductor m of Euler system (default: 7)")
+    p_es.add_argument("--prime", "-p", type=int, default=3, choices=[2, 3, 5, 7, 11], help="Base prime p (default: 3)")
+    p_es.add_argument("--archetype", default="heegner", choices=["heegner", "cyclotomic", "kato", "beilinson_flach"], help="Euler system archetype (default: heegner)")
+    p_es.add_argument("--svg", default="", help="Output Euler Systems SVG filepath")
+    p_es.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_es.add_argument("--demo", action="store_true", help="Run with demonstration norm relations, Kolyvagin derivatives, and Selmer bounds")
     args = parser.parse_args()
 
 
@@ -9663,6 +9671,52 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_bloch_kato_svg())
             print(f"[DxSkills] Bloch-Kato SVG written to: {args.svg}")
+    elif args.command in ["euler-systems", "kolyvagin-derivatives", "heegner-system", "selmer-bound-loom"]:
+        from scripts.euler_systems_loom import (
+            EulerSystemsKolyvaginLoom,
+            EulerSystemArchetype,
+        )
+        arch_map = {
+            "heegner": EulerSystemArchetype.HEEGNER_POINTS_ELLIPTIC.value,
+            "cyclotomic": EulerSystemArchetype.CYCLOTOMIC_UNITS.value,
+            "kato": EulerSystemArchetype.KATO_EULER_SYSTEM.value,
+            "beilinson_flach": EulerSystemArchetype.BEILINSON_FLACH_ELEMENTS.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, EulerSystemArchetype.HEEGNER_POINTS_ELLIPTIC.value)
+
+        loom = EulerSystemsKolyvaginLoom(
+            conductor=args.conductor,
+            prime_p=args.prime,
+            default_archetype=chosen_arch,
+        )
+        c_cls = loom.euler_classes[0]
+        deriv = loom.derivatives[0]
+        b_data = loom.selmer_bounds[0]
+        eval_deriv = loom.evaluate_kolyvagin_derivative(test_prime_ell=11, mod_power_m=1)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Euler Systems & Kolyvagin Derivatives Loom")
+            print("=================================================================")
+            print(f"Euler System Conductor & Prime: m = {c_cls.conductor_m} | Prime p = {loom.prime_p}")
+            print(f"Euler System Archetype:        {loom.default_archetype}")
+            print(f"Field Extension:               {c_cls.field_extension_label} (Galois Order = {c_cls.galois_group_order})")
+            print(f"Norm Compatibility Relation:   cor(c_{{m*ell}}) = P_ell(Frob_ell^-1) * c_m (Verified = {c_cls.norm_compatibility_verified})")
+            print(f"Kolyvagin Derivative:          {deriv.kolyvagin_operator_label}")
+            print(f"Finite-Singular Residues:      partial_ell(kappa_{{m*ell}}) = phi_ell(kappa_m) (Matched = {deriv.finite_singular_residue_match})")
+            print(f"Motive & Mordell-Weil Rank:    {b_data.motive_label} | r_MW = {b_data.mordell_weil_rank}")
+            print(f"Shafarevich-Tate Group Bound:  #Sha <= p^{b_data.sha_order_bound} (Finite = {b_data.is_sha_finite})")
+            print(f"Kolyvagin Annihilator:         {b_data.kolyvagin_annihilator_ideal}")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_euler_system_svg())
+            print(f"[DxSkills] Euler Systems SVG written to: {args.svg}")
     else:
         parser.print_help()
 
