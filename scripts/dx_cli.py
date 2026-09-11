@@ -692,6 +692,16 @@ def main():
     p_triad.add_argument("--json", "-j", action="store_true", help="Output raw JSON dialectic telemetry")
     p_triad.add_argument("--demo", action="store_true", help="Run with demonstration architectural polarity tensions")
 
+    # density-calibrator / density / whitespace-balancer / bouma-lens
+    p_density = subparsers.add_parser("density-calibrator", aliases=["density", "whitespace-balancer", "bouma-lens"], help="Autonomous cognitive spatial multi-scale attention density calibrator and visual restorer")
+    p_density.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or node layout JSON file")
+    p_density.add_argument("--foveal-sigma", "-s", type=float, default=200.0, help="Foveal attention Gaussian kernel standard deviation (default: 200.0)")
+    p_density.add_argument("--bouma-factor", "-b", type=float, default=1.6, help="Bouma clearance ratio factor (default: 1.6)")
+    p_density.add_argument("--output-canvas", "-o", default="", help="Output rebalanced Obsidian .canvas filepath")
+    p_density.add_argument("--svg", default="", help="Output attention density SVG diagram filepath")
+    p_density.add_argument("--json", "-j", action="store_true", help="Output raw JSON density telemetry")
+    p_density.add_argument("--demo", action="store_true", help="Run with demonstration high-density crowded canvas")
+
     args = parser.parse_args()
 
 
@@ -2881,6 +2891,46 @@ def main():
         if args.svg:
             synthesizer.to_svg(args.svg)
             print(f"[DxSkills] Dialectic synthesis SVG written to: {args.svg}")
+    elif args.command in ["density-calibrator", "density", "whitespace-balancer", "bouma-lens"]:
+        import scripts.density_calibrator as dcal
+
+        calibrator = dcal.AttentionDensityCalibrator(
+            foveal_sigma=args.foveal_sigma,
+            bouma_factor=args.bouma_factor,
+        )
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data:
+                calibrator.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                calibrator.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_nodes = {
+                "n_auth": {"title": "Core Auth", "x": 300, "y": 250, "width": 240, "height": 130, "text": "OAuth2 JWT verification and identity token issuer."},
+                "n_vault": {"title": "Token Vault", "x": 360, "y": 290, "width": 240, "height": 130, "text": "High entropy cryptographic key vault and rotating secret credentials."},
+                "n_session": {"title": "Session Cache", "x": 330, "y": 350, "width": 240, "height": 130, "text": "Redis-backed distributed session cache and rate limiting counter."},
+                "n_audit": {"title": "Audit Logger", "x": 400, "y": 320, "width": 240, "height": 130, "text": "Immutable security compliance audit event log stream."},
+                "n_gateway": {"title": "API Gateway", "x": 950, "y": 300, "width": 260, "height": 140, "text": "Edge TLS termination, reverse proxy, and global ingress routing."},
+                "n_billing": {"title": "Stripe Billing", "x": 1000, "y": 800, "width": 260, "height": 140, "text": "Subscription billing, webhook processing, and invoice generation."},
+            }
+            calibrator.load_dict(demo_nodes)
+
+        nodes, hotspots, telemetry = calibrator.calibrate()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + calibrator.render_ascii_report(telemetry))
+
+        if args.output_canvas:
+            calibrator.to_canvas(args.output_canvas, canvas_title="Calibrated Whitespace Canvas")
+            print(f"[DxSkills] Rebalanced whitespace canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            calibrator.to_svg(args.svg)
+            print(f"[DxSkills] Attention density SVG written to: {args.svg}")
     else:
         parser.print_help()
 

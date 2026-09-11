@@ -384,12 +384,16 @@
 - [x] **Task 87.2:** Automated synthetic resolution generator weaving third-way integrative solutions into unified spatial schemas.
 
 ### Phase 88: Autonomous Cognitive Spatial Multi-Scale Attention Density Calibrator & Visual Restorer
-- [ ] **Task 88.1:** Spatial attention density map calculating cognitive visual crowding across cluster intersections.
-- [ ] **Task 88.2:** Dynamic whitespace balancer expanding visual breathing room around high-entropy canvas hubs.
+- [x] **Task 88.1:** Spatial attention density map calculating cognitive visual crowding across cluster intersections.
+- [x] **Task 88.2:** Dynamic whitespace balancer expanding visual breathing room around high-entropy canvas hubs.
 
 ### Phase 89: Autonomous Cognitive Spatial Multi-Modal Code Signature Synthesizer & Symbol Mesh
 - [ ] **Task 89.1:** Abstract syntax symbol extractor projecting hierarchical AST structures into 2D spatial canvas cards.
 - [ ] **Task 89.2:** Visual type contract and interface boundary mapper highlighting leaky cross-boundary abstractions.
+
+### Phase 90: Autonomous Cognitive Spatial Working Memory Anchor Stacking & Compaction Harness
+- [ ] **Task 90.1:** Real-time semantic stack compression condensing resolved subgraphs into hierarchical memory tokens.
+- [ ] **Task 90.2:** Multi-scale spatial breadcrumb restorer preserving navigation trail across deep zoom levels.
 
 ---
 
@@ -481,3 +485,4 @@
 | **Cycle 81** | 2026-09-11 08:32 | Autonomous Cognitive Spatial Non-Linear Executive Scaffolding & Action Sequencer | `scripts/action_sequencer.py`, `tests/test_action_sequencer.py`, `index.html` | `8892459` |
 | **Cycle 82** | 2026-09-11 08:42 | Autonomous Cognitive Spatial Dynamic Cognitive Aperture & Scope Bounding Harness | `scripts/cognitive_aperture.py`, `tests/test_cognitive_aperture.py`, `index.html` | `5232d13` |
 | **Cycle 83** | 2026-09-11 08:52 | Autonomous Cognitive Spatial Associative Multi-Perspective Dialectic Synthesizer & Synthesis Mesh | `scripts/dialectic_synthesizer.py`, `tests/test_dialectic_synthesizer.py`, `index.html` | `48b5f42` |
+| **Cycle 84** | 2026-09-11 09:02 | Autonomous Cognitive Spatial Multi-Scale Attention Density Calibrator & Visual Restorer | `scripts/density_calibrator.py`, `tests/test_density_calibrator.py`, `index.html` | `5a4c87f` |
