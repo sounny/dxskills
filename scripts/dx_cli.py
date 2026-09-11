@@ -1698,6 +1698,14 @@ def main():
     p_es.add_argument("--svg", default="", help="Output Euler Systems SVG filepath")
     p_es.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_es.add_argument("--demo", action="store_true", help="Run with demonstration norm relations, Kolyvagin derivatives, and Selmer bounds")
+    # iwasawa-theory / padic-l-functions / iwasawa-main-conjecture / lambda-module-loom
+    p_iw = subparsers.add_parser("iwasawa-theory", aliases=["padic-l-functions", "iwasawa-main-conjecture", "lambda-module-loom"], help="Autonomous cognitive spatial Iwasawa Main Conjecture and p-Adic L-Functions Loom")
+    p_iw.add_argument("--prime", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11], help="Base prime p (default: 5)")
+    p_iw.add_argument("--lambda-inv", "-l", type=int, default=1, help="Iwasawa lambda-invariant (default: 1)")
+    p_iw.add_argument("--archetype", default="cyclotomic", choices=["cyclotomic", "ordinary", "supersingular", "totally_real"], help="Iwasawa theory archetype (default: cyclotomic)")
+    p_iw.add_argument("--svg", default="", help="Output Iwasawa Theory SVG filepath")
+    p_iw.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_iw.add_argument("--demo", action="store_true", help="Run with demonstration Lambda-modules, p-adic L-functions, and Main Conjecture equality")
     args = parser.parse_args()
 
 
@@ -9717,6 +9725,54 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_euler_system_svg())
             print(f"[DxSkills] Euler Systems SVG written to: {args.svg}")
+    elif args.command in ["iwasawa-theory", "padic-l-functions", "iwasawa-main-conjecture", "lambda-module-loom"]:
+        from scripts.iwasawa_theory_loom import (
+            IwasawaTheoryLoom,
+            IwasawaArchetype,
+        )
+        arch_map = {
+            "cyclotomic": IwasawaArchetype.CYCLOTOMIC_Z_P.value,
+            "ordinary": IwasawaArchetype.ELLIPTIC_CURVE_ORDINARY.value,
+            "supersingular": IwasawaArchetype.ELLIPTIC_CURVE_SUPERSINGULAR.value,
+            "totally_real": IwasawaArchetype.TOTALLY_REAL_FIELD.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, IwasawaArchetype.CYCLOTOMIC_Z_P.value)
+
+        loom = IwasawaTheoryLoom(
+            base_prime=args.prime,
+            lambda_inv=args.lambda_inv,
+            default_archetype=chosen_arch,
+        )
+        mod = loom.modules[0]
+        l_fn = loom.l_functions[0]
+        comp = loom.comparisons[0]
+        growth = loom.evaluate_class_number_growth(layer_n=3)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Iwasawa Main Conjecture & p-Adic L-Functions Loom")
+            print("=================================================================")
+            print(f"Base Extension & Prime:        {mod.base_field_label} | Prime p = {mod.prime_p}")
+            print(f"Iwasawa Archetype:             {loom.default_archetype}")
+            print(f"Iwasawa Invariants:            mu = {mod.mu_invariant}, lambda = {mod.lambda_invariant}, nu = {mod.nu_invariant}")
+            print(f"Ferrero-Washington mu = 0:     {mod.is_ferrero_washington_mu_zero}")
+            print(f"Class Number at Layer n = 3:   e_3 = {growth['exponent_e_n']} (|A_3| = {growth['order_approx']})")
+            print(f"Kubota-Leopoldt L_p(s, chi):   s = {l_fn.evaluation_point_s}, character = {l_fn.character_label}")
+            print(f"Special Bernoulli Value:       {l_fn.special_value_bernoulli:.4f} (Euler Factor = {l_fn.euler_factor_at_p:.4f})")
+            print(f"Algebraic Characteristic Ideal:{comp.algebraic_char_ideal}")
+            print(f"Analytic p-Adic L-Ideal:       {comp.analytic_l_ideal}")
+            print(f"Iwasawa Main Conjecture:       char_Lambda(X_infty) == (L_p) Verified ({comp.ideals_coincide})")
+            print(f"Theorem Reference:             {comp.theorem_reference}")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_iwasawa_svg())
+            print(f"[DxSkills] Iwasawa Theory SVG written to: {args.svg}")
     else:
         parser.print_help()
 
