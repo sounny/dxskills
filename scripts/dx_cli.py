@@ -1429,6 +1429,17 @@ def main():
     p_condensed.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_condensed.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_condensed.add_argument("--demo", action="store_true", help="Run with demonstration Stone space probes and liquid vector spaces")
+    # prismatic-cohomology / bhatt-scholze / prism-loom / nygaard-filtration
+    p_prismatic = subparsers.add_parser("prismatic-cohomology", aliases=["bhatt-scholze", "prism-loom", "nygaard-filtration"], help="Autonomous cognitive spatial Prismatic Cohomology and Bhatt-Scholze Prism Loom")
+    p_prismatic.add_argument("input", nargs="?", default="", help="Input prismatic space configuration JSON filepath")
+    p_prismatic.add_argument("--name", default="Cognitive Perspective Space X", help="Target space identifier")
+    p_prismatic.add_argument("--prism-type", default="Breuil-Kisin Prism (W(k)[[u]], (E(u)))", choices=["Breuil-Kisin Prism (W(k)[[u]], (E(u)))", "Crystalline Prism (W(k), (p))", "q-Crystalline Prism (Z_p[[q-1]], ([p]_q))", "Perfectoid Prism (A_inf, (xi))"], help="Prism classification")
+    p_prismatic.add_argument("--prime", type=int, default=5, help="Base prime p")
+    p_prismatic.add_argument("--report", default="", help="Output prismatic cohomology telemetry markdown filepath")
+    p_prismatic.add_argument("--svg", default="", help="Output universal prism and Nygaard filtration ladder SVG filepath")
+    p_prismatic.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_prismatic.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_prismatic.add_argument("--demo", action="store_true", help="Run with demonstration Breuil-Kisin prism at p=5")
     args = parser.parse_args()
 
 
@@ -8061,6 +8072,55 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Condensed math interactive HTML written to: {args.html}")
+    elif args.command in ["prismatic-cohomology", "bhatt-scholze", "prism-loom", "nygaard-filtration"]:
+        from scripts.prismatic_cohomology_loom import (
+            PrismaticCohomologyLoom,
+            PrismType,
+        )
+        loom = PrismaticCohomologyLoom(schema_name=args.name, prime_p=args.prime, prism_type=args.prism_type)
+        if not (args.demo or not args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loom.schema_name = data.get("schema_name", args.name)
+            loom.prime_p = int(data.get("prime_p", args.prime))
+            loom.prism_type = data.get("prism_type", args.prism_type)
+
+        result = loom.evaluate_prismatic_cohomology()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Prismatic Cohomology & Bhatt-Scholze Prism Loom")
+            print("=================================================================")
+            print(f"Target Space:                  {result.schema_name}")
+            print(f"Prism Classification:          {result.prism.prism_type}")
+            print(f"Base Delta-Ring A:             {result.prism.base_ring}")
+            print(f"Distinguished Ideal I:         {result.prism.distinguished_ideal_I}")
+            print(f"Frobenius Lift phi:            {result.prism.frobenius_lift}")
+            print(f"Harmonization Status:          {'VERIFIED (All Comparisons Match)' if result.all_specializations_harmonized else 'FAILED'}")
+            print("Universal Specialization Theorems:")
+            for sp in result.specializations:
+                print(f"  * {sp.modality}: Target={sp.target_ring} | Rank={sp.specialized_cohomology_rank} | Verified={sp.invariants_verified}")
+            print("Nygaard Filtration Stages N^>=i:")
+            for ns in result.nygaard_stages:
+                print(f"  Stage {ns.filtration_degree_i} ({ns.nygaard_module_label}): Graded={ns.graded_piece_hodge_tate} | Frobenius Rank={ns.divided_frobenius_rank} | Dim={ns.cohomology_dimension}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Prismatic report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Prismatic SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Prismatic interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
