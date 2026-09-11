@@ -815,6 +815,18 @@ def main():
     p_fatigue.add_argument("--json", "-j", action="store_true", help="Output raw JSON fatigue telemetry")
     p_fatigue.add_argument("--demo", action="store_true", help="Run with demonstration 20-sample decaying gaze session")
 
+    # stress-tester / lexical-stress / syntax-friction / stepping-stones
+    p_stress = subparsers.add_parser("stress-tester", aliases=["lexical-stress", "syntax-friction", "stepping-stones"], help="Autonomous cognitive spatial dynamic lexical stress-testing and gaze anchor synthesizer")
+    p_stress.add_argument("input", nargs="?", default="", help="Input source code or text filepath")
+    p_stress.add_argument("--code", "-c", default="", help="Raw code or text snippet string to stress-test")
+    p_stress.add_argument("--depth", "-d", type=int, default=3, help="Maximum acceptable syntactic nesting depth before friction escalation (default: 3)")
+    p_stress.add_argument("--threshold", "-t", type=float, default=0.60, help="Friction index threshold for stepping stone generation (default: 0.60)")
+    p_stress.add_argument("--output-md", default="", help="Output stepped markdown filepath")
+    p_stress.add_argument("--output-html", default="", help="Output stepped HTML filepath")
+    p_stress.add_argument("--svg", default="", help="Output lexical friction heatmap and trajectory SVG diagram filepath")
+    p_stress.add_argument("--json", "-j", action="store_true", help="Output raw JSON lexical stress telemetry")
+    p_stress.add_argument("--demo", action="store_true", help="Run with demonstration nested code snippet")
+
     args = parser.parse_args()
 
 
@@ -3606,6 +3618,53 @@ def main():
         if args.svg:
             meter.export_svg(result, args.svg)
             print(f"[DxSkills] Saccadic fatigue SVG diagram written to: {args.svg}")
+    elif args.command in ["stress-tester", "lexical-stress", "syntax-friction", "stepping-stones"]:
+        import scripts.lexical_stress_tester as lst_mod
+
+        tester = lst_mod.LexicalStressTester(
+            max_acceptable_depth=args.depth,
+            friction_threshold=args.threshold,
+        )
+
+        code_to_test = ""
+        if args.code:
+            code_to_test = args.code
+        elif args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                code_to_test = f.read()
+        elif args.demo or not args.input:
+            code_to_test = (
+                "def process_spatial_lattice(node_catalog: dict) -> list:\n"
+                "    active_anchors = []\n"
+                "    for category, cluster in node_catalog.items():\n"
+                "        if cluster.is_active():\n"
+                "            for item in cluster.elements:\n"
+                "                if item.friction_score > 0.65:\n"
+                "                    resolved_concept_identifier = item.synthesize_anchor()\n"
+                "                    active_anchors.append(resolved_concept_identifier)\n"
+                "    return active_anchors\n"
+            )
+
+        result = tester.parse_syntax(code_to_test)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + tester.generate_ascii_report(result))
+
+        if args.output_md:
+            with open(args.output_md, "w", encoding="utf-8") as f:
+                f.write(result.stepped_markdown)
+            print(f"[DxSkills] Stepped markdown written to: {args.output_md}")
+
+        if args.output_html:
+            with open(args.output_html, "w", encoding="utf-8") as f:
+                f.write(result.stepped_html)
+            print(f"[DxSkills] Stepped HTML written to: {args.output_html}")
+
+        if args.svg:
+            tester.export_svg(result, args.svg)
+            print(f"[DxSkills] Lexical friction SVG diagram written to: {args.svg}")
     else:
         parser.print_help()
 
