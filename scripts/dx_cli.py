@@ -1228,6 +1228,16 @@ def main():
     p_fbdl.add_argument("--svg", default="", help="Output fiber bundle interactive SVG filepath")
     p_fbdl.add_argument("--json", "-j", action="store_true", help="Output raw JSON holonomy telemetry")
     p_fbdl.add_argument("--demo", action="store_true", help="Run with demonstration Mobius strip fiber bundle")
+    # chrono-replay / replay-loom / episodic-replay / trajectory-synthesizer / hippocampal-replay
+    p_creplay = subparsers.add_parser("chrono-replay", aliases=["replay-loom", "episodic-replay", "trajectory-synthesizer", "hippocampal-replay"], help="Autonomous cognitive spatial chrono-spatial replay loom and episodic trajectory synthesizer engine")
+    p_creplay.add_argument("input", nargs="?", default="", help="Input episodic waypoints JSON filepath")
+    p_creplay.add_argument("--mode", default="forward", choices=["forward", "reverse", "choice-point"], help="Replay synthesis mode (default: forward)")
+    p_creplay.add_argument("--compression", type=float, default=14.0, help="Sharp-wave ripple temporal compression factor (default: 14.0)")
+    p_creplay.add_argument("--depth", type=int, default=4, help="Choice point decision lattice depth (default: 4)")
+    p_creplay.add_argument("--report", default="", help="Output chrono replay diagnostic markdown filepath")
+    p_creplay.add_argument("--svg", default="", help="Output chrono replay interactive SVG filepath")
+    p_creplay.add_argument("--json", "-j", action="store_true", help="Output raw JSON replay telemetry")
+    p_creplay.add_argument("--demo", action="store_true", help="Run with demonstration episodic trajectory rollout")
     args = parser.parse_args()
 
 
@@ -6525,6 +6535,93 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Fiber bundle SVG written to: {args.svg}")
+    elif args.command in ["chrono-replay", "replay-loom", "episodic-replay", "trajectory-synthesizer", "hippocampal-replay"]:
+        import scripts.chrono_spatial_replay_loom as csrl_mod
+        loom = csrl_mod.ChronoSpatialReplayLoom(default_compression=args.compression)
+
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                raw_wps = data.get("waypoints", [])
+                waypoints = [
+                    csrl_mod.EpisodicWaypoint(
+                        node_id=str(w.get("node_id", w.get("id", f"node-{i}"))),
+                        label=str(w.get("label", f"Milestone {i}")),
+                        x=float(w.get("x", 100.0 * (i + 1))),
+                        y=float(w.get("y", 150.0)),
+                        valence=float(w.get("valence", 0.5)),
+                        dwell_time_ms=float(w.get("dwell_time_ms", 250.0)),
+                    )
+                    for i, w in enumerate(raw_wps)
+                ]
+            if args.mode == "reverse":
+                telemetry = loom.synthesize_reverse_replay(waypoints, compression_factor=args.compression)
+            else:
+                telemetry = loom.synthesize_forward_replay(waypoints, compression_factor=args.compression)
+        elif args.mode == "reverse":
+            demo_wps = [
+                csrl_mod.EpisodicWaypoint("N1", "Initial Problem", 120.0, 260.0, valence=0.0),
+                csrl_mod.EpisodicWaypoint("N2", "Formulate Hypothesis", 280.0, 180.0, valence=0.4),
+                csrl_mod.EpisodicWaypoint("N3", "Execute Synthesis", 480.0, 240.0, valence=0.7),
+                csrl_mod.EpisodicWaypoint("N4", "Resolution Goal", 680.0, 200.0, valence=1.0),
+            ]
+            telemetry = loom.synthesize_reverse_replay(demo_wps, compression_factor=args.compression)
+        else:
+            telemetry = loom.simulate_choice_point_rollout(depth=args.depth)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print(f"[DxSkills] Chrono-Spatial Replay Loom Telemetry")
+            print(f"Mode: {telemetry.replay_mode}")
+            print(f"Total Waypoints: {telemetry.total_waypoints}")
+            print(f"Path Length: {telemetry.total_path_length_px:.1f} px")
+            print(f"Real-Time Duration: {telemetry.realtime_duration_ms:.0f} ms")
+            print(f"Compressed Duration: {telemetry.compressed_duration_ms:.0f} ms")
+            print(f"Compression Factor: {telemetry.compression_factor:.1f}x")
+            print(f"Fidelity Score: {telemetry.fidelity_score:.1f} / 100")
+            print(f"Status: {telemetry.status}")
+            if telemetry.warnings:
+                for w in telemetry.warnings:
+                    print(f"Note: {w}")
+
+        if args.report:
+            md_lines = [
+                "# Chrono-Spatial Replay Loom Diagnostic Report",
+                "",
+                f"**Replay Mode:** `{telemetry.replay_mode}`",
+                f"- **Status:** `{telemetry.status}`",
+                f"- **Total Waypoints:** {telemetry.total_waypoints}",
+                f"- **Total Path Length:** {telemetry.total_path_length_px:.1f} px",
+                f"- **Real-Time Duration:** {telemetry.realtime_duration_ms:.0f} ms",
+                f"- **Compressed Duration:** {telemetry.compressed_duration_ms:.0f} ms",
+                f"- **Compression Ratio:** {telemetry.compression_factor:.1f}x",
+                f"- **Ripple Frequency:** {telemetry.ripple_frequency_hz:.0f} Hz",
+                f"- **Mean Phase Precession:** {telemetry.mean_phase_precession_deg:.1f} deg",
+                f"- **Replay Fidelity Score:** {telemetry.fidelity_score:.1f} / 100",
+                "",
+                "## Replay Trajectory Waypoints",
+                "",
+                "| Node ID | Label | Coordinates (X, Y) | Valence | Theta Phase | Dwell Time |",
+                "| :--- | :--- | :--- | :--- | :--- | :--- |",
+            ]
+            for wp in telemetry.waypoints:
+                md_lines.append(
+                    f"| `{wp.node_id}` | {wp.label} | ({wp.x:.1f}, {wp.y:.1f}) | {wp.valence:.2f} | {wp.theta_phase_deg:.0f} deg | {wp.dwell_time_ms:.0f} ms |"
+                )
+            if telemetry.warnings:
+                md_lines.extend(["", "## Diagnostic Notes", ""])
+                for w in telemetry.warnings:
+                    md_lines.append(f"- [REPLAY] {w}")
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write("\n".join(md_lines) + "\n")
+            print(f"[DxSkills] Replay report written to: {args.report}")
+
+        if args.svg:
+            svg_code = loom.render_chrono_replay_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Replay SVG written to: {args.svg}")
     else:
         parser.print_help()
 
