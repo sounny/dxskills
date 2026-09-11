@@ -1370,6 +1370,20 @@ def main():
     p_ktheory.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_ktheory.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_ktheory.add_argument("--demo", action="store_true", help="Run with demonstration cognitive vector bundle suite")
+    # mirror-symmetry / homological-mirror / kontsevich-loom / fukaya-coherent
+    p_mirror = subparsers.add_parser("mirror-symmetry", aliases=["homological-mirror", "kontsevich-loom", "fukaya-coherent"], help="Autonomous cognitive spatial Homological Mirror Symmetry and Kontsevich Dual Loom")
+    p_mirror.add_argument("input", nargs="?", default="", help="Input mirror symmetry configuration JSON filepath")
+    p_mirror.add_argument("--area", type=float, default=1.0, help="Symplectic area A of target torus")
+    p_mirror.add_argument("--tau", type=float, default=1.0, help="Complex modulus imaginary part Im(tau) of dual elliptic curve")
+    p_mirror.add_argument("--p1", type=int, default=1, help="Winding p1 of first Lagrangian")
+    p_mirror.add_argument("--q1", type=int, default=0, help="Winding q1 of first Lagrangian")
+    p_mirror.add_argument("--p2", type=int, default=1, help="Winding p2 of second Lagrangian")
+    p_mirror.add_argument("--q2", type=int, default=2, help="Winding q2 of second Lagrangian")
+    p_mirror.add_argument("--report", default="", help="Output mirror symmetry markdown filepath")
+    p_mirror.add_argument("--svg", default="", help="Output Floer intersection and Hodge diamond SVG filepath")
+    p_mirror.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_mirror.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_mirror.add_argument("--demo", action="store_true", help="Run with demonstration Lagrangian pair and coherent sheaves")
     args = parser.parse_args()
 
 
@@ -7698,6 +7712,75 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] K-Theory interactive HTML written to: {args.html}")
+    elif args.command in ["mirror-symmetry", "homological-mirror", "kontsevich-loom", "fukaya-coherent"]:
+        from scripts.homological_mirror_loom import (
+            HomologicalMirrorLoom,
+            LagrangianSubmanifold,
+            CoherentSheaf,
+        )
+        loom = HomologicalMirrorLoom(torus_area=args.area)
+        if args.demo or not args.input:
+            l1 = LagrangianSubmanifold(label="Alpha Cycle L1", winding_p=args.p1, winding_q=args.q1, offset_y=0.25, color="#58a6ff")
+            l2 = LagrangianSubmanifold(label="Beta Cycle L2", winding_p=args.p2, winding_q=args.q2, offset_y=0.0, color="#d29922")
+            result = loom.evaluate_mirror_symmetry(l1=l1, l2=l2)
+        else:
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            l1_data = data.get("lagrangian_1", {"winding_p": 1, "winding_q": 0, "label": "L1"})
+            l2_data = data.get("lagrangian_2", {"winding_p": 1, "winding_q": 2, "label": "L2"})
+            loom.torus_area = float(data.get("torus_area", args.area))
+            l1 = LagrangianSubmanifold(
+                label=l1_data.get("label", "L1"),
+                winding_p=int(l1_data.get("winding_p", l1_data.get("p", 1))),
+                winding_q=int(l1_data.get("winding_q", l1_data.get("q", 0))),
+                offset_y=float(l1_data.get("offset_y", 0.25)),
+                color=l1_data.get("color", "#58a6ff"),
+            )
+            l2 = LagrangianSubmanifold(
+                label=l2_data.get("label", "L2"),
+                winding_p=int(l2_data.get("winding_p", l2_data.get("p", 1))),
+                winding_q=int(l2_data.get("winding_q", l2_data.get("q", 2))),
+                offset_y=float(l2_data.get("offset_y", 0.0)),
+                color=l2_data.get("color", "#d29922"),
+            )
+            result = loom.evaluate_mirror_symmetry(l1=l1, l2=l2)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Homological Mirror Symmetry & Kontsevich Dual Loom")
+            print("=================================================================")
+            print(f"Lagrangian L1 (A-Model):       Winding ({result.lagrangian_1.winding_p}, {result.lagrangian_1.winding_q}) - {result.lagrangian_1.label}")
+            print(f"Lagrangian L2 (A-Model):       Winding ({result.lagrangian_2.winding_p}, {result.lagrangian_2.winding_q}) - {result.lagrangian_2.label}")
+            print(f"Geometric Intersection Number: {result.intersection_number}")
+            print(f"Floer Cohomology Dim dim(HF*): {result.dim_floer_cohomology_hf}")
+            print(f"Mirror Coherent Sheaf E1:      Rank={result.sheaf_1.rank_r}, Degree={result.sheaf_1.degree_d}")
+            print(f"Mirror Coherent Sheaf E2:      Rank={result.sheaf_2.rank_r}, Degree={result.sheaf_2.degree_d}")
+            print(f"Ext Groups Dimension Sum:      {result.dim_ext_groups_sum}")
+            print(f"Kontsevich Equivalence:        {'VERIFIED D(Fuk) ~= D(Coh)' if result.kontsevich_equivalence_verified else 'DISCREPANT'}")
+            print("Hodge Diamond Transposition:")
+            print(f"  Original CY3: h(1,1)={result.hodge_diamond_original.get('h11',1)}, h(2,1)={result.hodge_diamond_original.get('h21',101)}, chi={result.hodge_diamond_original.get('chi',-200)}")
+            print(f"  Mirror CY3:   h(1,1)={result.hodge_diamond_mirror.get('h11',101)}, h(2,1)={result.hodge_diamond_mirror.get('h21',1)}, chi={result.hodge_diamond_mirror.get('chi',200)}")
+            print(f"Floer Intersection Generators: {len(result.floer_points)} points")
+            for pt in result.floer_points:
+                print(f"  P{pt.index}: (x={pt.coord_x:.4f}, y={pt.coord_y:.4f}) Maslov Index={pt.maslov_index}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Mirror symmetry report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Mirror symmetry SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Mirror symmetry interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
