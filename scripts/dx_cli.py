@@ -1831,6 +1831,14 @@ def main():
     p_pm.add_argument("--svg", default="", help="Output Paramodular Conjecture SVG filepath")
     p_pm.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_pm.add_argument("--demo", action="store_true", help="Run with demonstration abelian surface, paramodular cusp form, and Spinor Euler factors")
+    # calabi-yau-modularity / attractor-mechanism / picard-fuchs / calabi-yau-loom
+    p_cy = subparsers.add_parser("calabi-yau-modularity", aliases=["attractor-mechanism", "picard-fuchs", "cy-modularity-loom"], help="Autonomous cognitive spatial Calabi-Yau Modularity and Attractor Mechanism Loom")
+    p_cy.add_argument("--model", default="quintic", choices=["quintic", "rigid", "octic"], help="Calabi-Yau threefold model (default: quintic)")
+    p_cy.add_argument("--charges", default="1,0,0,-5", help="Electromagnetic charge vector p0,p1,q1,q0 (default: 1,0,0,-5)")
+    p_cy.add_argument("--steps", type=int, default=40, help="Attractor gradient flow steps (default: 40)")
+    p_cy.add_argument("--svg", default="", help="Output Calabi-Yau Modularity SVG filepath")
+    p_cy.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_cy.add_argument("--demo", action="store_true", help="Run demonstration Calabi-Yau moduli analysis, attractor flow, and S_4 modularity")
     args = parser.parse_args()
 
 
@@ -10673,6 +10681,66 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_svg())
             print(f"[DxSkills] Paramodular SVG written to: {out_path}")
+    elif args.command in ["calabi-yau-modularity", "attractor-mechanism", "picard-fuchs", "cy-modularity-loom"]:
+        from scripts.calabi_yau_modularity_loom import (
+            CalabiYauModularityLoom,
+        )
+        model_map = {
+            "quintic": "Mirror Quintic Threefold",
+            "rigid": "Rigid Schoen Calabi-Yau Threefold",
+            "octic": "Rigid Octic Threefold",
+        }
+        model_name = model_map.get(args.model, "Mirror Quintic Threefold")
+        try:
+            charge_parts = tuple(int(x.strip()) for x in args.charges.split(","))
+            if len(charge_parts) != 4:
+                charge_parts = (1, 0, 0, -5)
+        except Exception:
+            charge_parts = (1, 0, 0, -5)
+
+        loom = CalabiYauModularityLoom(model_name)
+        result = loom.analyze(charges=charge_parts)
+
+        if args.json:
+            import json
+            from dataclasses import asdict
+            res_dict = {
+                "model_name": result.model_name,
+                "hodge": asdict(result.hodge),
+                "conifold_dist": result.picard_fuchs.conifold_dist,
+                "attractor_z": [result.attractor.attractor_z.real, result.attractor.attractor_z.imag],
+                "horizon_entropy": result.attractor.horizon_entropy,
+                "cm_discriminant": result.attractor.cm_discriminant,
+                "modularity_type": result.attractor.modularity_type,
+                "modular_level": result.modular_level,
+                "hecke_eigenvalues": result.hecke_eigenvalues,
+                "modularity_proven": result.modularity_proven,
+                "notes": result.notes,
+            }
+            print(json.dumps(res_dict, indent=2))
+        else:
+            print("=================================================================")
+            print("  Calabi-Yau Modularity & Attractor Mechanism Loom")
+            print("=================================================================")
+            print(f"Calabi-Yau Model:             {result.model_name}")
+            print(f"Hodge Diamond:                h11 = {result.hodge.h11} | h21 = {result.hodge.h21} | chi = {result.hodge.euler_char}")
+            print(f"Middle Cohomology Dim:        {result.hodge.middle_cohomology_dim()} (Rigid: {result.hodge.is_rigid()})")
+            print(f"Conifold Singularity Dist:    {result.picard_fuchs.conifold_dist:.4f}")
+            print(f"Attractor Fixed Point z_*:    {result.attractor.attractor_z.real:.4f} + {result.attractor.attractor_z.imag:.4f}j")
+            print(f"Bekenstein-Hawking Entropy:   {result.attractor.horizon_entropy:.4f}")
+            print(f"Complex Multiplication Disc:  D = {result.attractor.cm_discriminant}")
+            print(f"Modularity Classification:    {result.attractor.modularity_type}")
+            print(f"Modular Level & Weights:      N = {result.modular_level} | k in {result.attractor.weight_components}")
+            print(f"Modularity Verified (R = T):  {result.modularity_proven}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "calabi_yau_modularity_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Calabi-Yau SVG written to: {out_path}")
     else:
         parser.print_help()
 
