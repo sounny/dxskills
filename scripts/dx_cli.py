@@ -1534,6 +1534,15 @@ def main():
     p_shimura.add_argument("--svg", default="", help="Output Shimura datum and Baily-Borel cusp SVG filepath")
     p_shimura.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_shimura.add_argument("--demo", action="store_true", help="Run with demonstration Shimura datum, PEL moduli, and Hecke tree")
+    # motivic-cohomology / beilinson-regulator / higher-chow / deligne-period
+    p_motivic = subparsers.add_parser("motivic-cohomology", aliases=["beilinson-regulator", "higher-chow", "deligne-period"], help="Autonomous cognitive spatial Motivic Cohomology and Beilinson Regulators Loom")
+    p_motivic.add_argument("--domain", default="Ring of Integers Spec(O_F) (Borel Regulator on K_{2n-1})", choices=["Ring of Integers Spec(O_F) (Borel Regulator on K_{2n-1})", "Smooth Projective Curve C (Higher Chow CH^2(C, 1))", "Abelian Variety A (Intermediate Jacobian Regulators)", "Modular Surface (Beilinson Conjectures on L(s, f, 2))"], help="Geometric domain")
+    p_motivic.add_argument("--codim", "-p", type=int, default=2, help="Cycle codimension p (default: 2)")
+    p_motivic.add_argument("--weight", "-q", type=int, default=2, help="Motivic weight q (default: 2)")
+    p_motivic.add_argument("--simplicial-m", "-m", type=int, default=1, help="Simplicial weight m in CH^p(X, m) (default: 1)")
+    p_motivic.add_argument("--svg", default="", help="Output motivic complexes and Deligne Jacobian SVG filepath")
+    p_motivic.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_motivic.add_argument("--demo", action="store_true", help="Run with demonstration higher Chow cycle, Deligne Jacobian, and Beilinson regulator")
     args = parser.parse_args()
 
 
@@ -8665,6 +8674,45 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_shimura_svg())
             print(f"[DxSkills] Shimura Variety SVG written to: {args.svg}")
+    elif args.command in ["motivic-cohomology", "beilinson-regulator", "higher-chow", "deligne-period"]:
+        from scripts.motivic_cohomology_loom import (
+            MotivicCohomologyLoom,
+            MotivicComplexType,
+            RegulatorDomain,
+            RegulatorRegime,
+        )
+        loom = MotivicCohomologyLoom(
+            domain=args.domain,
+            codimension_p=args.codim,
+            weight_q=args.weight,
+        )
+        cycle = loom.construct_higher_chow_cycle("CYCLE-DEMO-01", codimension_p=args.codim, simplicial_weight_m=args.simplicial_m)
+        reg = loom.evaluate_beilinson_regulator("REG-DEMO-01", cycle.cycle_id)
+        adams = loom.decompose_adams_eigenspace(k_group_label="K_1(X)", m_weight=args.simplicial_m, j_weight=args.weight)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            jac = loom.jacobians[0]
+            print("=================================================================")
+            print("  Motivic Cohomology & Beilinson-Soule Regulators Loom")
+            print("=================================================================")
+            print(f"Geometric Domain:              {loom.domain}")
+            print(f"Higher Chow Cycle:             {cycle.cycle_id} in CH^{cycle.codimension_p}(X, {cycle.simplicial_weight_m})")
+            print(f"Motivic Degree:                {cycle.motivic_degree} [Boundary Norm={cycle.boundary_norm:.4f}]")
+            print(f"Deligne Intermediate Jacobian: {jac.jacobian_id} (Weight q={jac.weight_q})")
+            print(f"Jacobian Dimension & Volume:   Dim={jac.complex_dimension} | Vol={jac.period_volume:.4f}")
+            print(f"Beilinson Regulator ID:        {reg.regulator_id}")
+            print(f"Regulator Vector:              {reg.regulator_vector}")
+            print(f"Regulator Determinant R_n:     {reg.regulator_determinant:.6f}")
+            print(f"Beilinson Conjecture Status:   {'VERIFIED' if reg.beilinson_conjecture_verified else 'FAILED'}")
+            print(f"Adams K-Theory Eigenspace:     {adams.k_group_label} ~= {adams.motivic_cohomology_group}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_motivic_svg())
+            print(f"[DxSkills] Motivic Cohomology SVG written to: {args.svg}")
     else:
         parser.print_help()
 
