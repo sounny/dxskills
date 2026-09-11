@@ -786,6 +786,16 @@ def main():
     p_dloom.add_argument("--json", "-j", action="store_true", help="Output raw JSON dialectic telemetry")
     p_dloom.add_argument("--demo", action="store_true", help="Run with demonstration architectural thesis and antithesis cards")
 
+    # lexical-pacer / bionic-pacer / ovp-pacer / fixation-pacer
+    p_lpacer = subparsers.add_parser("lexical-pacer", aliases=["bionic-pacer", "ovp-pacer", "fixation-pacer"], help="Autonomous cognitive spatial dynamic lexical pacing and bionic fixation anchor synthesizer")
+    p_lpacer.add_argument("input", nargs="?", default="", help="Input text filepath to pace")
+    p_lpacer.add_argument("--wpm", "-w", type=int, default=260, help="Target reading cadence WPM (default: 260)")
+    p_lpacer.add_argument("--markdown", "-m", action="store_true", help="Output bionic markdown with bolded prefix anchors")
+    p_lpacer.add_argument("--html", default="", help="Output bionic reader HTML filepath")
+    p_lpacer.add_argument("--svg", default="", help="Output OVP fixation curve SVG diagram filepath")
+    p_lpacer.add_argument("--json", "-j", action="store_true", help="Output raw JSON pacing telemetry")
+    p_lpacer.add_argument("--demo", action="store_true", help="Run with demonstration technical paragraph")
+
     args = parser.parse_args()
 
 
@@ -3451,6 +3461,38 @@ def main():
         if args.svg:
             loom.export_svg(result, args.svg)
             print(f"[DxSkills] Dialectic triad SVG diagram written to: {args.svg}")
+    elif args.command in ["lexical-pacer", "bionic-pacer", "ovp-pacer", "fixation-pacer"]:
+        import scripts.lexical_pacer as lpacer
+
+        pacer = lpacer.LexicalPacer(target_wpm=args.wpm)
+
+        text_content = ""
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                text_content = f.read()
+        elif args.demo or not args.input:
+            text_content = (
+                "Distributed systems require explicit boundary decoupling to maintain architectural resilience.\n"
+                "When microservices mutate shared state concurrently, data divergence triggers cascading latency.\n"
+                "Local-first architectures with deterministic conflict-free resolution provide optimal throughput."
+            )
+
+        result = pacer.pace_text(text_content)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        elif args.markdown:
+            print(result.bionic_markdown)
+        else:
+            print("\n" + pacer.generate_ascii_report(result))
+
+        if args.html:
+            pacer.export_html_reader(result, args.html)
+            print(f"[DxSkills] Bionic reader HTML written to: {args.html}")
+
+        if args.svg:
+            pacer.export_svg(result, args.svg)
+            print(f"[DxSkills] OVP fixation curve SVG diagram written to: {args.svg}")
     else:
         parser.print_help()
 
