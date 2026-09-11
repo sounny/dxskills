@@ -492,12 +492,16 @@
 - [x] **Task 114.2:** Sub-vocalization pacer generating rhythmic multi-sensory resonance cues for complex technical terms.
 
 ### Phase 115: Autonomous Cognitive Spatial Working Memory Saccade Fatigue Predictor & Kinetic Pacer
-- [ ] **Task 115.1:** Predictive kinetic fatigue estimator tracking cumulative angular saccade velocity and gaze deceleration.
-- [ ] **Task 115.2:** Adaptive visual rhythm pacer modulating canvas luminance gradients to induce restorative cognitive micro-rests.
+- [x] **Task 115.1:** Predictive kinetic fatigue estimator tracking cumulative angular saccade velocity and gaze deceleration.
+- [x] **Task 115.2:** Adaptive visual rhythm pacer modulating canvas luminance gradients to induce restorative cognitive micro-rests.
 
 ### Phase 116: Autonomous Cognitive Spatial Semantic Entropy Gate & Topological Density Equalizer
 - [ ] **Task 116.1:** Shannon-Wiener semantic information entropy estimator across localized sub-canvas nodes.
 - [ ] **Task 116.2:** Continuous spatial density equalizer redistributing high-entropy clusters into uniform visual layouts.
+
+### Phase 117: Autonomous Cognitive Spatial Bifurcation Radar & Path-Dependency Loom
+- [ ] **Task 117.1:** Arthur lock-in threshold estimator measuring path dependency and conceptual irreversibility.
+- [ ] **Task 117.2:** Multiverse bifurcation canvas visualizer rendering branch alternative timelines in dark titanium SVG.
 
 ---
 
@@ -616,6 +620,7 @@
 | **Cycle 108** | 2026-09-11 13:02 | Autonomous Cognitive Spatial Attentional Saccade Saliency Filter & Noise Gate | `scripts/saccade_saliency_filter.py`, `tests/test_saccade_saliency_filter.py`, `index.html` | `2036c6c` |
 | **Cycle 109** | 2026-09-11 13:12 | Autonomous Cognitive Spatial Working Memory Drift Compensator & Re-Centering Harness | `scripts/drift_compensator.py`, `tests/test_drift_compensator.py`, `index.html` | `e6175ef` |
 | **Cycle 110** | 2026-09-11 13:22 | Autonomous Cognitive Spatial Multimodal Phonological Loop Bridge & Grapheme Resonator | `scripts/phonological_bridge.py`, `tests/test_phonological_bridge.py`, `index.html` | `81b8cbb` |
+| **Cycle 111** | 2026-09-11 13:32 | Autonomous Cognitive Spatial Working Memory Saccade Fatigue Predictor & Kinetic Pacer | `scripts/saccade_fatigue_pacer.py`, `tests/test_saccade_fatigue_pacer.py`, `index.html` | `4934a94` |
 
 
 

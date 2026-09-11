@@ -961,6 +961,15 @@ def main():
     p_phono.add_argument("--json", "-j", action="store_true", help="Output raw JSON phonological telemetry")
     p_phono.add_argument("--demo", action="store_true", help="Run with demonstration technical specification text")
 
+    # saccade-pacer / kinetic-pacer / fatigue-predictor / main-sequence
+    p_kpacer = subparsers.add_parser("saccade-pacer", aliases=["kinetic-pacer", "fatigue-predictor", "main-sequence"], help="Autonomous cognitive spatial working memory saccade fatigue predictor and kinetic pacer")
+    p_kpacer.add_argument("input", nargs="?", default="", help="Input saccades JSON filepath")
+    p_kpacer.add_argument("--threshold", "-t", type=float, default=0.80, help="Velocity fatigue ratio threshold (default: 0.80)")
+    p_kpacer.add_argument("--report", default="", help="Output kinetic audit markdown filepath")
+    p_kpacer.add_argument("--svg", default="", help="Output Main Sequence velocity curve SVG filepath")
+    p_kpacer.add_argument("--json", "-j", action="store_true", help="Output raw JSON kinetic telemetry")
+    p_kpacer.add_argument("--demo", action="store_true", help="Run with demonstration ocular saccade sequence")
+
     args = parser.parse_args()
 
 
@@ -4521,6 +4530,47 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(result.resonance_map_svg)
             print(f"[DxSkills] Syllabic resonance SVG written to: {args.svg}")
+    elif args.command in ["saccade-pacer", "kinetic-pacer", "fatigue-predictor", "main-sequence"]:
+        import scripts.saccade_fatigue_pacer as sfp_mod
+
+        pacer = sfp_mod.SaccadeKineticPacer(fatigue_threshold_ratio=args.threshold)
+
+        saccades = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                if isinstance(raw_data, list):
+                    saccades = raw_data
+                elif isinstance(raw_data, dict):
+                    saccades = raw_data.get("saccades", [])
+            except json.JSONDecodeError:
+                pass
+        elif args.demo or not args.input:
+            saccades = [
+                {"amplitude_px": 100.0, "duration_ms": 30.0, "peak_velocity_px_s": 420.0},
+                {"amplitude_px": 150.0, "duration_ms": 35.0, "peak_velocity_px_s": 510.0},
+                {"amplitude_px": 250.0, "duration_ms": 80.0, "peak_velocity_px_s": 320.0},
+                {"amplitude_px": 350.0, "duration_ms": 110.0, "peak_velocity_px_s": 340.0},
+            ]
+
+        result = pacer.evaluate_kinetics(saccades)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print(result.audit_report_md)
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(result.audit_report_md)
+            print(f"[DxSkills] Kinetic pacer audit report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(result.kinetic_pacer_svg)
+            print(f"[DxSkills] Main Sequence kinetic SVG written to: {args.svg}")
     else:
         parser.print_help()
 
