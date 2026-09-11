@@ -1593,6 +1593,14 @@ def main():
     p_iut.add_argument("--svg", default="", help="Output IUT theory and Hodge theatre SVG filepath")
     p_iut.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_iut.add_argument("--demo", action="store_true", help="Run with demonstration Hodge theatre, theta-link, and multiradial envelope")
+    # non-commutative-geometry / nc-geometry / dirac-operator / connes-action / ncg-loom
+    p_ncg = subparsers.add_parser("non-commutative-geometry", aliases=["nc-geometry", "dirac-operator", "connes-action", "ncg-loom"], help="Autonomous cognitive spatial Non-Commutative Geometry and Connes Spectral Triples Loom")
+    p_ncg.add_argument("--archetype", default="noncommutative_torus", choices=["noncommutative_torus", "product_space", "spin_manifold", "four_point"], help="Spectral triple geometric archetype (default: noncommutative_torus)")
+    p_ncg.add_argument("--theta", type=float, default=0.618034, help="Deformation parameter theta for noncommutative torus (default: 0.618034)")
+    p_ncg.add_argument("--cutoff-lambda", type=float, default=100.0, help="Energy cutoff Lambda for Chamseddine-Connes spectral action (default: 100.0)")
+    p_ncg.add_argument("--svg", default="", help="Output Non-Commutative Geometry and Spectral Triples SVG filepath")
+    p_ncg.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_ncg.add_argument("--demo", action="store_true", help="Run with demonstration spectral triple, Dirac ladder, and Connes distance")
     args = parser.parse_args()
 
 
@@ -8989,6 +8997,58 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_iut_svg())
             print(f"[DxSkills] IUT Theory SVG written to: {args.svg}")
+    elif args.command in ["non-commutative-geometry", "nc-geometry", "dirac-operator", "connes-action", "ncg-loom"]:
+        from scripts.non_commutative_geometry_loom import (
+            NonCommutativeGeometryLoom,
+            SpectralTripleArchetype,
+            DiracOperatorType,
+        )
+        arch_map = {
+            "noncommutative_torus": SpectralTripleArchetype.NON_COMMUTATIVE_TORUS_T2.value,
+            "product_space": SpectralTripleArchetype.STANDARD_MODEL_PRODUCT.value,
+            "spin_manifold": SpectralTripleArchetype.RIEMANNIAN_SPIN_MANIFOLD.value,
+            "four_point": SpectralTripleArchetype.FINITE_FOUR_POINT_SPACE.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, SpectralTripleArchetype.NON_COMMUTATIVE_TORUS_T2.value)
+        loom = NonCommutativeGeometryLoom(
+            default_archetype=chosen_arch,
+            theta_parameter=args.theta,
+        )
+        tr = loom.triples[0]
+        sp = loom.evaluate_dirac_spectrum("SPEC-DEMO-01", max_n=4)
+        act = loom.evaluate_spectral_action("ACT-DEMO-01", cutoff_lambda=args.cutoff_lambda)
+        dist = loom.evaluate_connes_distance("DIST-DEMO-01", coordinate_displacement=1.0)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Non-Commutative Geometry & Connes Spectral Triples Loom")
+            print("=================================================================")
+            print(f"Geometric Archetype:           {tr.archetype}")
+            print(f"Metric Dimension & Grading:    Dimension d={tr.metric_dimension} | Even={tr.is_even_graded}")
+            print(f"KO-Dimension mod 8 & Real J:   KO-dim={tr.ko_dimension_mod_8} | Real Structure J={tr.has_real_structure}")
+            print(f"Deformation Parameter Theta:   Theta = {tr.deformation_parameter_theta:.6f}")
+            print(f"Algebra Structure A:           {tr.algebra_label}")
+            print(f"Hilbert Space H:               {tr.hilbert_space_dim}")
+            print(f"Dirac Resolvent Asymptotics:   {tr.dirac_resolvent_growth}")
+            print(f"Dirac Eigenvalues Sample:      {[round(ev, 3) for ev in sp.eigenvalues_sample[:8]]}")
+            print(f"Dirac Zero Modes (Harmonic):   {sp.zero_modes_count}")
+            print(f"Spectral Dimension:            d_spec = {sp.spectral_dimension}")
+            print(f"Dixmier Trace Volume:          Vol = {sp.dixmier_trace_volume:.4f}")
+            print(f"Cutoff Scale Lambda:           Lambda = {act.cutoff_lambda:.1f}")
+            print(f"Cosmological Term (Lambda^4):  {act.cosmological_term:.2f}")
+            print(f"Einstein-Hilbert (Lambda^2):   {act.einstein_hilbert_term:.2f}")
+            print(f"Yang-Mills/Higgs (Lambda^0):   {act.yang_mills_higgs_term:.2f}")
+            print(f"Total Spectral Action S:       {act.total_spectral_action:.2f}")
+            print(f"Connes Spectral Distance:      d(phi, psi) = {dist.spectral_distance:.4f}")
+            print(f"Distance Duality Status:       {'RECOVERS GEODESIC DISTANCE' if dist.is_classical_metric_limit else 'QUANTUM STATE SEPARATION'}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_ncg_svg())
+            print(f"[DxSkills] Non-Commutative Geometry SVG written to: {args.svg}")
     else:
         parser.print_help()
 
