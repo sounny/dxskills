@@ -632,12 +632,16 @@
 - [x] **Task 149.2:** Legendrian knot and front projection visualizer rendering characteristic Reeb orbits and cusp singularities in dark titanium SVG.
 
 ### Phase 150: Autonomous Cognitive Spatial Calabi-Yau Compactification & Multi-Dimensional Flux Vacuum Loom
-- [ ] **Task 150.1:** Calabi-Yau Ricci-flat metric solver projecting 6-dimensional compactified spatial knowledge moduli onto 2D cross-sections.
-- [ ] **Task 150.2:** Multi-dimensional flux vacuum visualizer rendering cross-section topology and Hodge diamond symmetry in dark titanium SVG.
+- [x] **Task 150.1:** Calabi-Yau Ricci-flat metric solver projecting 6-dimensional compactified spatial knowledge moduli onto 2D cross-sections.
+- [x] **Task 150.2:** Multi-dimensional flux vacuum visualizer rendering cross-section topology and Hodge diamond symmetry in dark titanium SVG.
 
 ### Phase 151: Autonomous Cognitive Spatial Sheaf-Theoretic Cohomology & Epistemic Gluing Loom
 - [ ] **Task 151.1:** Sheaf cohomology exact sequence solver checking local-to-global semantic section gluing obstructions.
 - [ ] **Task 151.2:** Cech cohomology visualizer rendering nerve complexes and sheaf stalk consistency diagrams in dark titanium SVG.
+
+### Phase 152: Autonomous Cognitive Spatial Non-Commutative Spectral Triple & Connes Distance Loom
+- [ ] **Task 152.1:** Spectral triple (A, H, D) Dirac operator solver computing Connes geodesic distance on non-commutative concept algebras.
+- [ ] **Task 152.2:** Non-commutative spectral visualizer rendering Dirac eigenvalue spectra and quantum metric fluctuations in dark titanium SVG.
 
 ---
 
@@ -790,7 +794,8 @@
 | **Cycle 142** | 2026-09-11 18:42 | Autonomous Cognitive Spatial Hyperbolic Poincare Disk Projector & Non-Euclidean Concept Loom | `scripts/hyperbolic_poincare_projector.py`, `tests/test_hyperbolic_poincare_projector.py`, `scripts/dx_cli.py`, `index.html` | `05ba8bc` |
 | **Cycle 143** | 2026-09-11 18:52 | Autonomous Cognitive Spatial Symplectic Phase Space Integrator & Hamiltonian Concept Orbit Loom | `scripts/symplectic_hamiltonian_integrator.py`, `tests/test_symplectic_hamiltonian_integrator.py`, `scripts/dx_cli.py`, `index.html` | `81fad8f` |
 | **Cycle 144** | 2026-09-11 19:02 | Autonomous Cognitive Spatial Hyper-Dimensional Grassmannian Manifold Projector & Subspace Angle Loom | `scripts/grassmannian_subspace_loom.py`, `tests/test_grassmannian_subspace_loom.py`, `scripts/dx_cli.py`, `index.html` | `e31abce` |
-| **Cycle 145** | 2026-09-11 19:12 | Autonomous Cognitive Spatial Contact Geometry Reeb Vector Field & Legendrian Submanifold Loom | `scripts/contact_reeb_loom.py`, `tests/test_contact_reeb_loom.py`, `scripts/dx_cli.py`, `index.html` | `pending` |
+| **Cycle 145** | 2026-09-11 19:12 | Autonomous Cognitive Spatial Contact Geometry Reeb Vector Field & Legendrian Submanifold Loom | `scripts/contact_reeb_loom.py`, `tests/test_contact_reeb_loom.py`, `scripts/dx_cli.py`, `index.html` | `3a34a37` |
+| **Cycle 146** | 2026-09-11 19:22 | Autonomous Cognitive Spatial Calabi-Yau Compactification & Multi-Dimensional Flux Vacuum Loom | `scripts/calabi_yau_compactification.py`, `tests/test_calabi_yau_compactification.py`, `scripts/dx_cli.py`, `index.html` | `pending` |
 
 
 
