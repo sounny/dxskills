@@ -1639,6 +1639,15 @@ def main():
     p_chr.add_argument("--svg", default="", help="Output Chromatic Homotopy and Morava K-Theory SVG filepath")
     p_chr.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_chr.add_argument("--demo", action="store_true", help="Run with demonstration formal group laws, K(n) periodicity ladder, and fracture square")
+    # geometric-cft / rosenlicht-serre / picard-sheaf / function-field-loom
+    p_cft = subparsers.add_parser("geometric-cft", aliases=["rosenlicht-serre", "picard-sheaf", "function-field-loom"], help="Autonomous cognitive spatial Geometric Class Field Theory and Langlands Duality for Function Fields Loom")
+    p_cft.add_argument("--genus", "-g", type=int, default=2, choices=[1, 2, 3, 4], help="Algebraic curve genus g (default: 2)")
+    p_cft.add_argument("--field-q", "-q", type=int, default=5, choices=[2, 3, 5, 7, 11], help="Base finite field cardinality q (default: 5)")
+    p_cft.add_argument("--modulus", "-m", type=int, default=2, choices=[0, 1, 2, 3, 4], help="Modulus divisor degree m (default: 2)")
+    p_cft.add_argument("--archetype", default="tame", choices=["tame", "wild", "unramified"], help="Modulus ramification archetype (default: tame)")
+    p_cft.add_argument("--svg", default="", help="Output Geometric CFT SVG filepath")
+    p_cft.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_cft.add_argument("--demo", action="store_true", help="Run with demonstration generalized Jacobians, Deligne Hecke descent, and L-function zeros")
     args = parser.parse_args()
 
 
@@ -9331,6 +9340,55 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_chromatic_svg())
             print(f"[DxSkills] Chromatic Homotopy SVG written to: {args.svg}")
+    elif args.command in ["geometric-cft", "rosenlicht-serre", "picard-sheaf", "function-field-loom"]:
+        from scripts.geometric_cft_loom import (
+            GeometricClassFieldTheoryLoom,
+            CurveModulusArchetype,
+        )
+        arch_map = {
+            "tame": CurveModulusArchetype.TAME_MODULUS.value,
+            "wild": CurveModulusArchetype.WILD_MODULUS.value,
+            "unramified": CurveModulusArchetype.UNRAMIFIED_SMOOTH.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, CurveModulusArchetype.TAME_MODULUS.value)
+
+        loom = GeometricClassFieldTheoryLoom(
+            curve_genus=args.genus,
+            field_q=args.field_q,
+            modulus_points=args.modulus,
+            modulus_archetype=chosen_arch,
+        )
+        rec = loom.reciprocity_records[0]
+        shf = loom.hecke_sheaves[0]
+        hecke = loom.evaluate_hecke_eigenvalue(point_deg=1, test_phase_rad=0.5)
+        lfn = loom.compute_function_field_l_function("L-CLI-01")
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Geometric Class Field Theory & Langlands Duality for GL_1 Loom")
+            print("=================================================================")
+            print(f"Curve Genus & Base Field:      Genus g = {rec.curve_genus} over F_{rec.field_cardinality_q}")
+            print(f"Modulus Conductor:             {rec.conductor_label} (Degree {rec.modulus_degree})")
+            print(f"Modulus Archetype:             {loom.modulus_archetype}")
+            print(f"Generalized Jacobian:          dim J_m = {rec.generalized_jacobian_dim} | Kernel: {rec.affine_group_type}")
+            print(f"Picard Rational Points Group:  |Pic_X(F_{rec.field_cardinality_q})| =~ {rec.picard_order_f_q} elements")
+            print(f"Reciprocity Equivalence:       pi_1^ab(X) =~ Pic_X(F_{rec.field_cardinality_q})^hat (Verified = {rec.reciprocity_verified})")
+            print(f"Deligne Hecke Eigensheaf:      {shf.sheaf_id} (Rank = {shf.rank})")
+            print(f"Abel-Jacobi Symmetric Power:   Sym^{shf.symmetric_power_degree}(X) -> Pic^{shf.symmetric_power_degree}(X) (Fiber Dim = {shf.abel_jacobi_fiber_dim})")
+            print(f"Hecke Action Evaluation:       Point Deg {hecke['point_degree']} | Eigenvalue = {hecke['eigenvalue_complex']}")
+            print(f"Frobenius Trace:               Tr(Frob_x | E) = {hecke['trace_frobenius']}")
+            print(f"Grothendieck L-Polynomial:     Degree = {lfn.degree_of_l_polynomial} (Critical Line Re(s)=1/2 Proved)")
+            print(f"Root Number & Special Value:   W(sigma) = {lfn.functional_equation_root_number.split()[0]} | L(1, sigma) = {lfn.special_value_at_1:.4f}")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_geometric_cft_svg())
+            print(f"[DxSkills] Geometric CFT SVG written to: {args.svg}")
     else:
         parser.print_help()
 
