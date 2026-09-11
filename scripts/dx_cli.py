@@ -1750,6 +1750,14 @@ def main():
     p_ps.add_argument("--svg", default="", help="Output Perfectoid Tilting SVG filepath")
     p_ps.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_ps.add_argument("--demo", action="store_true", help="Run with demonstration tilting equivalence, adic spectrum Spa(R, R^+), and Shimura variety torsion vanishing towers")
+    # fargues-scholze / local-shtuka / excursion-operator / geometrization-loom
+    p_fs = subparsers.add_parser("fargues-scholze", aliases=["local-shtuka", "excursion-operator", "geometrization-loom"], help="Autonomous cognitive spatial Fargues-Scholze Geometrization of Local Langlands Loom")
+    p_fs.add_argument("--group", "-g", default="GL_2", choices=["GL_2", "GSp_4", "SL_2"], help="Connected reductive group G (default: GL_2)")
+    p_fs.add_argument("--prime", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11, 13], help="Local base prime p (default: 5)")
+    p_fs.add_argument("--archetype", default="unramified", choices=["unramified", "supercuspidal", "siegel", "packet"], help="Local representation and shtuka archetype (default: unramified)")
+    p_fs.add_argument("--svg", default="", help="Output Fargues-Scholze SVG filepath")
+    p_fs.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_fs.add_argument("--demo", action="store_true", help="Run with demonstration Bun_G stack, local shtukas, excursion operators, and L-parameters")
     args = parser.parse_args()
 
 
@@ -10070,6 +10078,57 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_perfectoid_svg())
             print(f"[DxSkills] Perfectoid Tilting SVG written to: {out_path}")
+    elif args.command in ["fargues-scholze", "local-shtuka", "excursion-operator", "geometrization-loom"]:
+        from scripts.fargues_scholze_loom import (
+            FarguesScholzeLoom,
+            FarguesScholzeArchetype,
+        )
+        arch_map = {
+            "unramified": FarguesScholzeArchetype.GL2_UNRAMIFIED.value,
+            "supercuspidal": FarguesScholzeArchetype.GL2_SUPER_CUSPIDAL.value,
+            "siegel": FarguesScholzeArchetype.GSP4_SIEGEL_LOCAL.value,
+            "packet": FarguesScholzeArchetype.SL2_PACKET_DECOMPOSITION.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, FarguesScholzeArchetype.GL2_UNRAMIFIED.value)
+
+        loom = FarguesScholzeLoom(
+            group_label=args.group,
+            prime_p=args.prime,
+            default_archetype=chosen_arch,
+        )
+        bun = loom.bun_g_models[0]
+        sht = loom.local_shtukas[0]
+        exc = loom.excursion_operators[0]
+        eval_geom = loom.evaluate_geometrization_theorem(
+            is_reductive=True,
+            is_local_p_adic=True,
+        )
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Fargues-Scholze Geometrization of Local Langlands Loom")
+            print("=================================================================")
+            print(f"Reductive Group & Prime:       G = {bun.group_label} | Prime p = {bun.prime_p}")
+            print(f"Fargues-Scholze Archetype:     {loom.default_archetype}")
+            print(f"Moduli Stack Bun_G on X_FF:    Newton Strata = {bun.newton_strata}")
+            print(f"Harder-Narasimhan Slopes:      {bun.harder_narasimhan_slopes} ({bun.sheaf_category_label})")
+            print(f"Local Shtuka Moduli Space:     {sht.shtuka_id} ({sht.legs_count} Legs, {sht.schubert_variety_mu})")
+            print(f"Frobenius Modification Type:   {sht.frobenius_modification_type}")
+            print(f"Excursion Operator:            {exc.operator_id} (Bernstein Eigenvalue = {exc.bernstein_center_eigenvalue})")
+            print(f"Semisimple L-Parameter:        {exc.weil_deligne_parameter_label}")
+            print(f"Geometrization Theorem:        {eval_geom['geometrization_verdict']}")
+            print(f"Spectral Action Status:        {eval_geom['spectral_action_status']}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "fargues_scholze_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_fargues_scholze_svg())
+            print(f"[DxSkills] Fargues-Scholze SVG written to: {out_path}")
     else:
         parser.print_help()
 
