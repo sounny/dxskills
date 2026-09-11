@@ -1171,6 +1171,18 @@ def main():
     p_khor.add_argument("--svg", default="", help="Output kinematic horizon interactive SVG filepath")
     p_khor.add_argument("--json", "-j", action="store_true", help="Output raw JSON horizon telemetry")
     p_khor.add_argument("--demo", action="store_true", help="Run with demonstration 3D map exploration telemetry")
+    # morphological-lens / semantic-lens / granularity-zoom / morphological-zoom
+    p_mlens = subparsers.add_parser("morphological-lens", aliases=["semantic-lens", "granularity-zoom", "morphological-zoom"], help="Autonomous cognitive spatial morphological semantic lens and granularity zoom engine")
+    p_mlens.add_argument("input", nargs="?", default="", help="Input semantic graph hierarchy JSON filepath")
+    p_mlens.add_argument("--zoom", "-z", type=float, default=1.0, help="Continuous semantic zoom factor (default: 1.0)")
+    p_mlens.add_argument("--focus-x", type=float, default=430.0, help="X coordinate of focal center in pixels (default: 430.0)")
+    p_mlens.add_argument("--focus-y", type=float, default=260.0, help="Y coordinate of focal center in pixels (default: 260.0)")
+    p_mlens.add_argument("--focal-radius", type=float, default=140.0, help="Base foveal inspection radius in pixels (default: 140.0)")
+    p_mlens.add_argument("--cowan-capacity", type=int, default=4, help="Maximum foveal Cowan working memory capacity (default: 4)")
+    p_mlens.add_argument("--report", default="", help="Output semantic lens diagnostic markdown filepath")
+    p_mlens.add_argument("--svg", default="", help="Output semantic lens interactive SVG filepath")
+    p_mlens.add_argument("--json", "-j", action="store_true", help="Output raw JSON semantic lens telemetry")
+    p_mlens.add_argument("--demo", action="store_true", help="Run with demonstration software architecture hierarchy")
     args = parser.parse_args()
 
 
@@ -6182,6 +6194,55 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Kinematic horizon SVG written to: {args.svg}")
+    elif args.command in ["morphological-lens", "semantic-lens", "granularity-zoom", "morphological-zoom"]:
+        import scripts.morphological_semantic_lens as msl_mod
+        lens = msl_mod.MorphologicalSemanticLens(
+            base_focal_radius_px=args.focal_radius,
+            max_cowan_foveal_capacity=args.cowan_capacity,
+        )
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                raw_nodes = data.get("nodes", data.get("semantic_nodes", []))
+                samples = [
+                    msl_mod.SemanticNode(
+                        node_id=str(n.get("node_id", n.get("id", f"node-{i}"))),
+                        label=str(n.get("label", n.get("name", f"Node {i}"))),
+                        granularity_level=str(n.get("granularity_level", n.get("level", "MESO_SUBSYSTEM"))),
+                        abstraction_depth=float(n.get("abstraction_depth", n.get("depth", 0.5))),
+                        x=float(n.get("x", 400.0)),
+                        y=float(n.get("y", 250.0)),
+                        importance_weight=float(n.get("importance_weight", n.get("weight", 1.0))),
+                        details=list(n.get("details", [])),
+                    )
+                    for i, n in enumerate(raw_nodes)
+                ]
+                telemetry = lens.compute_semantic_zoom(
+                    samples,
+                    focus_x=args.focus_x,
+                    focus_y=args.focus_y,
+                    zoom_factor=args.zoom,
+                )
+        else:
+            telemetry = msl_mod.MorphologicalSemanticLens.create_demo_telemetry()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            report_md = lens.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = lens.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Morphological semantic lens report written to: {args.report}")
+
+        if args.svg:
+            svg_code = lens.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Morphological semantic lens SVG written to: {args.svg}")
     else:
         parser.print_help()
 
