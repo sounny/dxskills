@@ -1715,6 +1715,17 @@ def main():
     p_hd.add_argument("--svg", default="", help="Output Hida Family SVG filepath")
     p_hd.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_hd.add_argument("--demo", action="store_true", help="Run with demonstration ordinary Hecke spectra, weight fibrations, and big Galois representations")
+    # coleman-family / overconvergent-forms / eigencurve / finite-slope-loom
+    p_cl = subparsers.add_parser("coleman-family", aliases=["overconvergent-forms", "eigencurve", "finite-slope-loom"], help="Autonomous cognitive spatial Coleman Families and Overconvergent Modular Forms Loom")
+    p_cl.add_argument("--level", "-n", type=int, default=1, help="Modular level N (default: 1)")
+    p_cl.add_argument("--prime", "-p", type=int, default=2, choices=[2, 3, 5, 7, 11], help="Base prime p (default: 2)")
+    p_cl.add_argument("--weight", "-k", type=int, default=4, help="Weight k of modular forms (default: 4)")
+    p_cl.add_argument("--radius", "-r", type=float, default=0.2, help="Overconvergence radius r > 0 (default: 0.2)")
+    p_cl.add_argument("--slope", "-a", type=float, default=0.5, help="Slope alpha = v_p(a_p) of U_p eigenvalue (default: 0.5)")
+    p_cl.add_argument("--archetype", default="eigencurve", choices=["eigencurve", "finite-slope", "critical-slope", "ramanujan"], help="Coleman family archetype (default: eigencurve)")
+    p_cl.add_argument("--svg", default="", help="Output Coleman Family SVG filepath")
+    p_cl.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_cl.add_argument("--demo", action="store_true", help="Run with demonstration overconvergent Banach spaces, Fredholm series, slope decompositions, and eigencurve")
     args = parser.parse_args()
 
 
@@ -9829,6 +9840,54 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_hida_svg())
             print(f"[DxSkills] Hida Family SVG written to: {args.svg}")
+    elif args.command in ["coleman-family", "overconvergent-forms", "eigencurve", "finite-slope-loom"]:
+        from scripts.coleman_family_loom import (
+            ColemanFamilyLoom,
+            ColemanFamilyArchetype,
+        )
+        arch_map = {
+            "eigencurve": ColemanFamilyArchetype.COLEMAN_MAZUR_EIGENCURVE.value,
+            "finite-slope": ColemanFamilyArchetype.FINITE_SLOPE_TWO.value,
+            "critical-slope": ColemanFamilyArchetype.CRITICAL_SLOPE_K_MINUS_1.value,
+            "ramanujan": ColemanFamilyArchetype.RAMANUJAN_SLOPE_FAMILY.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, ColemanFamilyArchetype.COLEMAN_MAZUR_EIGENCURVE.value)
+
+        loom = ColemanFamilyLoom(
+            level_n=args.level,
+            prime_p=args.prime,
+            weight_k=args.weight,
+            default_archetype=chosen_arch,
+        )
+        sp = loom.spaces[0]
+        fred = loom.fredholm_series[0]
+        pt = loom.eigencurve_points[0]
+        crit = loom.evaluate_classicality_threshold(slope=args.slope, weight=args.weight)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Coleman Families & Overconvergent Modular Forms Loom")
+            print("=================================================================")
+            print(f"Modular Level & Prime:         N = {sp.level_n} | Prime p = {sp.prime_p}")
+            print(f"Coleman Family Archetype:      {loom.default_archetype}")
+            print(f"Overconvergent Banach Space:   M_{sp.weight_k}^dagger(Gamma_0({sp.level_n}), r={sp.overconvergence_radius_r})")
+            print(f"U_p Compact Operator:          {sp.is_u_p_compact} ({sp.banach_norm_type})")
+            print(f"Fredholm Series P(T):          det(1 - T * U_p) (Entire: {fred.is_entire_function}, Slopes: {fred.slope_segments})")
+            print(f"Newton Polygon Vertices:       {fred.newton_polygon_vertices}")
+            print(f"Coleman Classicality:          Slope {crit['slope_alpha']} vs Bound k - 1 = {crit['critical_bound']}")
+            print(f"Classical Cusp Form:           {crit['is_strictly_classical']} ({crit['criterion']})")
+            print(f"Eigencurve Point Projection:   {pt.point_id} -> Weight Space W (Slope: {pt.slope_alpha:.2f})")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "coleman_family_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_coleman_svg())
+            print(f"[DxSkills] Coleman Family SVG written to: {out_path}")
     else:
         parser.print_help()
 
