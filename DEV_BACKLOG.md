@@ -930,9 +930,14 @@
 - [x] **Task 210.3:** Interactive CLI suite (`gkz-theorem`, `gross-kohnen-zagier`, `half-integral-forms`, `gkz-loom`) with full unit test coverage and zero em dash compliance.
 
 ### Phase 211: Autonomous Cognitive Spatial Kudla Program & Arithmetic Siegel-Weil Formula Loom
-- [ ] **Task 211.1:** Kudla program engine modeling orthogonal and unitary Shimura varieties, arithmetic special cycles (Kudla-Rapoport cycles), Green functions, and the arithmetic Siegel-Weil formula connecting heights to derivative Eisenstein series.
-- [ ] **Task 211.2:** Visualizer rendering arithmetic intersection pairings of special cycles, non-holomorphic Eisenstein series derivatives, and Faltings heights in dark titanium SVG.
-- [ ] **Task 211.3:** Interactive CLI suite (`kudla-siegel-weil`, `arithmetic-cycles`, `kudla-rapoport`, `siegel-weil-loom`) with full unit test coverage and zero em dash compliance.
+- [x] **Task 211.1:** Kudla program engine modeling orthogonal and unitary Shimura varieties, arithmetic special cycles (Kudla-Rapoport cycles), Green functions, and the arithmetic Siegel-Weil formula connecting heights to derivative Eisenstein series.
+- [x] **Task 211.2:** Visualizer rendering arithmetic intersection pairings of special cycles, non-holomorphic Eisenstein series derivatives, and Faltings heights in dark titanium SVG.
+- [x] **Task 211.3:** Interactive CLI suite (`kudla-siegel-weil`, `arithmetic-cycles`, `arithmetic-siegel-weil`, `siegel-weil-loom`) with full unit test coverage and zero em dash compliance.
+
+### Phase 212: Autonomous Cognitive Spatial Kudla-Millson Forms & Arithmetic Cohomology Loom
+- [ ] **Task 212.1:** Kudla-Millson forms engine modeling differential forms of weight (p+q)/2 with values in cohomology, theta series of Kudla-Millson, and dualities between cycle classes and automorphic forms.
+- [ ] **Task 212.2:** Visualizer rendering Kudla-Millson closed differential forms, Poincaré duality pairings on orthogonal symmetric domains, and arithmetic cohomology lattices in dark titanium SVG.
+- [ ] **Task 212.3:** Interactive CLI suite (`kudla-millson`, `arithmetic-cohomology`, `poincare-theta`, `millson-loom`) with full unit test coverage and zero em dash compliance.
 
 ---
 
@@ -1146,7 +1151,8 @@
 | **Cycle 203** | 2026-09-12 04:52 | Autonomous Cognitive Spatial K3 Surfaces Modularity & Borcherds Automorphic Products Loom | `scripts/k3_modularity_loom.py`, `tests/test_k3_modularity_loom.py`, `scripts/dx_cli.py`, `index.html` | `3e1497b` |
 | **Cycle 204** | 2026-09-12 05:02 | Autonomous Cognitive Spatial Birch-Swinnerton-Dyer (BSD) Conjecture & Higher Rank Heegner Points Loom | `scripts/bsd_conjecture_loom.py`, `tests/test_bsd_conjecture_loom.py`, `scripts/dx_cli.py`, `index.html` | `7629a16` |
 | **Cycle 205** | 2026-09-12 05:12 | Autonomous Cognitive Spatial Beilinson-Flach Elements & Asymmetric Euler Systems Loom | `scripts/beilinson_flach_loom.py`, `tests/test_beilinson_flach_loom.py`, `scripts/dx_cli.py`, `index.html` | `d8e2dea` |
-| **Cycle 206** | 2026-09-12 05:22 | Autonomous Cognitive Spatial Gross-Kohnen-Zagier Theorem & Higher Modular Forms Loom | `scripts/gross_kohnen_zagier_loom.py`, `tests/test_gross_kohnen_zagier_loom.py`, `scripts/dx_cli.py`, `index.html` | `414c4af` |
+| **Cycle 206** | 2026-09-12 05:22 | Autonomous Cognitive Spatial Gross-Kohnen-Zagier Theorem & Higher Modular Forms Loom | `scripts/gross_kohnen_zagier_loom.py`, `tests/test_gross_kohnen_zagier_loom.py`, `scripts/dx_cli.py`, `index.html` | `c276537` |
+| **Cycle 207** | 2026-09-12 05:32 | Autonomous Cognitive Spatial Kudla Program & Arithmetic Siegel-Weil Formula Loom | `scripts/kudla_program_loom.py`, `tests/test_kudla_program_loom.py`, `scripts/dx_cli.py`, `index.html` | `685632e` |
 
 
 
