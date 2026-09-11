@@ -925,9 +925,14 @@
 - [x] **Task 209.3:** Interactive CLI suite (`beilinson-flach`, `rankin-selberg-euler`, `asymmetric-euler`, `flach-loom`) with full unit test coverage and zero em dash compliance.
 
 ### Phase 210: Autonomous Cognitive Spatial Gross-Kohnen-Zagier Theorem & Higher Modular Forms Loom
-- [ ] **Task 210.1:** Gross-Kohnen-Zagier engine modeling Jacobi forms, modular forms of half-integral weight k+1/2, Heegner divisors on modular curves, and Gross-Kohnen-Zagier generating series of Heegner points.
-- [ ] **Task 210.2:** Visualizer rendering Fourier coefficients of weight 3/2 cusp forms matching canonical heights of Heegner points in dark titanium SVG.
-- [ ] **Task 210.3:** Interactive CLI suite (`gkz-theorem`, `gross-kohnen-zagier`, `half-integral-forms`, `gkz-loom`) with full unit test coverage and zero em dash compliance.
+- [x] **Task 210.1:** Gross-Kohnen-Zagier engine modeling Jacobi forms, modular forms of half-integral weight k+1/2, Heegner divisors on modular curves, and Gross-Kohnen-Zagier generating series of Heegner points.
+- [x] **Task 210.2:** Visualizer rendering Fourier coefficients of weight 3/2 cusp forms matching canonical heights of Heegner points in dark titanium SVG.
+- [x] **Task 210.3:** Interactive CLI suite (`gkz-theorem`, `gross-kohnen-zagier`, `half-integral-forms`, `gkz-loom`) with full unit test coverage and zero em dash compliance.
+
+### Phase 211: Autonomous Cognitive Spatial Kudla Program & Arithmetic Siegel-Weil Formula Loom
+- [ ] **Task 211.1:** Kudla program engine modeling orthogonal and unitary Shimura varieties, arithmetic special cycles (Kudla-Rapoport cycles), Green functions, and the arithmetic Siegel-Weil formula connecting heights to derivative Eisenstein series.
+- [ ] **Task 211.2:** Visualizer rendering arithmetic intersection pairings of special cycles, non-holomorphic Eisenstein series derivatives, and Faltings heights in dark titanium SVG.
+- [ ] **Task 211.3:** Interactive CLI suite (`kudla-siegel-weil`, `arithmetic-cycles`, `kudla-rapoport`, `siegel-weil-loom`) with full unit test coverage and zero em dash compliance.
 
 ---
 
@@ -1140,7 +1145,8 @@
 | **Cycle 202** | 2026-09-12 04:42 | Autonomous Cognitive Spatial Calabi-Yau Modularity & Attractor Mechanism Loom | `scripts/calabi_yau_modularity_loom.py`, `tests/test_calabi_yau_modularity_loom.py`, `scripts/dx_cli.py`, `index.html` | `54812fe` |
 | **Cycle 203** | 2026-09-12 04:52 | Autonomous Cognitive Spatial K3 Surfaces Modularity & Borcherds Automorphic Products Loom | `scripts/k3_modularity_loom.py`, `tests/test_k3_modularity_loom.py`, `scripts/dx_cli.py`, `index.html` | `3e1497b` |
 | **Cycle 204** | 2026-09-12 05:02 | Autonomous Cognitive Spatial Birch-Swinnerton-Dyer (BSD) Conjecture & Higher Rank Heegner Points Loom | `scripts/bsd_conjecture_loom.py`, `tests/test_bsd_conjecture_loom.py`, `scripts/dx_cli.py`, `index.html` | `7629a16` |
-| **Cycle 205** | 2026-09-12 05:12 | Autonomous Cognitive Spatial Beilinson-Flach Elements & Asymmetric Euler Systems Loom | `scripts/beilinson_flach_loom.py`, `tests/test_beilinson_flach_loom.py`, `scripts/dx_cli.py`, `index.html` | `2674f59` |
+| **Cycle 205** | 2026-09-12 05:12 | Autonomous Cognitive Spatial Beilinson-Flach Elements & Asymmetric Euler Systems Loom | `scripts/beilinson_flach_loom.py`, `tests/test_beilinson_flach_loom.py`, `scripts/dx_cli.py`, `index.html` | `d8e2dea` |
+| **Cycle 206** | 2026-09-12 05:22 | Autonomous Cognitive Spatial Gross-Kohnen-Zagier Theorem & Higher Modular Forms Loom | `scripts/gross_kohnen_zagier_loom.py`, `tests/test_gross_kohnen_zagier_loom.py`, `scripts/dx_cli.py`, `index.html` | `414c4af` |
 
 
 

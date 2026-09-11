@@ -1861,6 +1861,12 @@ def main():
     p_bf.add_argument("--svg", default="", help="Output Beilinson-Flach Loom SVG filepath")
     p_bf.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_bf.add_argument("--demo", action="store_true", help="Run demonstration Rankin-Selberg product, degree 4 Euler factors, BF classes, and Selmer bounding")
+    # gkz-theorem / gross-kohnen-zagier / half-integral-forms / gkz-loom
+    p_gkz = subparsers.add_parser("gkz-theorem", aliases=["gross-kohnen-zagier", "half-integral-forms", "gkz-loom"], help="Autonomous cognitive spatial Gross-Kohnen-Zagier (GKZ) Theorem and Higher Modular Forms Loom")
+    p_gkz.add_argument("--curve", "-c", default="37a1", choices=["37a1", "11a1", "389a1"], help="Elliptic curve label (default: 37a1)")
+    p_gkz.add_argument("--svg", default="", help="Output GKZ Theorem SVG filepath")
+    p_gkz.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_gkz.add_argument("--demo", action="store_true", help="Run demonstration Shimura-Kohnen lifting, Fourier coefficients, and GKZ height pairings")
     args = parser.parse_args()
 
 
@@ -10905,6 +10911,49 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.render_svg())
             print(f"[DxSkills] Beilinson-Flach SVG written to: {out_path}")
+    elif args.command in ["gkz-theorem", "gross-kohnen-zagier", "half-integral-forms", "gkz-loom"]:
+        from scripts.gross_kohnen_zagier_loom import (
+            GrossKohnenZagierLoom,
+        )
+        loom = GrossKohnenZagierLoom(args.curve)
+        result = loom.analyze()
+
+        if args.json:
+            import json
+            from dataclasses import asdict
+            res_dict = {
+                "curve_label": result.curve_label,
+                "conductor_n": result.conductor_n,
+                "shimura_kohnen_form": asdict(result.shimura_kohnen_form),
+                "l_derivative_value": result.l_derivative_value,
+                "petersson_norm": result.petersson_norm,
+                "proportionality_constant": result.proportionality_constant,
+                "discriminants": [asdict(d) for d in result.discriminants],
+                "pairings": [asdict(p) for p in result.pairings],
+                "generating_series_modularity_proven": result.generating_series_modularity_proven,
+            }
+            print(json.dumps(res_dict, indent=2))
+        else:
+            print("=================================================================")
+            print("  Gross-Kohnen-Zagier (GKZ) Theorem & Half-Integral Forms Loom")
+            print("=================================================================")
+            print(f"Elliptic Curve E/Q:           {result.curve_label} (Conductor N = {result.conductor_n})")
+            print(f"Kohnen Plus Space Form:       {result.shimura_kohnen_form.label} in S_{{3/2}}^+(4N) (Level = {result.shimura_kohnen_form.level_4n})")
+            print(f"L-Function Derivative:        L'(E, 1) = {result.l_derivative_value:.6f}")
+            print(f"Petersson Inner Product:      (f, f) = {result.petersson_norm:.6f}")
+            print(f"GKZ Proportionality Constant: kappa = L'/(4*pi*(f,f)) = {result.proportionality_constant:.6f}")
+            print(f"Heegner Discriminants:        {len(result.discriminants)} points analyzed")
+            print(f"Height Pairings Evaluated:    {len(result.pairings)} pairings checked")
+            print(f"Generating Series Modularity: {result.generating_series_modularity_proven} (Automorphic on X_0(N))")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "gkz_theorem_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] GKZ Theorem SVG written to: {out_path}")
     else:
         parser.print_help()
 
