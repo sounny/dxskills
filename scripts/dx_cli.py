@@ -1583,6 +1583,16 @@ def main():
     p_der.add_argument("--svg", default="", help="Output derived geometry and spectral Postnikov tower SVG filepath")
     p_der.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_der.add_argument("--demo", action="store_true", help="Run with demonstration derived critical locus, cotangent complex, and TMF spectral sheaf")
+    # iut-theory / hodge-theatre / theta-link / mochizuki-loom
+    p_iut = subparsers.add_parser("iut-theory", aliases=["hodge-theatre", "theta-link", "mochizuki-loom"], help="Autonomous cognitive spatial Inter-Universal Teichmuller Theory and Mochizuki Hodge Theatre Loom")
+    p_iut.add_argument("--prime-l", "-l", type=int, default=5, choices=[3, 5, 7, 11, 13], help="Base odd prime l for theta packet capsule (default: 5)")
+    p_iut.add_argument("--q-param", "-q", type=float, default=0.05, help="Elliptic curve q-parameter (default: 0.05)")
+    p_iut.add_argument("--log-n", type=int, default=0, help="Log-step coordinate n in log-theta lattice Z x Z (default: 0)")
+    p_iut.add_argument("--theta-m", type=int, default=0, help="Theta-step coordinate m in log-theta lattice Z x Z (default: 0)")
+    p_iut.add_argument("--epsilon", type=float, default=0.1, help="Epsilon parameter for Szpiro height bound (default: 0.1)")
+    p_iut.add_argument("--svg", default="", help="Output IUT theory and Hodge theatre SVG filepath")
+    p_iut.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_iut.add_argument("--demo", action="store_true", help="Run with demonstration Hodge theatre, theta-link, and multiradial envelope")
     args = parser.parse_args()
 
 
@@ -8935,6 +8945,50 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_derived_svg())
             print(f"[DxSkills] Derived Geometry SVG written to: {args.svg}")
+    elif args.command in ["iut-theory", "hodge-theatre", "theta-link", "mochizuki-loom"]:
+        from scripts.iut_theory_loom import (
+            IUTTheoryLoom,
+            HodgeTheatreArchetype,
+            IUTLinkType,
+        )
+        loom = IUTTheoryLoom(
+            base_prime_l=args.prime_l,
+            base_q_parameter=args.q_param,
+        )
+        ht = loom.hodge_theatres[0]
+        lnk = loom.evaluate_theta_link(
+            link_id="LINK-DEMO-01",
+            source_theatre_id="HT-0-0",
+            target_theatre_id="HT-0-1",
+        )
+        env = loom.evaluate_multiradial_envelope("ENV-DEMO-01", epsilon=args.epsilon)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Inter-Universal Teichmuller Theory & Mochizuki Hodge Theatre Loom")
+            print("=================================================================")
+            print(f"Base Prime l & Capsule Size:   Prime l={loom.base_prime_l} | Capsule Size l*={ht.capsule_size}")
+            print(f"Base Elliptic Parameter q:     q = {loom.base_q_parameter}")
+            print(f"Hodge Theatre ID & Lattice:    {ht.theatre_id} at (n={ht.log_coord_n}, m={ht.theta_coord_m})")
+            print(f"Frobenioid-Like Status:        {ht.frobenius_like_status}")
+            print(f"Etale-Like Rigid Core:         {ht.etale_like_rigid_status}")
+            print(f"Theta Packet {lnk.link_id}:        Values={[round(v, 4) for v in lnk.theta_packet_values]}")
+            print(f"Deformed Packet across Link:   Values={[round(v, 4) for v in lnk.deformed_packet_values]}")
+            print(f"Ring Addition Axiom:           {'BROKEN (Multiplication deformed across theatres)' if lnk.ring_axiom_broken else 'PRESERVED'}")
+            print(f"Multiradial Indet 1 (Aut):     Volume = {env.indet_1_automorphism_volume:.4f}")
+            print(f"Multiradial Indet 2 (Kummer):  Volume = {env.indet_2_kummer_phase_volume:.4f}")
+            print(f"Multiradial Indet 3 (Upper):   Volume = {env.indet_3_upper_bound_volume:.4f}")
+            print(f"Total Multiradial Log-Volume:  Bound = {env.total_log_volume_bound:.4f}")
+            print(f"Szpiro Height Upper Bound:     Bound = {env.canonical_height_bound:.4f} (eps={args.epsilon})")
+            print(f"Szpiro Inequality Status:      {'SATISFIED (Uniform Diophantine bound confirmed)' if env.szpiro_inequality_satisfied else 'FAILED'}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_iut_svg())
+            print(f"[DxSkills] IUT Theory SVG written to: {args.svg}")
     else:
         parser.print_help()
 
