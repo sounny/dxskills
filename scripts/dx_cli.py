@@ -805,6 +805,16 @@ def main():
     p_galois.add_argument("--json", "-j", action="store_true", help="Output raw JSON lattice telemetry")
     p_galois.add_argument("--demo", action="store_true", help="Run with demonstration 4-entity cross-cluster context")
 
+    # fatigue-meter / saccadic-fatigue / contrast-damper / ocular-fatigue
+    p_fatigue = subparsers.add_parser("fatigue-meter", aliases=["saccadic-fatigue", "contrast-damper", "ocular-fatigue"], help="Autonomous cognitive spatial working memory saccadic fatigue meter and dynamic contrast damper")
+    p_fatigue.add_argument("input", nargs="?", default="", help="Input gaze session JSON filepath")
+    p_fatigue.add_argument("--baseline", "-b", type=float, default=420.0, help="Baseline saccadic peak velocity in deg/s (default: 420.0)")
+    p_fatigue.add_argument("--session-max", type=float, default=45.0, help="Maximum recommended continuous session duration in minutes (default: 45.0)")
+    p_fatigue.add_argument("--css", default="", help="Output restorative CSS tokens filepath")
+    p_fatigue.add_argument("--svg", default="", help="Output fatigue main sequence SVG diagram filepath")
+    p_fatigue.add_argument("--json", "-j", action="store_true", help="Output raw JSON fatigue telemetry")
+    p_fatigue.add_argument("--demo", action="store_true", help="Run with demonstration 20-sample decaying gaze session")
+
     args = parser.parse_args()
 
 
@@ -3553,6 +3563,49 @@ def main():
         if args.svg:
             engine.export_svg(result, args.svg)
             print(f"[DxSkills] Galois lattice SVG diagram written to: {args.svg}")
+    elif args.command in ["fatigue-meter", "saccadic-fatigue", "contrast-damper", "ocular-fatigue"]:
+        import scripts.saccadic_fatigue_meter as sfatigue
+
+        meter = sfatigue.SaccadicFatigueMeter(
+            baseline_velocity_deg_s=args.baseline,
+            max_session_minutes=args.session_max,
+        )
+
+        samples_input = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            samples_input = raw_data if isinstance(raw_data, list) else raw_data.get("samples", [])
+        elif args.demo or not args.input:
+            for i in range(20):
+                t_ms = i * 105000.0  # ~35 mins
+                vel = 440.0 - (i * 6.5)
+                blink = 5.0 if i < 10 else 1.8
+                samples_input.append({
+                    "sample_id": f"s_{i+1:02d}",
+                    "timestamp_ms": t_ms,
+                    "saccade_amplitude_deg": 9.0,
+                    "peak_velocity_deg_s": vel,
+                    "fixation_duration_ms": 210.0 + (i * 8.0),
+                    "blink_interval_sec": blink,
+                    "target_card_id": f"card_{(i % 4) + 1}",
+                })
+
+        result = meter.evaluate_gaze_samples(samples_input)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + meter.generate_ascii_report(result))
+
+        if args.css:
+            with open(args.css, "w", encoding="utf-8") as f:
+                f.write(result.restorative_css_tokens)
+            print(f"[DxSkills] Restorative CSS tokens written to: {args.css}")
+
+        if args.svg:
+            meter.export_svg(result, args.svg)
+            print(f"[DxSkills] Saccadic fatigue SVG diagram written to: {args.svg}")
     else:
         parser.print_help()
 
