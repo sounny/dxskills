@@ -1238,6 +1238,16 @@ def main():
     p_creplay.add_argument("--svg", default="", help="Output chrono replay interactive SVG filepath")
     p_creplay.add_argument("--json", "-j", action="store_true", help="Output raw JSON replay telemetry")
     p_creplay.add_argument("--demo", action="store_true", help="Run with demonstration episodic trajectory rollout")
+    # topographic-contour / isocline-tracer / semantic-topography / contour-morph / terrain-elevation
+    p_tcont = subparsers.add_parser("topographic-contour", aliases=["isocline-tracer", "semantic-topography", "contour-morph", "terrain-elevation"], help="Autonomous cognitive spatial topographic contour morph and iso-semantic isocline tracer engine")
+    p_tcont.add_argument("input", nargs="?", default="", help="Input semantic summits JSON filepath")
+    p_tcont.add_argument("--interval", type=float, default=80.0, help="Contour elevation slice interval (default: 80.0)")
+    p_tcont.add_argument("--grid-w", type=int, default=52, help="Grid sampling horizontal resolution (default: 52)")
+    p_tcont.add_argument("--grid-h", type=int, default=34, help="Grid sampling vertical resolution (default: 34)")
+    p_tcont.add_argument("--report", default="", help="Output topographic diagnostic markdown filepath")
+    p_tcont.add_argument("--svg", default="", help="Output topographic contour interactive SVG filepath")
+    p_tcont.add_argument("--json", "-j", action="store_true", help="Output raw JSON topography telemetry")
+    p_tcont.add_argument("--demo", action="store_true", help="Run with demonstration semantic relief terrain")
     args = parser.parse_args()
 
 
@@ -6622,6 +6632,80 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Replay SVG written to: {args.svg}")
+    elif args.command in ["topographic-contour", "isocline-tracer", "semantic-topography", "contour-morph", "terrain-elevation"]:
+        import scripts.topographic_contour_morph as tcm_mod
+        morph = tcm_mod.TopographicContourMorph(base_contour_interval=args.interval)
+
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                raw_summits = data.get("summits", [])
+                for i, s in enumerate(raw_summits):
+                    morph.add_summit(
+                        tcm_mod.ElevationSummit(
+                            summit_id=str(s.get("summit_id", s.get("id", f"summit-{i}"))),
+                            label=str(s.get("label", f"Peak {i}")),
+                            x=float(s["x"]),
+                            y=float(s["y"]),
+                            elevation=float(s.get("elevation", 500.0)),
+                            spread_sigma=float(s.get("spread_sigma", 65.0)),
+                        )
+                    )
+            telemetry = morph.trace_isoclines(
+                grid_w=args.grid_w,
+                grid_h=args.grid_h,
+                contour_interval=args.interval,
+            )
+        else:
+            telemetry = morph.simulate_demo_semantic_terrain()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print(f"[DxSkills] Topographic Contour & Relief Telemetry")
+            print(f"Total Summits: {telemetry.total_summits}")
+            print(f"Elevation Range: {telemetry.min_elevation:.0f}m to {telemetry.max_elevation:.0f}m")
+            print(f"Contour Interval: {telemetry.contour_interval:.0f}m")
+            print(f"Isocline Levels: {telemetry.total_isocline_levels}")
+            print(f"Total Segments: {telemetry.total_segments}")
+            print(f"Terrain Ruggedness: {telemetry.terrain_ruggedness_index:.1f}%")
+            if telemetry.warnings:
+                for w in telemetry.warnings:
+                    print(f"Note: {w}")
+
+        if args.report:
+            md_lines = [
+                "# Topographic Contour Morph & Iso-Semantic Isocline Diagnostic Report",
+                "",
+                f"**Terrain Ruggedness Index:** `{telemetry.terrain_ruggedness_index:.1f}%`",
+                f"- **Total Summits:** {telemetry.total_summits}",
+                f"- **Elevation Range:** {telemetry.min_elevation:.0f}m to {telemetry.max_elevation:.0f}m",
+                f"- **Contour Interval:** {telemetry.contour_interval:.0f}m",
+                f"- **Total Isocline Slices:** {telemetry.total_isocline_levels}",
+                f"- **Marching Squares Segments:** {telemetry.total_segments}",
+                "",
+                "## Registered Semantic Summits",
+                "",
+                "| Summit ID | Label | Coordinates (X, Y) | Peak Elevation | Dispersion Sigma |",
+                "| :--- | :--- | :--- | :--- | :--- |",
+            ]
+            for s in telemetry.summits:
+                md_lines.append(
+                    f"| `{s.summit_id}` | {s.label} | ({s.x:.1f}, {s.y:.1f}) | {s.elevation:.0f}m | {s.spread_sigma:.0f}px |"
+                )
+            if telemetry.warnings:
+                md_lines.extend(["", "## Diagnostic Notes", ""])
+                for w in telemetry.warnings:
+                    md_lines.append(f"- [TOPOGRAPHY] {w}")
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write("\n".join(md_lines) + "\n")
+            print(f"[DxSkills] Topography report written to: {args.report}")
+
+        if args.svg:
+            svg_code = morph.render_topographic_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Topography SVG written to: {args.svg}")
     else:
         parser.print_help()
 
