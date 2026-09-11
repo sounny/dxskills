@@ -1194,6 +1194,16 @@ def main():
     p_munf.add_argument("--svg", default="", help="Output topological manifold interactive SVG filepath")
     p_munf.add_argument("--json", "-j", action="store_true", help="Output raw JSON manifold net telemetry")
     p_munf.add_argument("--demo", action="store_true", help="Run with demonstration unfolded Salvador Dali tesseract cross")
+    # saliency-conductor / saccadic-conductor / gaze-conductor / saccadic-saliency
+    p_scond = subparsers.add_parser("saliency-conductor", aliases=["saccadic-conductor", "gaze-conductor", "saccadic-saliency"], help="Autonomous cognitive spatial dynamic attentional funnel and saccadic saliency conductor engine")
+    p_scond.add_argument("input", nargs="?", default="", help="Input visual saliency waypoints JSON filepath")
+    p_scond.add_argument("--px-per-deg", type=float, default=35.0, help="Pixels per visual degree (default: 35.0)")
+    p_scond.add_argument("--latency", type=float, default=190.0, help="Base saccadic decision latency in ms (default: 190.0)")
+    p_scond.add_argument("--penalty", type=float, default=1.4, help="Regression penalty multiplier (default: 1.4)")
+    p_scond.add_argument("--report", default="", help="Output saccadic saliency diagnostic markdown filepath")
+    p_scond.add_argument("--svg", default="", help="Output saccadic saliency interactive SVG filepath")
+    p_scond.add_argument("--json", "-j", action="store_true", help="Output raw JSON saliency telemetry")
+    p_scond.add_argument("--demo", action="store_true", help="Run with demonstration technical scanpath")
     args = parser.parse_args()
 
 
@@ -6286,6 +6296,50 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Topological manifold SVG written to: {args.svg}")
+    elif args.command in ["saliency-conductor", "saccadic-conductor", "gaze-conductor", "saccadic-saliency"]:
+        import scripts.saccadic_saliency_conductor as ssc_mod
+        conductor = ssc_mod.SaccadicSaliencyConductor(
+            px_per_degree=args.px_per_deg,
+            base_saccade_latency_ms=args.latency,
+            regression_penalty_weight=args.penalty,
+        )
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                raw_wps = data.get("waypoints", data.get("saliency_waypoints", []))
+                waypoints = [
+                    ssc_mod.SaliencyWaypoint(
+                        waypoint_id=str(w.get("waypoint_id", w.get("id", f"wp-{i}"))),
+                        label=str(w.get("label", w.get("name", f"Waypoint {i}"))),
+                        x=float(w.get("x", 100.0 * (i + 1))),
+                        y=float(w.get("y", 150.0)),
+                        raw_saliency=float(w.get("raw_saliency", w.get("saliency", 0.8))),
+                        semantic_weight=float(w.get("semantic_weight", w.get("weight", 0.8))),
+                        order_index=int(w.get("order_index", i)),
+                    )
+                    for i, w in enumerate(raw_wps)
+                ]
+                telemetry = conductor.conduct_saliency_path(waypoints)
+        else:
+            telemetry = ssc_mod.SaccadicSaliencyConductor.create_demo_telemetry()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            report_md = conductor.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = conductor.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Saccadic conductor report written to: {args.report}")
+
+        if args.svg:
+            svg_code = conductor.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Saccadic conductor SVG written to: {args.svg}")
     else:
         parser.print_help()
 
