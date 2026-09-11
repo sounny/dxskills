@@ -1783,6 +1783,14 @@ def main():
     p_gs.add_argument("--svg", default="", help="Output Gross-Stark SVG filepath")
     p_gs.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_gs.add_argument("--demo", action="store_true", help="Run with demonstration Gross-Stark unit, p-adic regulator, and Shintani cones")
+    # langlands-shahidi / shahidi-gamma / intertwining-operator / automorphic-l-loom
+    p_ls = subparsers.add_parser("langlands-shahidi", aliases=["shahidi-gamma", "intertwining-operator", "automorphic-l-loom"], help="Autonomous cognitive spatial Langlands-Shahidi Method and Automorphic L-Functions Loom")
+    p_ls.add_argument("--spectral-s", "-s", type=float, default=1.0, help="Spectral complex parameter s (default: 1.0)")
+    p_ls.add_argument("--prime", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11, 13], help="Local unramified prime p (default: 5)")
+    p_ls.add_argument("--archetype", default="so5", choices=["so5", "sp4", "rankin", "exterior"], help="Quasi-split group and parabolic archetype (default: so5)")
+    p_ls.add_argument("--svg", default="", help="Output Langlands-Shahidi SVG filepath")
+    p_ls.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_ls.add_argument("--demo", action="store_true", help="Run with demonstration intertwining operator, Shahidi gamma factors, and functorial lifts")
     args = parser.parse_args()
 
 
@@ -10313,6 +10321,57 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_svg())
             print(f"[DxSkills] Gross-Stark SVG written to: {out_path}")
+    elif args.command in ["langlands-shahidi", "shahidi-gamma", "intertwining-operator", "automorphic-l-loom"]:
+        from scripts.langlands_shahidi_loom import (
+            LanglandsShahidiLoom,
+            ShahidiArchetype,
+        )
+        arch_map = {
+            "so5": ShahidiArchetype.SO5_SPLIT_STANDARD.value,
+            "sp4": ShahidiArchetype.SP4_SIEGEL_DEGREE2.value,
+            "rankin": ShahidiArchetype.GL2_TIMES_GL2_IN_GL4.value,
+            "exterior": ShahidiArchetype.GL4_EXTERIOR_SQUARE.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, ShahidiArchetype.SO5_SPLIT_STANDARD.value)
+
+        loom = LanglandsShahidiLoom(
+            spectral_s=args.spectral_s,
+            prime_p=args.prime,
+            default_archetype=chosen_arch,
+        )
+        grp = loom.group_data
+        rep = loom.levi_representation
+        factors = loom.local_factors
+        gl = loom.global_l_data
+        eval_res = loom.evaluate_unitary_axis()
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Langlands-Shahidi Method & Automorphic L-Functions Loom")
+            print("=================================================================")
+            print(f"Quasi-Split Group:             {grp.group_label} (dim = {grp.dimension_g})")
+            print(f"Levi Subgroup:                 {grp.levi_m_label}")
+            print(f"Unipotent Radical:             dim(N) = {grp.unipotent_n_dimension}")
+            print(f"Generic Representation:        {rep.representation_label}")
+            print(f"Whittaker Model:               Generic ({rep.whittaker_model_character[:45]})")
+            print(f"Spectral Parameter:            s = {loom.spectral_s} (On Unitary Axis Re(s)=1: {eval_res['is_on_unitary_axis']})")
+            print(f"Local Prime & Factors:         p = {loom.prime_p} ({len(factors)} adjoint pieces)")
+            print(f"First Local Factor:            L(s) = {factors[0].local_l_value:.4f} | gamma(s) = {factors[0].local_gamma_value:.4f}")
+            print(f"Global Functorial Lift:        {gl.functorial_lift_type}")
+            print(f"Ramanujan Generalized Bound:   {gl.ramanujan_generalized_bound}")
+            print(f"Meromorphic Continuation:      {gl.has_meromorphic_continuation} (Root Number = {gl.functional_equation_root_number})")
+            print(f"Unitary Axis Non-Vanishing:    L(1 + it, pi, r) != 0 (Guaranteed: {eval_res['non_vanishing_guaranteed']})")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "langlands_shahidi_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_svg())
+            print(f"[DxSkills] Langlands-Shahidi SVG written to: {out_path}")
     else:
         parser.print_help()
 

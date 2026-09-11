@@ -875,9 +875,14 @@
 - [x] **Task 199.3:** Interactive CLI suite (`gross-stark`, `stark-conjecture`, `padic-regulator`, `brumer-stark`) with full unit test coverage and zero em dash compliance.
 
 ### Phase 200: Autonomous Cognitive Spatial Langlands-Shahidi Method & Automorphic L-Functions Loom
-- [ ] **Task 200.1:** Langlands-Shahidi method engine modeling maximal parabolic subgroups, Whittaker models, intertwining operators M(s, pi), and local gamma-factors gamma(s, pi x tau, psi).
-- [ ] **Task 200.2:** Automorphic L-function visualizer rendering Eisenstein series residues, Plancherel measure poles, and functorial transfer lifts (Sym^3 GL_2, exterior square) in dark titanium SVG.
-- [ ] **Task 200.3:** Interactive CLI suite (`langlands-shahidi`, `shahidi-gamma`, `intertwining-operator`, `automorphic-l-loom`) with full unit test coverage and zero em dash compliance.
+- [x] **Task 200.1:** Langlands-Shahidi method engine modeling maximal parabolic subgroups, Whittaker models, intertwining operators M(s, pi), and local gamma-factors gamma(s, pi x tau, psi).
+- [x] **Task 200.2:** Automorphic L-function visualizer rendering Eisenstein series residues, Plancherel measure poles, and functorial transfer lifts (Sym^3 GL_2, exterior square) in dark titanium SVG.
+- [x] **Task 200.3:** Interactive CLI suite (`langlands-shahidi`, `shahidi-gamma`, `intertwining-operator`, `automorphic-l-loom`) with full unit test coverage and zero em dash compliance.
+
+### Phase 201: Autonomous Cognitive Spatial Arthur-Selberg Trace Formula & Endoscopic Classification Loom
+- [ ] **Task 201.1:** Arthur-Selberg trace formula engine modeling invariant discrete trace I_disc(gamma) = I_disc(pi), orbital integrals, and transfer factors.
+- [ ] **Task 201.2:** Endoscopic classification visualizer rendering elliptic endoscopic groups H, Ngo Bao Chau fundamental lemma transfers, and discrete Arthur packets in dark titanium SVG.
+- [ ] **Task 201.3:** Interactive CLI suite (`arthur-trace-formula`, `endoscopic-classification`, `arthur-packet`, `selberg-trace-loom`) with full unit test coverage and zero em dash compliance.
 
 ---
 
@@ -1080,7 +1085,8 @@
 | **Cycle 192** | 2026-09-12 03:02 | Autonomous Cognitive Spatial Fargues-Scholze Geometrization of Local Langlands Loom | `scripts/fargues_scholze_loom.py`, `tests/test_fargues_scholze_loom.py`, `scripts/dx_cli.py`, `index.html` | `b84bab9` |
 | **Cycle 193** | 2026-09-12 03:12 | Autonomous Cognitive Spatial Shimura Varieties & Kudla Program Arithmetic Intersection Loom | `scripts/kudla_program_loom.py`, `tests/test_kudla_program_loom.py`, `scripts/dx_cli.py`, `index.html` | `8c18d85` |
 | **Cycle 194** | 2026-09-12 03:22 | Autonomous Cognitive Spatial Colmez Conjecture & Faltings Heights of CM Abelian Varieties Loom | `scripts/colmez_conjecture_loom.py`, `tests/test_colmez_conjecture_loom.py`, `scripts/dx_cli.py`, `index.html` | `ef6e16c` |
-| **Cycle 195** | 2026-09-12 03:32 | Autonomous Cognitive Spatial Gross-Stark Conjecture & p-Adic Stark Conjectures Loom | `scripts/gross_stark_loom.py`, `tests/test_gross_stark_loom.py`, `scripts/dx_cli.py`, `index.html` | `e4f10a0` |
+| **Cycle 195** | 2026-09-12 03:32 | Autonomous Cognitive Spatial Gross-Stark Conjecture & p-Adic Stark Conjectures Loom | `scripts/gross_stark_loom.py`, `tests/test_gross_stark_loom.py`, `scripts/dx_cli.py`, `index.html` | `6a9c851` |
+| **Cycle 196** | 2026-09-12 03:42 | Autonomous Cognitive Spatial Langlands-Shahidi Method & Automorphic L-Functions Loom | `scripts/langlands_shahidi_loom.py`, `tests/test_langlands_shahidi_loom.py`, `scripts/dx_cli.py`, `index.html` | `0fcf9d6` |
 
 
 
