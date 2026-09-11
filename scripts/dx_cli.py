@@ -1552,6 +1552,16 @@ def main():
     p_dyn.add_argument("--svg", default="", help="Output arithmetic dynamics and Julia-Fatou phase partition SVG filepath")
     p_dyn.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_dyn.add_argument("--demo", action="store_true", help="Run with demonstration PCF map, Call-Silverman height, and Berkovich tree")
+    # arithmetic-topology / knots-primes / kapranov-reznikov / legendre-linking
+    p_topo = subparsers.add_parser("arithmetic-topology", aliases=["knots-primes", "kapranov-reznikov", "legendre-linking"], help="Autonomous cognitive spatial Arithmetic Topology and Knots-Primes Kapranov-Reznikov Loom")
+    p_topo.add_argument("--field", default="Rational Field Q", help="Base arithmetic field")
+    p_topo.add_argument("--prime-p", "-p", type=int, default=3, help="Primary arithmetic prime knot p (default: 3)")
+    p_topo.add_argument("--prime-q", "-q", type=int, default=5, help="Secondary arithmetic prime knot q (default: 5)")
+    p_topo.add_argument("--prime-r", "-r", type=int, default=7, help="Tertiary prime knot r for Borromean triple (default: 7)")
+    p_topo.add_argument("--borromean", action="store_true", help="Evaluate classical Borromean prime triple {13, 61, 937}")
+    p_topo.add_argument("--svg", default="", help="Output arithmetic topology and Mazur dictionary SVG filepath")
+    p_topo.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_topo.add_argument("--demo", action="store_true", help="Run with demonstration arithmetic knots, Legendre link, Alexander-Iwasawa system, and Borromean triple")
     args = parser.parse_args()
 
 
@@ -8762,6 +8772,51 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_dynamics_svg())
             print(f"[DxSkills] Arithmetic Dynamics SVG written to: {args.svg}")
+    elif args.command in ["arithmetic-topology", "knots-primes", "kapranov-reznikov", "legendre-linking"]:
+        from scripts.arithmetic_topology_loom import (
+            ArithmeticTopologyLoom,
+            TopologyAnalogyType,
+            KnotArchetype,
+        )
+        loom = ArithmeticTopologyLoom(
+            base_field=args.field,
+            p_adic_prime=2,
+        )
+        p = 13 if args.borromean else args.prime_p
+        q = 61 if args.borromean else args.prime_q
+        r = 937 if args.borromean else args.prime_r
+
+        k1 = loom.construct_arithmetic_knot("KNOT-01", prime_p=p)
+        k2 = loom.construct_arithmetic_knot("KNOT-02", prime_p=q)
+        lnk = loom.evaluate_arithmetic_link("LINK-01", prime_p=p, prime_q=q)
+        ai = loom.evaluate_alexander_iwasawa_duality("AI-01", prime_p=p)
+        bt = loom.evaluate_borromean_triple("BORR-01", p=p, q=q, r=r)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Arithmetic Topology & Knots-Primes Kapranov-Reznikov Loom")
+            print("=================================================================")
+            print(f"Base Arithmetic Field:         {loom.base_field}")
+            print(f"Primary Prime Knot:            p = {k1.prime_p} ({k1.archetype})")
+            print(f"Knot Invariants:               Crossings={k1.crossing_number} | Genus={k1.genus} | Hyp Vol={k1.hyperbolic_volume:.4f}")
+            print(f"Secondary Prime Knot:          q = {k2.prime_p} ({k2.archetype})")
+            print(f"Legendre Linking Number:       ({lnk.prime_p}/{lnk.prime_q}) = {lnk.legendre_p_over_q} | ({lnk.prime_q}/{lnk.prime_p}) = {lnk.legendre_q_over_p}")
+            print(f"Topological Linking mod 2:     lk({lnk.prime_p}, {lnk.prime_q}) mod 2 = {lnk.linking_number_mod_2}")
+            print(f"Gauss Quadratic Reciprocity:   {'VERIFIED' if lnk.quadratic_reciprocity_verified else 'FAILED'}")
+            print(f"Alexander Knot Polynomial:     {ai.alexander_polynomial_formula}")
+            print(f"Iwasawa Characteristic Form:   {ai.iwasawa_polynomial_formula}")
+            print(f"Borromean Prime Triple:        ({bt.primes[0]}, {bt.primes[1]}, {bt.primes[2]})")
+            print(f"Redei Triple Symbol [p, q, r]: {bt.redei_triple_symbol}")
+            print(f"Milnor mu(123) Invariant:      {bt.milnor_triple_invariant}")
+            print(f"Borromean Status:              {'ENTANGLED (Non-trivial Redei symbol)' if bt.is_borromean_entangled else 'UNENTANGLED'}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_topology_svg())
+            print(f"[DxSkills] Arithmetic Topology SVG written to: {args.svg}")
     else:
         parser.print_help()
 
