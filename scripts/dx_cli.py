@@ -1766,6 +1766,14 @@ def main():
     p_kp.add_argument("--svg", default="", help="Output Kudla Program SVG filepath")
     p_kp.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_kp.add_argument("--demo", action="store_true", help="Run with demonstration special cycles, Kudla-Rapoport intersections, and Eisenstein series derivative")
+    # colmez-conjecture / faltings-height / cm-abelian-loom / artin-derivative
+    p_cz = subparsers.add_parser("colmez-conjecture", aliases=["faltings-height", "cm-abelian-loom", "artin-derivative"], help="Autonomous cognitive spatial Colmez Conjecture and Faltings Heights Loom")
+    p_cz.add_argument("--dimension", "-g", type=int, default=1, choices=[1, 2, 3], help="Dimension of CM abelian variety (default: 1)")
+    p_cz.add_argument("--discriminant", "-d", type=int, default=7, choices=[7, 11, 15, 19, 23], help="Fundamental discriminant of CM field (default: 7)")
+    p_cz.add_argument("--archetype", default="elliptic", choices=["elliptic", "surface", "dihedral", "sextic"], help="CM variety archetype (default: elliptic)")
+    p_cz.add_argument("--svg", default="", help="Output Colmez Conjecture SVG filepath")
+    p_cz.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_cz.add_argument("--demo", action="store_true", help="Run with demonstration CM type, Faltings height, and Artin L-derivatives")
     args = parser.parse_args()
 
 
@@ -10192,6 +10200,57 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_svg())
             print(f"[DxSkills] Kudla Program SVG written to: {out_path}")
+    elif args.command in ["colmez-conjecture", "faltings-height", "cm-abelian-loom", "artin-derivative"]:
+        from scripts.colmez_conjecture_loom import (
+            ColmezConjectureLoom,
+            ColmezArchetype,
+        )
+        arch_map = {
+            "elliptic": ColmezArchetype.IMAGINARY_QUADRATIC_CHOWLA_SELBERG.value,
+            "surface": ColmezArchetype.QUARTIC_CYCLOTOMIC_Q_MU5.value,
+            "dihedral": ColmezArchetype.QUARTIC_NON_ABELIAN_CM.value,
+            "sextic": ColmezArchetype.SEXTIC_CM_FIELD.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, ColmezArchetype.IMAGINARY_QUADRATIC_CHOWLA_SELBERG.value)
+
+        loom = ColmezConjectureLoom(
+            dimension_g=args.dimension,
+            discriminant_d=args.discriminant,
+            default_archetype=chosen_arch,
+        )
+        field_info = loom.cm_field
+        type_info = loom.cm_type
+        fh = loom.faltings_height
+        eval_colmez = loom.evaluate_colmez_conjecture()
+        artins = loom.artin_derivatives
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Colmez Conjecture & Faltings Heights of CM Varieties Loom")
+            print("=================================================================")
+            print(f"CM Field & Dimension:          {field_info.field_label} (dim g = {field_info.dimension_g})")
+            print(f"Discriminants:                 Disc(E) = {field_info.discriminant_e} | Disc(F) = {field_info.discriminant_f}")
+            print(f"Galois Group:                  {field_info.galois_group_label}")
+            print(f"CM Type:                       {type_info.type_id} ({type_info.embeddings_count} Embeddings, Reflex={type_info.reflex_field})")
+            print(f"Stable Faltings Height:        h_Fal(A) = {fh.stable_faltings_height:.5f}")
+            print(f"Taguchi-Smith Height:          h_TS(A) = {fh.taguchi_smith_height:.5f}")
+            print(f"Archimedean Period Integral:   int_{{A(C)}} |omega ^ omega_bar| = {fh.archimedean_period_integral}")
+            print(f"Artin Characters Evaluated:    {len(artins)} characters")
+            print(f"Quadratic Char Log-Deriv:      L'(0, chi)/L(0, chi) = {artins[1].logarithmic_derivative:.5f} (cond = {artins[1].conductor})")
+            print(f"Colmez Conjecture Equality:    Satisfied: {eval_colmez['is_colmez_equality_satisfied']} (Diff = {eval_colmez['absolute_discrepancy']})")
+            print(f"Verification Verdict:          {eval_colmez['proof_status']}")
+            print(f"Andre-Oort Consequence:        {eval_colmez['andre_oort_consequence']}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "colmez_conjecture_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_svg())
+            print(f"[DxSkills] Colmez Conjecture SVG written to: {out_path}")
     else:
         parser.print_help()
 
