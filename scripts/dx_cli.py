@@ -1248,6 +1248,17 @@ def main():
     p_tcont.add_argument("--svg", default="", help="Output topographic contour interactive SVG filepath")
     p_tcont.add_argument("--json", "-j", action="store_true", help="Output raw JSON topography telemetry")
     p_tcont.add_argument("--demo", action="store_true", help="Run with demonstration semantic relief terrain")
+    # tensegrity-lattice / tensegrity-solver / cable-strut-lattice / dynamic-equilibrium / biotensegrity-loom
+    p_tlat = subparsers.add_parser("tensegrity-lattice", aliases=["tensegrity-solver", "cable-strut-lattice", "dynamic-equilibrium", "biotensegrity-loom"], help="Autonomous cognitive spatial tensegrity cable-strut lattice and dynamic equilibrium balancer engine")
+    p_tlat.add_argument("--type", default="3-prism", choices=["3-prism", "6-icosahedron"], help="Tensegrity topology configuration (default: 3-prism)")
+    p_tlat.add_argument("--radius", type=float, default=150.0, help="Bounding radius in px (default: 150.0)")
+    p_tlat.add_argument("--height", type=float, default=190.0, help="Prism height in px (default: 190.0)")
+    p_tlat.add_argument("--prestress", type=float, default=120.0, help="Mean tensile cable prestress force (default: 120.0)")
+    p_tlat.add_argument("--twist", type=float, default=30.0, help="Prism dihedral twist angle in degrees (default: 30.0)")
+    p_tlat.add_argument("--report", default="", help="Output tensegrity diagnostic markdown filepath")
+    p_tlat.add_argument("--svg", default="", help="Output tensegrity lattice interactive SVG filepath")
+    p_tlat.add_argument("--json", "-j", action="store_true", help="Output raw JSON tensegrity telemetry")
+    p_tlat.add_argument("--demo", action="store_true", help="Run with demonstration tensegrity prism")
     args = parser.parse_args()
 
 
@@ -6706,6 +6717,87 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Topography SVG written to: {args.svg}")
+    elif args.command in ["tensegrity-lattice", "tensegrity-solver", "cable-strut-lattice", "dynamic-equilibrium", "biotensegrity-loom"]:
+        import scripts.tensegrity_equilibrium_lattice as tel_mod
+        lattice = tel_mod.TensegrityEquilibriumLattice(default_prestress=args.prestress)
+
+        if args.type == "6-icosahedron":
+            telemetry = lattice.build_6strut_icosahedron(
+                radius=args.radius,
+                prestress_level=args.prestress,
+            )
+        else:
+            telemetry = lattice.build_3strut_prism(
+                radius=args.radius,
+                height=args.height,
+                twist_deg=args.twist,
+                prestress_level=args.prestress,
+            )
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print(f"[DxSkills] Tensegrity Cable-Strut Lattice Telemetry")
+            print(f"Structure Type: {telemetry.structure_type}")
+            print(f"Total Nodes: {telemetry.total_nodes}")
+            print(f"Floating Struts: {telemetry.total_struts}")
+            print(f"Tensile Cables: {telemetry.total_cables}")
+            print(f"Mean Prestress: {telemetry.mean_prestress_tension:.1f} N")
+            print(f"Peak Compression: {telemetry.max_compression_force:.1f} N")
+            print(f"Strain Energy: {telemetry.total_strain_energy:.1f} J")
+            print(f"Equilibrium Residual: {telemetry.equilibrium_residual_norm:.4f}")
+            print(f"Self-Stressed Stability: {telemetry.is_self_stressed_stable}")
+            if telemetry.warnings:
+                for w in telemetry.warnings:
+                    print(f"Note: {w}")
+
+        if args.report:
+            md_lines = [
+                "# Tensegrity Cable-Strut Lattice Diagnostic Report",
+                "",
+                f"**Structure Type:** `{telemetry.structure_type}`",
+                f"- **Stability Status:** `{'STABLE' if telemetry.is_self_stressed_stable else 'UNSTABLE'}`",
+                f"- **Total Nodes:** {telemetry.total_nodes}",
+                f"- **Floating Struts:** {telemetry.total_struts}",
+                f"- **Tensile Cables:** {telemetry.total_cables}",
+                f"- **Mean Prestress Tension:** {telemetry.mean_prestress_tension:.1f} N",
+                f"- **Peak Compression Force:** {telemetry.max_compression_force:.1f} N",
+                f"- **Total Elastic Strain Energy:** {telemetry.total_strain_energy:.1f} J",
+                f"- **Equilibrium Residual Norm:** {telemetry.equilibrium_residual_norm:.4f}",
+                "",
+                "## Floating Compression Struts",
+                "",
+                "| Strut ID | Node A | Node B | Length | Compression Force |",
+                "| :--- | :--- | :--- | :--- | :--- |",
+            ]
+            for s in telemetry.struts:
+                md_lines.append(
+                    f"| `{s.strut_id}` | {s.node_a_id} | {s.node_b_id} | {s.length:.1f} px | {s.compression_force:.1f} N |"
+                )
+            md_lines.extend([
+                "",
+                "## Tensile Cables (Sample First 6)",
+                "",
+                "| Cable ID | Node A | Node B | Length | Prestress Tension |",
+                "| :--- | :--- | :--- | :--- | :--- |",
+            ])
+            for c in telemetry.cables[:6]:
+                md_lines.append(
+                    f"| `{c.cable_id}` | {c.node_a_id} | {c.node_b_id} | {c.length:.1f} px | {c.prestress_tension:.1f} N |"
+                )
+            if telemetry.warnings:
+                md_lines.extend(["", "## Diagnostic Notes", ""])
+                for w in telemetry.warnings:
+                    md_lines.append(f"- [TENSEGRITY] {w}")
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write("\n".join(md_lines) + "\n")
+            print(f"[DxSkills] Tensegrity report written to: {args.report}")
+
+        if args.svg:
+            svg_code = lattice.render_tensegrity_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Tensegrity SVG written to: {args.svg}")
     else:
         parser.print_help()
 
