@@ -1706,6 +1706,15 @@ def main():
     p_iw.add_argument("--svg", default="", help="Output Iwasawa Theory SVG filepath")
     p_iw.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_iw.add_argument("--demo", action="store_true", help="Run with demonstration Lambda-modules, p-adic L-functions, and Main Conjecture equality")
+    # hida-family / ordinary-deformation / lambda-adic-form / hecke-algebra-loom
+    p_hd = subparsers.add_parser("hida-family", aliases=["ordinary-deformation", "lambda-adic-form", "hecke-algebra-loom"], help="Autonomous cognitive spatial Hida Families and Ordinary Modular Deformations Loom")
+    p_hd.add_argument("--level", "-n", type=int, default=11, help="Modular level N (default: 11)")
+    p_hd.add_argument("--prime", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11], help="Base prime p (default: 5)")
+    p_hd.add_argument("--weight", "-k", type=int, default=2, help="Target specialization weight k >= 2 (default: 2)")
+    p_hd.add_argument("--archetype", default="elliptic", choices=["elliptic", "delta", "cm", "eisenstein"], help="Hida family archetype (default: elliptic)")
+    p_hd.add_argument("--svg", default="", help="Output Hida Family SVG filepath")
+    p_hd.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_hd.add_argument("--demo", action="store_true", help="Run with demonstration ordinary Hecke spectra, weight fibrations, and big Galois representations")
     args = parser.parse_args()
 
 
@@ -9773,6 +9782,53 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_iwasawa_svg())
             print(f"[DxSkills] Iwasawa Theory SVG written to: {args.svg}")
+    elif args.command in ["hida-family", "ordinary-deformation", "lambda-adic-form", "hecke-algebra-loom"]:
+        from scripts.hida_family_loom import (
+            HidaFamilyLoom,
+            HidaFamilyArchetype,
+        )
+        arch_map = {
+            "elliptic": HidaFamilyArchetype.WEIGHT_TWO_ELLIPTIC.value,
+            "delta": HidaFamilyArchetype.RAMANUJAN_DELTA_FAMILY.value,
+            "cm": HidaFamilyArchetype.CM_FAMILY.value,
+            "eisenstein": HidaFamilyArchetype.EISENSTEIN_FAMILY.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, HidaFamilyArchetype.WEIGHT_TWO_ELLIPTIC.value)
+
+        loom = HidaFamilyLoom(
+            level_n=args.level,
+            prime_p=args.prime,
+            default_archetype=chosen_arch,
+        )
+        fam = loom.families[0]
+        spec = loom.specialize_to_weight(target_weight=args.weight)
+        rep = loom.representations[0]
+        eval_cong = loom.evaluate_congruence_ideal(test_order=2)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Hida Families & Ordinary Modular Deformations Loom")
+            print("=================================================================")
+            print(f"Modular Level & Prime:         N = {fam.level_n} | Prime p = {fam.prime_p}")
+            print(f"Hida Family Archetype:         {loom.default_archetype}")
+            print(f"Hecke Algebra Rank over Lambda:rank_Lambda(h^ord) = {fam.hecke_algebra_rank} (Ordinary at p = {fam.is_ordinary_at_p})")
+            print(f"Lambda-Adic Coefficients:      a_p(T) in Z_p[[T]]^x ({fam.lambda_adic_coefficients.get('a_p', 'u(T)')})")
+            print(f"Weight Specialization k = {spec.weight_k}:  T -> (1+p)^{spec.weight_k - 2} - 1 (P_k = {spec.arithmetic_point_t_val:.4f})")
+            print(f"Classical Form Label:          {spec.classical_form_label}")
+            print(f"Hecke Eigenvalue a_p(P_k):     {spec.hecke_eigenvalue_a_p:.4f} (Classical Cusp Form = {spec.is_classical_cusp_form})")
+            print(f"Big Galois Representation:     rho_F: G_Q -> GL_2(I) (Unramified outside Np = {rep.is_unramified_outside_np})")
+            print(f"Local Shape at Prime p:        {rep.local_p_shape}")
+            print(f"Congruence Ideal:              {rep.congruence_ideal_label} (Adjoint L_p Divisibility Verified)")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_hida_svg())
+            print(f"[DxSkills] Hida Family SVG written to: {args.svg}")
     else:
         parser.print_help()
 
