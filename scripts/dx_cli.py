@@ -720,6 +720,16 @@ def main():
     p_stack.add_argument("--json", "-j", action="store_true", help="Output raw JSON stack telemetry")
     p_stack.add_argument("--demo", action="store_true", help="Run with demonstration hierarchical multi-scale subgraphs")
 
+    # saliency-matrix / saliency-decoupler / attenuation-matrix / focus-spotlight
+    p_saliency = subparsers.add_parser("saliency-matrix", aliases=["saliency-decoupler", "attenuation-matrix", "focus-spotlight"], help="Autonomous cognitive spatial working memory saliency decoupler and attenuation matrix")
+    p_saliency.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or nodes JSON file")
+    p_saliency.add_argument("--focal", "-f", default="", help="Target node ID of active focal locus (default: first node)")
+    p_saliency.add_argument("--decay", "-d", type=float, default=0.0018, help="Exponential spatial distance attenuation decay rate (default: 0.0018)")
+    p_saliency.add_argument("--output-canvas", "-o", default="", help="Output attenuated Obsidian .canvas filepath")
+    p_saliency.add_argument("--svg", default="", help="Output saliency matrix SVG diagram filepath")
+    p_saliency.add_argument("--json", "-j", action="store_true", help="Output raw JSON saliency telemetry")
+    p_saliency.add_argument("--demo", action="store_true", help="Run with demonstration multi-tier spatial chatter field")
+
     args = parser.parse_args()
 
 
@@ -3104,6 +3114,47 @@ def main():
         if args.svg:
             compactor.to_svg(args.svg)
             print(f"[DxSkills] Anchor stack SVG written to: {args.svg}")
+    elif args.command in ["saliency-matrix", "saliency-decoupler", "attenuation-matrix", "focus-spotlight"]:
+        import scripts.saliency_matrix as smat
+
+        matrix = smat.SaliencyDecouplerMatrix(decay_rate=args.decay)
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data:
+                matrix.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                matrix.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_nodes = {
+                "nodes": {
+                    "node_core": {"title": "Active Feature Engine", "x": 500, "y": 400, "dependencies": ["node_near_1", "node_near_2"]},
+                    "node_near_1": {"title": "Context Cache", "x": 380, "y": 280, "dependencies": ["node_core", "node_mid_1"]},
+                    "node_near_2": {"title": "State Store", "x": 640, "y": 300, "dependencies": ["node_core"]},
+                    "node_mid_1": {"title": "Auth Broker", "x": 200, "y": 180, "dependencies": ["node_far_1"]},
+                    "node_mid_2": {"title": "Telemetry Sink", "x": 800, "y": 220, "dependencies": ["node_near_2"]},
+                    "node_far_1": {"title": "Legacy Gateway", "x": 100, "y": 80, "dependencies": []},
+                    "node_far_2": {"title": "Batch Cold Storage", "x": 980, "y": 700, "dependencies": []},
+                }
+            }
+            matrix.load_dict(demo_nodes)
+
+        focal_id = args.focal if args.focal else None
+        nodes, telemetry = matrix.attenuate(focal_node_id=focal_id)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + matrix.render_ascii_matrix(telemetry))
+
+        if args.output_canvas:
+            matrix.to_canvas(focal_node_id=focal_id, output_path=args.output_canvas, canvas_title="Saliency Attenuation Canvas")
+            print(f"[DxSkills] Attenuated saliency canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            matrix.to_svg(focal_node_id=focal_id, output_path=args.svg)
+            print(f"[DxSkills] Saliency matrix SVG written to: {args.svg}")
     else:
         parser.print_help()
 
