@@ -624,6 +624,17 @@ def main():
     p_chunk.add_argument("--json", "-j", action="store_true", help="Output raw JSON chunk pacing telemetry")
     p_chunk.add_argument("--demo", action="store_true", help="Run with demonstration technical specification prose")
 
+    # memory-shield / shield / saliency-shield
+    p_shield = subparsers.add_parser("memory-shield", aliases=["shield", "saliency-shield"], help="Autonomous cognitive spatial saliency decoupling and working memory shield")
+    p_shield.add_argument("canvas", nargs="?", default="", help="Target Obsidian .canvas filepath to shield")
+    p_shield.add_argument("--focus", "-f", nargs="*", default=[], help="Optional list of active focus node IDs")
+    p_shield.add_argument("--focus-radius", type=float, default=600.0, help="Radial distance of primary focus zone in px (default: 600)")
+    p_shield.add_argument("--orientation-radius", type=float, default=1200.0, help="Radial distance of orientation ring in px (default: 1200)")
+    p_shield.add_argument("--output-canvas", "-o", default="", help="Output shielded Obsidian .canvas filepath")
+    p_shield.add_argument("--svg", "-s", default="", help="Output shielding radar SVG filepath")
+    p_shield.add_argument("--json", "-j", action="store_true", help="Output raw JSON memory shield telemetry")
+    p_shield.add_argument("--demo", action="store_true", help="Run with demonstration spatial canvas layout")
+
     args = parser.parse_args()
 
 
@@ -2510,6 +2521,45 @@ def main():
         if args.svg:
             pacer.export_svg_strip(telemetry, args.svg)
             print(f"[DxSkills] Syntactic chunk strip SVG exported to: {args.svg}")
+    elif args.command in ["memory-shield", "shield", "saliency-shield"]:
+        import scripts.memory_shield as wms
+
+        shield = wms.WorkingMemoryShield(
+            focus_radius_px=args.focus_radius,
+            orientation_radius_px=args.orientation_radius,
+        )
+
+        canvas_data = {}
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                canvas_data = json.load(f)
+        elif args.demo or not args.canvas:
+            canvas_data = {
+                "nodes": [
+                    {"id": "node-core", "x": 0, "y": 0, "width": 300, "height": 180, "text": "Active Architecture Focus\n\nDeterministic state transitions."},
+                    {"id": "node-near-1", "x": 380, "y": 50, "width": 260, "height": 140, "text": "Consensus Engine\n\nRaft-based state machine."},
+                    {"id": "node-near-2", "x": -380, "y": -40, "width": 260, "height": 140, "text": "Write-Ahead Log\n\nSequential durability log."},
+                    {"id": "node-mid", "x": 800, "y": 400, "width": 280, "height": 150, "text": "Cluster Telemetry Gateway\n\nHTTP metrics exposition."},
+                    {"id": "node-far", "x": 1600, "y": -700, "width": 320, "height": 200, "text": "ARCHIVED DEPRECATED MIGRATION NOTES\n\nLEGACY SCHEMAS AND SCRIPTS"},
+                ]
+            }
+
+        focus_ids = args.focus if args.focus else None
+        shielded_canvas, telemetry = shield.apply_memory_shield(canvas_data, focus_ids=focus_ids)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + shield.render_ascii_report(telemetry))
+
+        if args.output_canvas:
+            with open(args.output_canvas, "w", encoding="utf-8") as f:
+                json.dump(shielded_canvas, f, indent=2)
+            print(f"[DxSkills] Shielded .canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            shield.export_svg_shield(telemetry, args.svg)
+            print(f"[DxSkills] Memory shield radar SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
