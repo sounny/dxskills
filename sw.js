@@ -1,12 +1,15 @@
 // DxSkills Service Worker (Offline Scaffolding Cache)
-const CACHE_NAME = 'dxskills-cache-v1';
+const CACHE_NAME = 'dxskills-cache-v2';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icons/icon-192.svg',
   './icons/icon-512.svg',
-  './icons/icon-maskable.svg'
+  './icons/icon-maskable.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
