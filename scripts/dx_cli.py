@@ -1135,6 +1135,14 @@ def main():
     p_gaze.add_argument("--svg", default="", help="Output gaze envelope interactive SVG filepath")
     p_gaze.add_argument("--json", "-j", action="store_true", help="Output raw JSON gaze stabilization telemetry")
     p_gaze.add_argument("--demo", action="store_true", help="Run with demonstration technical architecture scanpath")
+    # dialectical-tensor-loom / hegelian-tensor-loom / dialectical-tensor / hegelian-loom / tensor-lattice-loom
+    p_loom = subparsers.add_parser("dialectical-tensor-loom", aliases=["hegelian-tensor-loom", "dialectical-tensor", "hegelian-loom", "tensor-lattice-loom"], help="Autonomous cognitive spatial dialectical tensor lattice and Hegelian synthesis loom")
+    p_loom.add_argument("input", nargs="?", default="", help="Input dialectical poles and argument graph JSON filepath")
+    p_loom.add_argument("--threshold", type=float, default=0.65, help="Acute friction threshold for antithesis opposition (default: 0.65)")
+    p_loom.add_argument("--report", default="", help="Output dialectical synthesis diagnostic markdown filepath")
+    p_loom.add_argument("--svg", default="", help="Output Hegelian dialectical tensor loom SVG filepath")
+    p_loom.add_argument("--json", "-j", action="store_true", help="Output raw JSON dialectical lattice telemetry")
+    p_loom.add_argument("--demo", action="store_true", help="Run with demonstration technical architecture dialectic")
     args = parser.parse_args()
 
 
@@ -5964,6 +5972,61 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Gaze envelope SVG written to: {args.svg}")
+    elif args.command in ["dialectical-tensor-loom", "hegelian-tensor-loom", "dialectical-tensor", "hegelian-loom", "tensor-lattice-loom"]:
+        import scripts.dialectical_tensor_loom as dtl_mod
+        loom = dtl_mod.DialecticalTensorLoom(
+            acute_friction_threshold=args.threshold,
+        )
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                poles = [
+                    dtl_mod.DialecticalPole(
+                        pole_id=str(p.get("id", f"pole-{i}")),
+                        title=str(p.get("title", f"Pole {i+1}")),
+                        dimension_vector=[float(v) for v in p.get("vector", p.get("dimension_vector", [1.0, 0.0]))],
+                        core_axiom=str(p.get("axiom", p.get("core_axiom", "Core postulate"))),
+                        pole_type=str(p.get("type", p.get("pole_type", "THESIS"))),
+                        pos_x=float(p.get("x", 200.0 + i * 200.0)),
+                        pos_y=float(p.get("y", 250.0)),
+                    )
+                    for i, p in enumerate(data.get("poles", []))
+                ]
+                resolutions = [
+                    dtl_mod.AufhebungResolution(
+                        resolution_id=str(r.get("id", f"res-{i}")),
+                        thesis_id=str(r.get("thesis_id", "")),
+                        antithesis_id=str(r.get("antithesis_id", "")),
+                        synthesis_title=str(r.get("title", "Harmonic Synthesis")),
+                        preserved_tenets=[str(t) for t in r.get("preserved", [])],
+                        negated_biases=[str(b) for b in r.get("negated", [])],
+                        emergent_axiom=str(r.get("emergent_axiom", "Synthesized paradigm")),
+                        resolution_ratio=float(r.get("resolution_ratio", 0.85)),
+                        cognitive_harmony_index=float(r.get("harmony_index", 85.0)),
+                    )
+                    for i, r in enumerate(data.get("resolutions", []))
+                ]
+                telemetry = loom.evaluate_lattice(poles, resolutions if resolutions else None)
+        else:
+            telemetry = dtl_mod.DialecticalTensorLoom.create_demo_telemetry()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            report_md = loom.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = loom.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Dialectical synthesis report written to: {args.report}")
+
+        if args.svg:
+            svg_code = loom.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Dialectical tensor loom SVG written to: {args.svg}")
     else:
         parser.print_help()
 
