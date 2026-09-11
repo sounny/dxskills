@@ -1268,6 +1268,16 @@ def main():
     p_viso.add_argument("--svg", default="", help="Output Voronoi isochrone interactive SVG filepath")
     p_viso.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_viso.add_argument("--demo", action="store_true", help="Run with demonstration semantic cluster territories")
+    # poincare-disk / hyperbolic-poincare / poincare-loom / hyperbolic-tree
+    p_poin = subparsers.add_parser("poincare-disk", aliases=["hyperbolic-poincare", "poincare-loom", "hyperbolic-tree"], help="Autonomous cognitive spatial hyperbolic Poincare disk projector and non-Euclidean concept loom")
+    p_poin.add_argument("input", nargs="?", default="", help="Input concept taxonomy JSON filepath")
+    p_poin.add_argument("--focus", default="", help="Target concept node ID to shift to origin via Mobius isometry")
+    p_poin.add_argument("--radial-step", type=float, default=0.62, help="Hyperbolic radial distance step per hierarchy level (default: 0.62)")
+    p_poin.add_argument("--report", default="", help="Output hyperbolic diagnostic markdown filepath")
+    p_poin.add_argument("--svg", default="", help="Output Poincare disk SVG filepath")
+    p_poin.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_poin.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_poin.add_argument("--demo", action="store_true", help="Run with demonstration cognitive taxonomy tree")
     args = parser.parse_args()
 
 
@@ -6889,6 +6899,94 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Voronoi SVG written to: {args.svg}")
+    elif args.command in ["poincare-disk", "hyperbolic-poincare", "poincare-loom", "hyperbolic-tree"]:
+        from scripts.hyperbolic_poincare_projector import (
+            create_cognitive_taxonomy_disk,
+            PoincareDiskProjector,
+            HyperbolicPoint,
+        )
+        if args.demo or not args.input:
+            projector = create_cognitive_taxonomy_disk()
+        else:
+            projector = PoincareDiskProjector()
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            root_id = data.get("root_id", "")
+            for n_data in data.get("nodes", []):
+                projector.add_node(
+                    node_id=n_data["node_id"],
+                    label=n_data["label"],
+                    parent_id=n_data.get("parent_id"),
+                    weight=n_data.get("weight", 1.0),
+                    color=n_data.get("color", "#38bdf8"),
+                    metadata=n_data.get("metadata", {})
+                )
+            if root_id:
+                projector.build_tree_layout(root_id, radial_step=args.radial_step)
+
+        if args.focus:
+            projector = projector.apply_mobius_focus(args.focus)
+
+        metrics = projector.calculate_metrics()
+
+        if args.json:
+            print(json.dumps(projector.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Hyperbolic Poincare Disk Projector & Non-Euclidean Concept Loom")
+            print("=================================================================")
+            print(f"Total Concept Nodes: {metrics['total_nodes']}")
+            print(f"Total Geodesic Arcs: {metrics['total_geodesics']}")
+            print(f"Maximum Hierarchy Depth: {metrics['max_depth']}")
+            print(f"Average Branching Factor: {metrics['average_branching_factor']}")
+            print(f"Hyperbolic Diameter: {metrics['hyperbolic_diameter']}")
+            print(f"Mean Geodesic Length: {metrics['mean_edge_length']}")
+            print(f"Area Expansion vs Euclidean: {metrics['hyperbolic_area_expansion']}x")
+            print("Constant Curvature: K = -1.0")
+            if projector.focus_node_id:
+                print(f"Mobius Focus Origin Node: {projector.focus_node_id}")
+
+        if args.report:
+            md_lines = [
+                "# Hyperbolic Poincare Disk Projector Diagnostic Report",
+                "",
+                "## Non-Euclidean Embedding Telemetry",
+                f"- **Constant Curvature:** K = -1.0",
+                f"- **Total Concept Nodes:** {metrics['total_nodes']}",
+                f"- **Total Geodesic Arcs:** {metrics['total_geodesics']}",
+                f"- **Maximum Hierarchy Depth:** {metrics['max_depth']}",
+                f"- **Average Branching Factor:** {metrics['average_branching_factor']}",
+                f"- **Hyperbolic Diameter:** {metrics['hyperbolic_diameter']}",
+                f"- **Mean Geodesic Length:** {metrics['mean_edge_length']}",
+                f"- **Area Expansion vs Euclidean:** {metrics['hyperbolic_area_expansion']}x",
+            ]
+            if projector.focus_node_id:
+                md_lines.append(f"- **Mobius Focus Origin Node:** `{projector.focus_node_id}`")
+            md_lines.extend([
+                "",
+                "## Concept Nodes",
+                "",
+                "| Node ID | Label | Depth | Euclidean Radius | Hyperbolic Radius | Color |",
+                "| :--- | :--- | :--- | :--- | :--- | :--- |",
+            ])
+            for node in projector.nodes.values():
+                md_lines.append(
+                    f"| `{node.node_id}` | {node.label} | {node.depth} | "
+                    f"{node.point.euclidean_radius:.4f} | {node.point.hyperbolic_radius:.4f} | `{node.color}` |"
+                )
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write("\n".join(md_lines) + "\n")
+            print(f"[DxSkills] Hyperbolic report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(projector.to_svg())
+            print(f"[DxSkills] Poincare disk SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(projector.to_html())
+            print(f"[DxSkills] Poincare interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
