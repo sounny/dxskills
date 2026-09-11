@@ -1360,6 +1360,16 @@ def main():
     p_atiyah.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_atiyah.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_atiyah.add_argument("--demo", action="store_true", help="Run with demonstration cognitive Riemann surface and chiral Dirac operator")
+
+    # k-theory / vector-bundle / bott-periodicity / grothendieck-loom
+    p_ktheory = subparsers.add_parser("k-theory", aliases=["vector-bundle", "bott-periodicity", "grothendieck-loom"], help="Autonomous cognitive spatial Topological K-Theory and Vector Bundle Classification Loom")
+    p_ktheory.add_argument("input", nargs="?", default="", help="Input K-theory configuration JSON filepath")
+    p_ktheory.add_argument("--base", default="S^2 (Cognitive Context Sphere)", help="Base manifold identifier")
+    p_ktheory.add_argument("--report", default="", help="Output K-theory classification markdown filepath")
+    p_ktheory.add_argument("--svg", default="", help="Output Bott periodicity and clutching SVG filepath")
+    p_ktheory.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_ktheory.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_ktheory.add_argument("--demo", action="store_true", help="Run with demonstration cognitive vector bundle suite")
     args = parser.parse_args()
 
 
@@ -7628,6 +7638,66 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Atiyah-Singer interactive HTML written to: {args.html}")
+    elif args.command in ["k-theory", "vector-bundle", "bott-periodicity", "grothendieck-loom"]:
+        from scripts.k_theory_bundle_loom import (
+            KTheoryBundleLoom,
+            VectorBundle,
+        )
+        if args.demo or not args.input:
+            loom = KTheoryBundleLoom.create_default_cognitive_k_theory_suite()
+        else:
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            base_m = data.get("base_manifold", args.base)
+            loom = KTheoryBundleLoom(base_manifold=base_m)
+            for b_data in data.get("bundles", []):
+                loom.add_bundle(
+                    VectorBundle(
+                        bundle_id=b_data.get("bundle_id", "B"),
+                        label=b_data.get("label", "Bundle"),
+                        base_space=b_data.get("base_space", base_m),
+                        fiber_dim=int(b_data.get("fiber_dim", 1)),
+                        first_chern_number_c1=int(b_data.get("first_chern_number_c1", 0)),
+                        second_chern_number_c2=int(b_data.get("second_chern_number_c2", 0)),
+                        is_trivial=bool(b_data.get("is_trivial", False)),
+                        clutching_degree=int(b_data.get("clutching_degree", 0)),
+                    )
+                )
+
+        result = loom.classify_bundles()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Topological K-Theory & Vector Bundle Classification Loom")
+            print("=================================================================")
+            print(f"Base Manifold:                 {result.base_manifold}")
+            print(f"Classified Bundles:            {result.num_bundles}")
+            print(f"Grothendieck Virtual K-Classes: {len(result.k_classes)}")
+            print(f"Net Topological Charge (c1):   {result.h_topological_charge}")
+            print(f"Stable Equivalence Status:     {'VERIFIED EQUIVALENT' if result.stable_equivalence_verified else 'DISTINCT'}")
+            print(f"Bott Periodicity Recurrence:   Complex Mod 2 / Real Mod 8")
+            print("Classified Bundles Detail:")
+            for b in result.bundles:
+                triv = "Trivial" if b.is_trivial else "Non-Trivial"
+                print(f"  {b.bundle_id}: {b.label} (Rank={b.rank}, c1={b.first_chern_number_c1:+d}, {triv})")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] K-Theory report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Bott periodicity SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] K-Theory interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
