@@ -1064,6 +1064,15 @@ def main():
     p_tlatt.add_argument("--json", "-j", action="store_true", help="Output raw JSON tesseract telemetry")
     p_tlatt.add_argument("--demo", action="store_true", help="Run with demonstration canonical 16-cell hypercube schema")
 
+    # dialectic-tensor / tensor-gate / orthogonality-gate / synthesis-tensor
+    p_dtensor = subparsers.add_parser("dialectic-tensor", aliases=["tensor-gate", "orthogonality-gate", "synthesis-tensor"], help="Autonomous cognitive spatial dialectic tensor and semantic orthogonality gate")
+    p_dtensor.add_argument("input", nargs="?", default="", help="Input dialectic concept vectors JSON filepath")
+    p_dtensor.add_argument("--tension-threshold", type=float, default=0.50, help="Tension energy threshold for synthesis trigger (default: 0.50)")
+    p_dtensor.add_argument("--report", default="", help="Output dialectic tensor audit markdown filepath")
+    p_dtensor.add_argument("--svg", default="", help="Output dialectic tensor SVG diagram filepath")
+    p_dtensor.add_argument("--json", "-j", action="store_true", help="Output raw JSON tensor telemetry")
+    p_dtensor.add_argument("--demo", action="store_true", help="Run with demonstration dialectic vector set")
+
     args = parser.parse_args()
 
 
@@ -5362,6 +5371,79 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Tesseract SVG written to: {args.svg}")
+    elif args.command in ["dialectic-tensor", "tensor-gate", "orthogonality-gate", "synthesis-tensor"]:
+        import scripts.dialectic_tensor_gate as dtg_mod
+
+        gate = dtg_mod.DialecticTensorGate(tension_threshold=args.tension_threshold)
+
+        vectors = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+            try:
+                raw_data = json.loads(raw_text)
+                raw_list = raw_data if isinstance(raw_data, list) else raw_data.get("vectors", [])
+                for idx, item in enumerate(raw_list, 1):
+                    vectors.append(dtg_mod.DialecticVector(
+                        vector_id=str(item.get("id", f"vec-{idx}")),
+                        title=str(item.get("title", f"Vector {idx}")),
+                        components=[float(c) for c in item.get("components", [1.0, 0.0])],
+                        domain=str(item.get("domain", "general")),
+                        magnitude=float(item.get("magnitude", 1.0))
+                    ))
+            except json.JSONDecodeError:
+                pass
+
+        if not vectors or args.demo:
+            vectors = dtg_mod.sample_dialectic_vectors()
+
+        telemetry = gate.evaluate_manifold(vectors)
+
+        if args.json:
+            out_dict = {
+                "total_vectors": telemetry.total_vectors,
+                "evaluated_pairs_count": telemetry.evaluated_pairs_count,
+                "mean_orthogonality": telemetry.mean_orthogonality,
+                "peak_tension_pair": list(telemetry.peak_tension_pair) if telemetry.peak_tension_pair else None,
+                "pair_tensions": [
+                    {
+                        "thesis": pt.thesis_id,
+                        "antithesis": pt.antithesis_id,
+                        "cosine_similarity": pt.cosine_similarity,
+                        "orthogonality": pt.orthogonality_score,
+                        "tension": pt.tension_energy,
+                        "state": pt.synthesis_opportunity
+                    }
+                    for pt in telemetry.pair_tensions
+                ],
+                "synthesis_candidates": [
+                    {
+                        "title": sc.title,
+                        "thesis": sc.thesis_id,
+                        "antithesis": sc.antithesis_id,
+                        "power": sc.synthesis_power,
+                        "resolution_angle_deg": sc.resolution_angle_deg,
+                        "components": sc.components
+                    }
+                    for sc in telemetry.synthesis_candidates
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = gate.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = gate.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Dialectic tensor report written to: {args.report}")
+
+        if args.svg:
+            svg_code = gate.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Dialectic tensor SVG written to: {args.svg}")
     else:
         parser.print_help()
 
