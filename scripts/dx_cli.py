@@ -1573,6 +1573,16 @@ def main():
     p_anab.add_argument("--svg", default="", help="Output anabelian geometry and Section Conjecture SVG filepath")
     p_anab.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_anab.add_argument("--demo", action="store_true", help="Run with demonstration hyperbolic curve, Galois section, outer Galois representation, and Neukirch-Uchida reconstruction")
+    # derived-geometry / spectral-scheme / lurie-spectral / e-infinity-ring
+    p_der = subparsers.add_parser("derived-geometry", aliases=["spectral-scheme", "lurie-spectral", "e-infinity-ring"], help="Autonomous cognitive spatial Derived Algebraic Geometry and Lurie Spectral Schemes Loom")
+    p_der.add_argument("--spectrum", default="Topological Modular Forms TMF", choices=["Sphere Spectrum S (Initial E_infty-Ring)", "Topological Modular Forms TMF", "Periodic Complex K-Theory KU", "Periodic Real K-Theory KO", "Eilenberg-MacLane Spectrum HZ"], help="Base E_infty-ring spectrum")
+    p_der.add_argument("--archetype", default="Derived Critical Locus dCrit(f) (Shifted Symplectic)", choices=["Derived Critical Locus dCrit(f) (Shifted Symplectic)", "Moduli Stack of Elliptic Curves with TMF Sheaf M_ell", "Derived Self-Intersection with Tor Sheaves", "Spectral Affine Space Spec(S[x_1, ..., x_n])", "Derived Quotient Stack [X / G] with Lie Algebra Resolvent"], help="Derived scheme archetype")
+    p_der.add_argument("--depth", "-d", type=int, default=3, help="Homotopical Postnikov truncation depth (default: 3)")
+    p_der.add_argument("--amp-low", type=int, default=-1, help="Cotangent complex lowest amplitude degree (default: -1)")
+    p_der.add_argument("--amp-high", type=int, default=0, help="Cotangent complex highest amplitude degree (default: 0)")
+    p_der.add_argument("--svg", default="", help="Output derived geometry and spectral Postnikov tower SVG filepath")
+    p_der.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_der.add_argument("--demo", action="store_true", help="Run with demonstration derived critical locus, cotangent complex, and TMF spectral sheaf")
     args = parser.parse_args()
 
 
@@ -8877,6 +8887,54 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_anabelian_svg())
             print(f"[DxSkills] Anabelian Geometry SVG written to: {args.svg}")
+    elif args.command in ["derived-geometry", "spectral-scheme", "lurie-spectral", "e-infinity-ring"]:
+        from scripts.derived_geometry_loom import (
+            DerivedGeometryLoom,
+            DerivedSchemeArchetype,
+            RingSpectraType,
+        )
+        loom = DerivedGeometryLoom(
+            primary_spectrum=args.spectrum,
+            default_archetype=args.archetype,
+        )
+        s = loom.derived_schemes[0]
+        cc = loom.evaluate_cotangent_complex(
+            complex_id="L-DEMO-01",
+            amplitude_low=args.amp_low,
+            amplitude_high=args.amp_high,
+            ext0_automorphisms=0,
+            ext2_obstructions=0,
+        )
+        sh = loom.evaluate_spectral_sheaf(
+            sheaf_id="SHEAF-DEMO-01",
+            ring_spectrum=args.spectrum,
+            picard_rank=1,
+        )
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Derived Algebraic Geometry & Lurie Spectral Schemes Loom")
+            print("=================================================================")
+            print(f"Base E_infty-Ring Spectrum:    {loom.primary_spectrum}")
+            print(f"Derived Scheme Archetype:      {s.archetype}")
+            print(f"Dimensions:                    Classical={s.classical_dimension} | Virtual={s.virtual_dimension}")
+            print(f"Postnikov Truncation Depth:    Depth={s.homotopical_depth} (Sheaves: {list(s.homotopy_sheaves.keys())})")
+            print(f"Structure Sheaf Formula:       {s.structure_formula}")
+            print(f"Quasi-Smooth Status:           {'YES (Derived LCI with virtual class)' if s.is_quasi_smooth else 'NO'}")
+            print(f"Cotangent Complex L_{{X/S}}:     Amplitude=[{cc.amplitude_low}, {cc.amplitude_high}] | Euler={cc.euler_characteristic}")
+            print(f"Deformation Regime:            {cc.deformation_regime}")
+            print(f"Spectral Sheaf Picard Module:  {sh.sheaf_id} (Rank={sh.picard_rank})")
+            print(f"Picard Torsion Invariants:     {sh.torsion_invariants}")
+            print(f"Chern Character Vector ch:     {sh.chern_character_degrees}")
+            print(f"Higher Invertibles:            {'PRESENT in pi_1(O_X^times)' if sh.has_higher_homotopical_invertibles else 'NONE'}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_derived_svg())
+            print(f"[DxSkills] Derived Geometry SVG written to: {args.svg}")
     else:
         parser.print_help()
 
