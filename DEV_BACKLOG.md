@@ -516,12 +516,16 @@
 - [x] **Task 120.2:** Multi-body orbital layout simulator arranging subordinate supporting arguments into stable Keplerian ellipses in dark titanium SVG.
 
 ### Phase 121: Autonomous Cognitive Spatial Working Memory Anchor Stacking & Hierarchical Zoom Lens
-- [ ] **Task 121.1:** Semantic level-of-detail (LoD) threshold manager dynamically pruning micro-anchors upon zoom retreat.
-- [ ] **Task 121.2:** Multi-tier semantic zoom lens visualizer rendering nested conceptual hierarchy envelopes in dark titanium SVG.
+- [x] **Task 121.1:** Semantic level-of-detail (LoD) threshold manager dynamically pruning micro-anchors upon zoom retreat.
+- [x] **Task 121.2:** Multi-tier semantic zoom lens visualizer rendering nested conceptual hierarchy envelopes in dark titanium SVG.
 
 ### Phase 122: Autonomous Cognitive Spatial Multimodal Concept Constellation & Synesthetic Starburst
 - [ ] **Task 122.1:** Harmonic frequency synthesizer mapping conceptual clusters to distinct auditory and chromatic resonance bands.
 - [ ] **Task 122.2:** Dynamic constellation weaver generating interconnected conceptual asterisms in dark titanium SVG.
+
+### Phase 123: Autonomous Cognitive Spatial Allocentric Compass & Coordinate Anchor Compass
+- [ ] **Task 123.1:** Spatial orientation tracker monitoring allocentric landmark alignment across complex canvas pan-and-scan trajectories.
+- [ ] **Task 123.2:** Allocentric compass HUD rendering polar orientation vectors and heading drift in dark titanium SVG.
 
 ---
 
@@ -646,6 +650,7 @@
 | **Cycle 114** | 2026-09-11 14:02 | Autonomous Cognitive Spatial Working Memory Saccadic Drift Compensator & Foveal Re-Centering Loom | `scripts/foveal_recentering_loom.py`, `tests/test_foveal_recentering_loom.py`, `index.html` | `4eb58cb` |
 | **Cycle 115** | 2026-09-11 14:12 | Autonomous Cognitive Spatial Dynamic Attentional Funnel & Saccadic Boundary Gasket | `scripts/attentional_funnel_gasket.py`, `tests/test_attentional_funnel_gasket.py`, `scripts/dx_cli.py`, `index.html` | `e990261` |
 | **Cycle 116** | 2026-09-11 14:22 | Autonomous Cognitive Spatial Semantic Gravity Well & Conceptual Orbit Engine | `scripts/semantic_gravity_well.py`, `tests/test_semantic_gravity_well.py`, `scripts/dx_cli.py`, `index.html` | `dab4b8c` |
+| **Cycle 117** | 2026-09-11 14:32 | Autonomous Cognitive Spatial Working Memory Anchor Stacking & Hierarchical Zoom Lens | `scripts/anchor_stacking_zoom_lens.py`, `tests/test_anchor_stacking_zoom_lens.py`, `scripts/dx_cli.py`, `index.html` | `d51fe08` |
 
 
 

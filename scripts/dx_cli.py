@@ -1023,6 +1023,17 @@ def main():
     p_sgravity.add_argument("--json", "-j", action="store_true", help="Output raw JSON gravity telemetry")
     p_sgravity.add_argument("--demo", action="store_true", help="Run with demonstration conceptual thesis system")
 
+    # zoom-lens / anchor-stacking / semantic-zoom-lens / lod-lens
+    p_zlens = subparsers.add_parser("zoom-lens", aliases=["semantic-zoom-lens", "lod-lens", "hierarchical-zoom"], help="Autonomous cognitive spatial working memory anchor stacking and hierarchical zoom lens")
+    p_zlens.add_argument("input", nargs="?", default="", help="Input semantic anchors JSON filepath")
+    p_zlens.add_argument("--zoom", "-z", type=float, default=1.0, help="Zoom magnification factor (e.g. 0.4 for Macro, 0.85 for Meso, 1.5 for Micro; default: 1.0)")
+    p_zlens.add_argument("--macro-threshold", type=float, default=0.55, help="Macro LoD zoom threshold (default: 0.55)")
+    p_zlens.add_argument("--meso-threshold", type=float, default=1.15, help="Meso LoD zoom threshold (default: 1.15)")
+    p_zlens.add_argument("--report", default="", help="Output zoom lens audit markdown filepath")
+    p_zlens.add_argument("--svg", default="", help="Output zoom lens SVG diagram filepath")
+    p_zlens.add_argument("--json", "-j", action="store_true", help="Output raw JSON zoom telemetry")
+    p_zlens.add_argument("--demo", action="store_true", help="Run with demonstration knowledge hierarchy")
+
     args = parser.parse_args()
 
 
@@ -5025,6 +5036,92 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Conceptual orbit SVG written to: {args.svg}")
+    elif args.command in ["zoom-lens", "semantic-zoom-lens", "lod-lens", "hierarchical-zoom"]:
+        import scripts.anchor_stacking_zoom_lens as aszl_mod
+
+        lens = aszl_mod.AnchorStackingZoomLens(
+            macro_zoom_threshold=args.macro_threshold,
+            meso_zoom_threshold=args.meso_threshold
+        )
+
+        anchors = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+            try:
+                raw_data = json.loads(raw_text)
+                raw_list = raw_data if isinstance(raw_data, list) else raw_data.get("anchors", [])
+                for idx, item in enumerate(raw_list, 1):
+                    anchors.append(aszl_mod.SemanticAnchor(
+                        anchor_id=str(item.get("id", f"anc-{idx}")),
+                        title=str(item.get("title", f"Anchor {idx}")),
+                        x=float(item.get("x", 0.0)),
+                        y=float(item.get("y", 0.0)),
+                        lod_level=int(item.get("lod_level", item.get("lod", 0))),
+                        parent_id=item.get("parent_id"),
+                        saliency=float(item.get("saliency", 1.0)),
+                        tags=list(item.get("tags", []))
+                    ))
+            except json.JSONDecodeError:
+                pass
+
+        if not anchors or args.demo:
+            anchors = aszl_mod.sample_knowledge_hierarchy()
+
+        telemetry = lens.evaluate_zoom(anchors, zoom_factor=args.zoom)
+
+        if args.json:
+            out_dict = {
+                "zoom_factor": telemetry.zoom_factor,
+                "active_lod_tier": telemetry.active_lod_tier,
+                "total_anchors": telemetry.total_anchors,
+                "visible_anchor_count": telemetry.visible_anchor_count,
+                "collapsed_cluster_count": telemetry.collapsed_cluster_count,
+                "mean_crowding_index": telemetry.mean_crowding_index,
+                "cowan_compliant": telemetry.cowan_compliant,
+                "cognitive_load_score": telemetry.cognitive_load_score,
+                "visible_anchors": [
+                    {
+                        "id": a.anchor_id,
+                        "title": a.title,
+                        "x": a.x,
+                        "y": a.y,
+                        "lod_level": a.lod_level,
+                        "parent_id": a.parent_id,
+                        "saliency": a.saliency,
+                        "tags": a.tags
+                    }
+                    for a in telemetry.visible_anchors
+                ],
+                "collapsed_hulls": [
+                    {
+                        "cluster_id": h.cluster_id,
+                        "parent_anchor_id": h.parent_anchor_id,
+                        "title": h.title,
+                        "center": [h.center_x, h.center_y],
+                        "radius_px": h.radius_px,
+                        "contained_count": h.contained_anchor_count,
+                        "aggregate_saliency": h.aggregate_saliency
+                    }
+                    for h in telemetry.collapsed_hulls
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = lens.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = lens.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Zoom lens audit report written to: {args.report}")
+
+        if args.svg:
+            svg_code = lens.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Zoom lens SVG written to: {args.svg}")
     else:
         parser.print_help()
 
