@@ -1083,6 +1083,15 @@ def main():
     p_aevict.add_argument("--json", "-j", action="store_true", help="Output raw JSON eviction telemetry")
     p_aevict.add_argument("--demo", action="store_true", help="Run with demonstration decaying anchor set")
 
+    # saccadic-predictor / trajectory-predictor / gaze-prefetch / saccade-prefetch
+    p_spred = subparsers.add_parser("saccadic-predictor", aliases=["trajectory-predictor", "gaze-prefetch", "saccade-prefetch"], help="Autonomous cognitive spatial working memory saccadic trajectory predictor and predictive pre-fetcher")
+    p_spred.add_argument("input", nargs="?", default="", help="Input fixation history and candidate nodes JSON filepath")
+    p_spred.add_argument("--distance", type=float, default=600.0, help="Maximum trajectory prediction distance in pixels (default: 600.0)")
+    p_spred.add_argument("--report", default="", help="Output saccadic trajectory audit markdown filepath")
+    p_spred.add_argument("--svg", default="", help="Output saccadic trajectory HUD SVG filepath")
+    p_spred.add_argument("--json", "-j", action="store_true", help="Output raw JSON trajectory telemetry")
+    p_spred.add_argument("--demo", action="store_true", help="Run with demonstration ocular fixation sequence")
+
     args = parser.parse_args()
 
 
@@ -5522,6 +5531,82 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Anchor sunset horizon SVG written to: {args.svg}")
+    elif args.command in ["saccadic-predictor", "trajectory-predictor", "gaze-prefetch", "saccade-prefetch"]:
+        import scripts.saccadic_trajectory_predictor as stp_mod
+        predictor = stp_mod.SaccadicTrajectoryPredictor(max_prediction_distance_px=args.distance)
+
+        fixations = []
+        candidates = []
+
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                fix_items = data.get("fixations", [])
+                for item in fix_items:
+                    fixations.append(
+                        stp_mod.FixationPoint(
+                            node_id=str(item.get("id", item.get("node_id", "fix"))),
+                            title=str(item.get("title", "Fixation")),
+                            x=float(item.get("x", 0.0)),
+                            y=float(item.get("y", 0.0)),
+                            timestamp_ms=float(item.get("timestamp_ms", 0.0)),
+                            dwell_duration_ms=float(item.get("dwell_duration_ms", 250.0)),
+                        )
+                    )
+                candidates = data.get("candidates", data.get("nodes", []))
+        else:
+            fixations, candidates = stp_mod.sample_saccadic_session()
+
+        telemetry = predictor.evaluate_pre_fetch_candidates(fixations, candidates)
+
+        if args.json:
+            traj_dict = None
+            if telemetry.current_trajectory:
+                traj_dict = {
+                    "origin_x": telemetry.current_trajectory.origin_x,
+                    "origin_y": telemetry.current_trajectory.origin_y,
+                    "heading_deg": telemetry.current_trajectory.heading_deg,
+                    "velocity_px_per_ms": telemetry.current_trajectory.velocity_px_per_ms,
+                    "confidence": telemetry.current_trajectory.confidence,
+                    "cone_angle_deg": telemetry.current_trajectory.cone_angle_deg,
+                }
+
+            out_dict = {
+                "recent_fixations_count": telemetry.recent_fixations_count,
+                "current_trajectory": traj_dict,
+                "candidate_count": telemetry.candidate_count,
+                "predictive_efficiency_score": telemetry.predictive_efficiency_score,
+                "recommended_cache_size": telemetry.recommended_cache_size,
+                "pre_fetch_candidates": [
+                    {
+                        "node_id": c.node_id,
+                        "title": c.title,
+                        "pos_x": c.pos_x,
+                        "pos_y": c.pos_y,
+                        "distance_px": c.distance_px,
+                        "angle_offset_deg": c.angle_offset_deg,
+                        "priority_score": c.priority_score,
+                        "pre_fetch_tier": c.pre_fetch_tier,
+                    }
+                    for c in telemetry.pre_fetch_candidates
+                ],
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = predictor.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = predictor.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Saccadic trajectory report written to: {args.report}")
+
+        if args.svg:
+            svg_code = predictor.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Saccadic trajectory SVG written to: {args.svg}")
     else:
         parser.print_help()
 
