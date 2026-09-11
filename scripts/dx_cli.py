@@ -1624,6 +1624,14 @@ def main():
     p_sat.add_argument("--svg", default="", help="Output Geometric Satake and Mirkovic-Vilonen SVG filepath")
     p_sat.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_sat.add_argument("--demo", action="store_true", help="Run with demonstration Schubert stratification, MV cycles, and tensor convolution")
+    # categorical-langlands / ind-coherent-sheaves / hecke-eigensheaves / bun-g-loom
+    p_glc = subparsers.add_parser("categorical-langlands", aliases=["ind-coherent-sheaves", "hecke-eigensheaves", "bun-g-loom"], help="Autonomous cognitive spatial Categorical Langlands and Ind-Coherent Sheaves on Bun_G Loom")
+    p_glc.add_argument("--genus", "-g", type=int, default=2, choices=[1, 2, 3, 4], help="Algebraic curve genus g (default: 2)")
+    p_glc.add_argument("--stack", default="bun_sl2", choices=["bun_sl2", "bun_pgl2", "bun_sl3", "bun_sp4"], help="Moduli stack of bundles Bun_G (default: bun_sl2)")
+    p_glc.add_argument("--spectral", default="tempered", choices=["tempered", "eisenstein", "arthur", "cuspidal"], help="Spectral local system archetype (default: tempered)")
+    p_glc.add_argument("--svg", default="", help="Output Categorical Langlands and Bun_G SVG filepath")
+    p_glc.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_glc.add_argument("--demo", action="store_true", help="Run with demonstration D(Bun_G), Hecke correspondence, and IndCoh_Nilp")
     args = parser.parse_args()
 
 
@@ -9222,6 +9230,61 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_satake_svg())
             print(f"[DxSkills] Geometric Satake SVG written to: {args.svg}")
+    elif args.command in ["categorical-langlands", "ind-coherent-sheaves", "hecke-eigensheaves", "bun-g-loom"]:
+        from scripts.categorical_langlands_loom import (
+            CategoricalLanglandsLoom,
+            AutomorphicStackArchetype,
+            SpectralLocSysArchetype,
+        )
+        stack_map = {
+            "bun_sl2": AutomorphicStackArchetype.BUN_SL2.value,
+            "bun_pgl2": AutomorphicStackArchetype.BUN_PGL2.value,
+            "bun_sl3": AutomorphicStackArchetype.BUN_SL3.value,
+            "bun_sp4": AutomorphicStackArchetype.BUN_SP4.value,
+        }
+        spec_map = {
+            "tempered": SpectralLocSysArchetype.IRREDUCIBLE_TEMPERED.value,
+            "eisenstein": SpectralLocSysArchetype.REDUCIBLE_EISENSTEIN.value,
+            "arthur": SpectralLocSysArchetype.ARTHUR_NON_TEMPERED.value,
+            "cuspidal": SpectralLocSysArchetype.CUSPIDAL_RIGID.value,
+        }
+        chosen_stack = stack_map.get(args.stack, AutomorphicStackArchetype.BUN_SL2.value)
+        chosen_spec = spec_map.get(args.spectral, SpectralLocSysArchetype.IRREDUCIBLE_TEMPERED.value)
+
+        loom = CategoricalLanglandsLoom(
+            curve_genus=args.genus,
+            default_stack=chosen_stack,
+            default_spectral=chosen_spec,
+        )
+        crv = loom.curves[0]
+        dmod = loom.automorphic_dmodules[0]
+        sheaf = loom.spectral_sheaves[0]
+        hecke = loom.evaluate_hecke_eigensheaf(point_coordinate_x=0.5, test_coweight=1)
+        eq = loom.compute_categorical_equivalence("GLC-RUN-01")
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Categorical Langlands & Ind-Coherent Sheaves on Bun_G Loom")
+            print("=================================================================")
+            print(f"Curve Genus & Euler Char:      Genus g = {crv.genus} | chi(X) = {crv.euler_characteristic} | deg(K_X) = {crv.canonical_bundle_degree}")
+            print(f"Automorphic Moduli Stack:      {dmod.stack_label}")
+            print(f"Dimension of Bun_G:            dim Bun_G = {dmod.dimension_bun_g} (Char Variety = {dmod.characteristic_variety_dim})")
+            print(f"Whittaker Normalization:       {dmod.is_whittaker_normalized}")
+            print(f"Spectral Derived Stack:        LocSys_{sheaf.dual_group}(X)")
+            print(f"Local System Archetype:        {sheaf.locsys_archetype}")
+            print(f"Singular Support Dimension:    dim SingSupp = {sheaf.singular_support_dimension} in Nilpotent Cone N")
+            print(f"Cohomological Amplitude:       {sheaf.cohomological_amplitude}")
+            print(f"Hecke Functor Evaluation:      {hecke['representation_tested']} at x={hecke['hecke_point_x']}")
+            print(f"Hecke Eigenvalue Scalar:       Trace = {hecke['eigenvalue_scalar_trace']}")
+            print(f"Equivalence Verification:      {eq.status_summary}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_langlands_svg())
+            print(f"[DxSkills] Categorical Langlands SVG written to: {args.svg}")
     else:
         parser.print_help()
 
