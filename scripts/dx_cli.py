@@ -1044,6 +1044,15 @@ def main():
     p_cstar.add_argument("--json", "-j", action="store_true", help="Output raw JSON constellation telemetry")
     p_cstar.add_argument("--demo", action="store_true", help="Run with demonstration concept star clusters")
 
+    # allocentric-compass / polar-compass / anchor-compass / heading-tracker
+    p_acompass = subparsers.add_parser("allocentric-compass", aliases=["polar-compass", "anchor-compass", "heading-tracker"], help="Autonomous cognitive spatial allocentric compass and coordinate anchor compass engine")
+    p_acompass.add_argument("input", nargs="?", default="", help="Input navigation session JSON filepath")
+    p_acompass.add_argument("--max-jump", type=float, default=85.0, help="Maximum allowed heading jump before disorientation in deg (default: 85.0)")
+    p_acompass.add_argument("--report", default="", help="Output allocentric compass audit markdown filepath")
+    p_acompass.add_argument("--svg", default="", help="Output allocentric compass SVG diagram filepath")
+    p_acompass.add_argument("--json", "-j", action="store_true", help="Output raw JSON compass telemetry")
+    p_acompass.add_argument("--demo", action="store_true", help="Run with demonstration navigation trajectory")
+
     args = parser.parse_args()
 
 
@@ -5211,6 +5220,81 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Concept constellation SVG written to: {args.svg}")
+    elif args.command in ["allocentric-compass", "polar-compass", "anchor-compass", "heading-tracker"]:
+        import scripts.allocentric_compass as ac_mod
+
+        tracker = ac_mod.AllocentricCompassTracker(max_allowed_heading_jump_deg=args.max_jump)
+
+        landmarks = []
+        waypoints = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+            try:
+                raw_data = json.loads(raw_text)
+                lm_list = raw_data.get("landmarks", [])
+                for idx, item in enumerate(lm_list, 1):
+                    landmarks.append(ac_mod.CanvasLandmark(
+                        landmark_id=str(item.get("id", f"lm-{idx}")),
+                        title=str(item.get("title", f"Landmark {idx}")),
+                        pos_x=float(item.get("x", 0.0)),
+                        pos_y=float(item.get("y", 0.0)),
+                        is_cardinal_north=bool(item.get("is_north", False)),
+                        importance=float(item.get("importance", 1.0))
+                    ))
+                wp_list = raw_data.get("waypoints", [])
+                for idx, item in enumerate(wp_list, 1):
+                    waypoints.append(ac_mod.GazeTrajectoryWaypoint(
+                        waypoint_id=str(item.get("id", f"wp-{idx}")),
+                        pos_x=float(item.get("x", 0.0)),
+                        pos_y=float(item.get("y", 0.0)),
+                        timestamp_ms=float(item.get("timestamp_ms", float(idx) * 200.0))
+                    ))
+            except json.JSONDecodeError:
+                pass
+
+        if not landmarks or not waypoints or args.demo:
+            landmarks, waypoints = ac_mod.sample_navigation_session()
+
+        telemetry = tracker.evaluate_trajectory(landmarks, waypoints)
+
+        if args.json:
+            out_dict = {
+                "north_anchor_id": telemetry.north_anchor_id,
+                "north_coords": list(telemetry.north_coords),
+                "total_fixes": telemetry.total_fixes,
+                "mean_bearing_deg": telemetry.mean_bearing_deg,
+                "angular_dispersion_deg": telemetry.angular_dispersion_deg,
+                "disorientation_count": telemetry.disorientation_count,
+                "orientation_fidelity_pct": telemetry.orientation_fidelity_pct,
+                "fixes": [
+                    {
+                        "waypoint_id": f.waypoint_id,
+                        "bearing_deg": f.bearing_deg,
+                        "sector": f.cardinal_sector,
+                        "distance_px": f.distance_to_north_px,
+                        "drift_deg": f.heading_drift_deg,
+                        "is_disoriented": f.is_disoriented
+                    }
+                    for f in telemetry.fixes
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = tracker.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = tracker.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Allocentric compass report written to: {args.report}")
+
+        if args.svg:
+            svg_code = tracker.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Allocentric compass SVG written to: {args.svg}")
     else:
         parser.print_help()
 
