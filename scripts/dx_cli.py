@@ -827,6 +827,15 @@ def main():
     p_stress.add_argument("--json", "-j", action="store_true", help="Output raw JSON lexical stress telemetry")
     p_stress.add_argument("--demo", action="store_true", help="Run with demonstration nested code snippet")
 
+    # anchor-distiller / distill-anchors / canvas-radar / semantic-index
+    p_distiller = subparsers.add_parser("anchor-distiller", aliases=["distill-anchors", "canvas-radar", "semantic-index"], help="Autonomous cognitive spatial multi-scale semantic anchor distillation and visual indexer")
+    p_distiller.add_argument("input", nargs="?", default="", help="Input canvas JSON or items JSON filepath")
+    p_distiller.add_argument("--threshold", "-t", type=float, default=650.0, help="Cluster spatial distance threshold in canvas units (default: 650.0)")
+    p_distiller.add_argument("--canvas", default="", help="Output Obsidian Canvas (.canvas) filepath")
+    p_distiller.add_argument("--svg", default="", help="Output visual indexer radar map SVG filepath")
+    p_distiller.add_argument("--json", "-j", action="store_true", help="Output raw JSON distillation telemetry")
+    p_distiller.add_argument("--demo", action="store_true", help="Run with demonstration multi-cluster spatial canvas nodes")
+
     args = parser.parse_args()
 
 
@@ -3665,6 +3674,86 @@ def main():
         if args.svg:
             tester.export_svg(result, args.svg)
             print(f"[DxSkills] Lexical friction SVG diagram written to: {args.svg}")
+    elif args.command in ["anchor-distiller", "distill-anchors", "canvas-radar", "semantic-index"]:
+        import scripts.semantic_anchor_distiller as sad_mod
+
+        distiller = sad_mod.SemanticAnchorDistiller(
+            cluster_distance_threshold=args.threshold,
+        )
+
+        items_input = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            items_input = raw_data if isinstance(raw_data, list) else raw_data.get("nodes", raw_data.get("items", []))
+        elif args.demo or not args.input:
+            items_input = [
+                {
+                    "id": "node_arch_1",
+                    "x": 80.0,
+                    "y": 90.0,
+                    "title": "Dual-Code Memory Interleaver",
+                    "category": "Architecture",
+                    "text_content": "Phonological loop and visuospatial sketchpad dual processing system.",
+                    "salience_weight": 0.95,
+                    "tags": ["memory", "dual-code"],
+                },
+                {
+                    "id": "node_arch_2",
+                    "x": 120.0,
+                    "y": 140.0,
+                    "title": "Buffer Compactor",
+                    "category": "Architecture",
+                    "text_content": "FIFO buffer compaction maintaining strict Cowan bounds.",
+                    "salience_weight": 0.60,
+                    "tags": ["memory", "buffer"],
+                },
+                {
+                    "id": "node_arch_3",
+                    "x": 100.0,
+                    "y": 180.0,
+                    "title": "Working Set Pruner",
+                    "category": "Architecture",
+                    "text_content": "Dynamic working set anchor eviction for cognitive stamina.",
+                    "salience_weight": 0.70,
+                    "tags": ["memory", "pruner"],
+                },
+                {
+                    "id": "node_eye_1",
+                    "x": 1380.0,
+                    "y": 880.0,
+                    "title": "Saccadic Fatigue Damper",
+                    "category": "Ocular",
+                    "text_content": "Carpenter main sequence peak velocity decay tracking.",
+                    "salience_weight": 0.92,
+                    "tags": ["saccade", "fatigue"],
+                },
+                {
+                    "id": "node_eye_2",
+                    "x": 1420.0,
+                    "y": 920.0,
+                    "title": "Optimal Viewing Position Calibrator",
+                    "category": "Ocular",
+                    "text_content": "Rayner OVP lexical fixation anchor placement.",
+                    "salience_weight": 0.85,
+                    "tags": ["rayner", "ovp"],
+                },
+            ]
+
+        result = distiller.distill_canvas(items_input)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + distiller.generate_ascii_report(result))
+
+        if args.canvas:
+            distiller.export_canvas(result, args.canvas)
+            print(f"[DxSkills] Distilled canvas written to: {args.canvas}")
+
+        if args.svg:
+            distiller.export_svg(result, args.svg)
+            print(f"[DxSkills] Visual indexer radar SVG written to: {args.svg}")
     else:
         parser.print_help()
 
