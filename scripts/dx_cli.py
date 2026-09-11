@@ -756,6 +756,16 @@ def main():
     p_sproj.add_argument("--json", "-j", action="store_true", help="Output raw JSON projection telemetry")
     p_sproj.add_argument("--demo", action="store_true", help="Run with demonstration triadic abstraction plane entities")
 
+    # attention-flow / attention-heatmap / density-flow / dwell-optimizer
+    p_aflow = subparsers.add_parser("attention-flow", aliases=["attention-heatmap", "density-flow", "dwell-optimizer"], help="Autonomous cognitive spatial multi-scale attention heatmap and density flow optimizer")
+    p_aflow.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or nodes JSON file")
+    p_aflow.add_argument("--wpm", type=float, default=220.0, help="Baseline reading speed in words per minute (default: 220.0)")
+    p_aflow.add_argument("--threshold", "-t", type=float, default=4000.0, help="Cognitive stagnation dwell threshold in milliseconds (default: 4000.0)")
+    p_aflow.add_argument("--output-canvas", "-o", default="", help="Output flow-balanced Obsidian .canvas filepath")
+    p_aflow.add_argument("--svg", default="", help="Output attention heatmap SVG diagram filepath")
+    p_aflow.add_argument("--json", "-j", action="store_true", help="Output raw JSON attention flow telemetry")
+    p_aflow.add_argument("--demo", action="store_true", help="Run with demonstration uneven density spatial cards")
+
     args = parser.parse_args()
 
 
@@ -3295,6 +3305,43 @@ def main():
         if args.svg:
             projector.to_svg(args.svg)
             print(f"[DxSkills] Cross-scale projection SVG diagram written to: {args.svg}")
+    elif args.command in ["attention-flow", "attention-heatmap", "density-flow", "dwell-optimizer"]:
+        import scripts.attention_flow_optimizer as aflow
+
+        optimizer = aflow.AttentionFlowOptimizer(baseline_wpm=args.wpm, stagnation_dwell_threshold_ms=args.threshold)
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data and isinstance(raw_data["nodes"], list):
+                optimizer.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                optimizer.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_canvas = {
+                "nodes": [
+                    {"id": "card_headline", "text": "Executive Mission Overview and Tactical Focus", "x": 100, "y": 100, "width": 260, "height": 140},
+                    {"id": "card_stagnant", "text": "Comprehensive technical architecture review with extensive multi-clause descriptions detailing distributed event streams, fault-tolerant cluster consensus, schema validation mechanisms, and database failover protocols across multiple geographical cloud zones.", "x": 450, "y": 100, "width": 260, "height": 140},
+                    {"id": "card_balanced", "text": "Synchronous state cache and low-latency buffer ring", "x": 100, "y": 400, "width": 260, "height": 140}
+                ],
+                "edges": []
+            }
+            optimizer.load_canvas(demo_canvas)
+
+        profiles, telemetry = optimizer.optimize_attention_flow()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + optimizer.render_ascii_report(telemetry))
+
+        if args.output_canvas:
+            optimizer.to_canvas(args.output_canvas, canvas_title="Flow-Balanced Attention Canvas")
+            print(f"[DxSkills] Attention-flow balanced canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            optimizer.to_svg(args.svg)
+            print(f"[DxSkills] Attention heatmap SVG written to: {args.svg}")
     else:
         parser.print_help()
 
