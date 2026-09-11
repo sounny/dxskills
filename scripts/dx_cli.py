@@ -1348,6 +1348,18 @@ def main():
     p_quant.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_quant.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_quant.add_argument("--demo", action="store_true", help="Run with demonstration anharmonic cognitive oscillator")
+
+    # atiyah-singer / index-theorem / topological-anomaly / spectral-flow-loom
+    p_atiyah = subparsers.add_parser("atiyah-singer", aliases=["index-theorem", "topological-anomaly", "spectral-flow-loom"], help="Autonomous cognitive spatial Atiyah-Singer Index Theorem and Topological Anomaly Loom")
+    p_atiyah.add_argument("input", nargs="?", default="", help="Input Atiyah-Singer configuration JSON filepath")
+    p_atiyah.add_argument("--dim", type=int, default=2, help="Manifold dimension (default: 2)")
+    p_atiyah.add_argument("--genus", type=int, default=1, help="Manifold genus g (default: 1)")
+    p_atiyah.add_argument("--rank", type=int, default=2, help="Twisting bundle rank (default: 2)")
+    p_atiyah.add_argument("--report", default="", help="Output Atiyah-Singer diagnostic markdown filepath")
+    p_atiyah.add_argument("--svg", default="", help="Output spectral flow and index SVG filepath")
+    p_atiyah.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_atiyah.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_atiyah.add_argument("--demo", action="store_true", help="Run with demonstration cognitive Riemann surface and chiral Dirac operator")
     args = parser.parse_args()
 
 
@@ -7565,6 +7577,57 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Quantization interactive HTML written to: {args.html}")
+    elif args.command in ["atiyah-singer", "index-theorem", "topological-anomaly", "spectral-flow-loom"]:
+        from scripts.atiyah_singer_index_loom import (
+            AtiyahSingerIndexLoom,
+        )
+        if args.demo or not args.input:
+            loom = AtiyahSingerIndexLoom(manifold_dim=args.dim, genus=args.genus, twisting_bundle_rank=args.rank)
+        else:
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            m_dim = data.get("manifold_dim", args.dim)
+            g_val = data.get("genus", args.genus)
+            r_val = data.get("twisting_bundle_rank", args.rank)
+            loom = AtiyahSingerIndexLoom(manifold_dim=m_dim, genus=g_val, twisting_bundle_rank=r_val)
+
+        result = loom.evaluate_atiyah_singer()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Atiyah-Singer Index Theorem & Topological Anomaly Loom")
+            print("=================================================================")
+            print(f"Operator Name:                 {result.operator_name}")
+            print(f"Kernel Dimension dim ker(D+):  {result.dimension_ker_d}")
+            print(f"Cokernel Dimension dim coker:  {result.dimension_coker_d}")
+            print(f"Analytical Index ind_a:        {result.analytical_index}")
+            print(f"Topological Index ind_t:       {result.topological_index}")
+            print(f"Index Theorem Equivalence:     {'VERIFIED' if result.index_theorem_verified else 'FAILED'}")
+            print(f"Dirac Spectral Flow:           {result.spectral_flow_value}")
+            print(f"Euler Characteristic (chi):    {result.characteristic_classes.euler_characteristic}")
+            print(f"Manifold Genus (g):            {result.characteristic_classes.genus}")
+            print(f"Todd Genus Td(TM):             {result.characteristic_classes.todd_genus:.4f}")
+            print(f"A-Roof Genus A_hat(TM):        {result.characteristic_classes.a_roof_genus:.4f}")
+            print(f"Chiral Anomaly Coefficient:    {result.chiral_anomaly_coefficient:.4f}")
+            print(f"Summary:                       {result.interpretation}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Atiyah-Singer report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Spectral flow and index SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Atiyah-Singer interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
