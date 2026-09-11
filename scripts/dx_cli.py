@@ -1440,6 +1440,19 @@ def main():
     p_prismatic.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_prismatic.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_prismatic.add_argument("--demo", action="store_true", help="Run with demonstration Breuil-Kisin prism at p=5")
+    # factorization-homology / topological-chiral / chiral-loom / disk-algebra
+    p_fact = subparsers.add_parser("factorization-homology", aliases=["topological-chiral", "chiral-loom", "disk-algebra"], help="Autonomous cognitive spatial Factorization Homology and Topological Chiral Homology Loom")
+    p_fact.add_argument("input", nargs="?", default="", help="Input factorization space configuration JSON filepath")
+    p_fact.add_argument("--name", default="Cognitive Spatial Manifold M", help="Target spatial schema identifier")
+    p_fact.add_argument("--manifold-name", default="Torus T^2 Cognitive Field", help="Manifold name")
+    p_fact.add_argument("--dim", type=int, default=2, help="Manifold dimension n")
+    p_fact.add_argument("--manifold-type", default="Torus T^2 (Elliptic Modular Chiral Field)", choices=["Torus T^2 (Elliptic Modular Chiral Field)", "Circle S^1 (Hochschild Homology Loop)", "Sphere S^2 (Spherical Compactification)", "Riemann Surface Sigma_g (Multi-Handle Cognitive Field)", "Euclidean Workspace R^n (Local Unbounded Space)"], help="Manifold classification")
+    p_fact.add_argument("--algebra-type", default="E_2 Braided Algebra (Planar Spatial Interaction)", choices=["E_2 Braided Algebra (Planar Spatial Interaction)", "E_1 Associative Algebra (Linear Cognitive Stream)", "E_n Little Disks Algebra (Multi-Dimensional Cognitive Workspace)", "E_infinity Commutative Algebra (Isotropic Unrestricted Fusion)"], help="Operadic E_n-algebra type")
+    p_fact.add_argument("--report", default="", help="Output factorization homology telemetry markdown filepath")
+    p_fact.add_argument("--svg", default="", help="Output disk embeddings and chiral bar complex SVG filepath")
+    p_fact.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_fact.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_fact.add_argument("--demo", action="store_true", help="Run with demonstration Torus T^2 and braided E_2 algebra")
     args = parser.parse_args()
 
 
@@ -8121,6 +8134,66 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Prismatic interactive HTML written to: {args.html}")
+    elif args.command in ["factorization-homology", "topological-chiral", "chiral-loom", "disk-algebra"]:
+        from scripts.factorization_homology_loom import (
+            FactorizationHomologyLoom,
+            EnAlgebraType,
+            ManifoldType,
+        )
+        loom = FactorizationHomologyLoom(
+            schema_name=args.name,
+            manifold_name=args.manifold_name,
+            manifold_dim=args.dim,
+            manifold_type=args.manifold_type,
+            algebra_type=args.algebra_type,
+        )
+        if not (args.demo or not args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loom.schema_name = data.get("schema_name", args.name)
+            loom.manifold_name = data.get("manifold_name", args.manifold_name)
+            loom.manifold_dim = int(data.get("manifold_dim", args.dim))
+            loom.manifold_type = data.get("manifold_type", args.manifold_type)
+            loom.algebra_type = data.get("algebra_type", args.algebra_type)
+
+        result = loom.evaluate_factorization_homology()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Factorization Homology & Topological Chiral Homology Loom")
+            print("=================================================================")
+            print(f"Target Manifold:               {result.manifold_name} ({result.manifold_type})")
+            print(f"Manifold Dimension:            n={result.manifold_dimension_n}")
+            print(f"Coefficient E_n-Algebra:       {result.algebra.algebra_type}")
+            print(f"Underlying Ring:               {result.algebra.underlying_ring}")
+            print(f"Total Chiral Homology Dim:     {result.total_chiral_dimension}")
+            print(f"Poincare Dual Target:          {result.poincare_dual_mapping_space}")
+            print(f"Excision Verification:         {'VERIFIED' if result.excision_verified else 'FAILED'}")
+            print(f"Non-Abelian Poincare Duality:  {'VERIFIED (Homotopy Equivalence)' if result.non_abelian_poincare_verified else 'FAILED'}")
+            print("Embedded Disk Observable States:")
+            for d in result.disks:
+                print(f"  * {d.disk_id}: Center=({d.center_x:.1f}, {d.center_y:.1f}) | Radius={d.radius:.1f} | State='{d.local_state_label}' | Rank={d.tensor_rank}")
+            print("Chiral Bar Simplicial Stages:")
+            for bs in result.bar_stages:
+                print(f"  Stage {bs.degree_k} ({bs.active_disks_count} Disks): Morphism='{bs.boundary_morphism_label[:40]}...' | Diff Rank={bs.differential_rank} | Homology Rank={bs.homology_rank}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Factorization homology report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Factorization homology SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Factorization homology interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
