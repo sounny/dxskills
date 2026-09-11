@@ -795,9 +795,14 @@
 - [x] **Task 183.3:** Interactive CLI suite (`geometric-cft`, `rosenlicht-serre`, `picard-sheaf`, `function-field-loom`) with full unit test coverage and zero em dash compliance.
 
 ### Phase 184: Autonomous Cognitive Spatial Grothendieck Dessins d'Enfants & Belyi Map Galois Ramification Loom
-- [ ] **Task 184.1:** Grothendieck dessins d'enfants engine modeling Belyi functions f: X -> P^1 ramified over {0, 1, infty}, bipartite graph tessellations, and permutation monodromy representations.
-- [ ] **Task 184.2:** Absolute Galois group action visualizer rendering Gal(Q-bar/Q) tree transformations, ribbon graph orientations, and modular curve j-invariants in dark titanium SVG.
-- [ ] **Task 184.3:** Interactive CLI suite (`dessins-enfants`, `belyi-map`, `monodromy-graph`, `galois-dessin-loom`) with full unit test coverage and zero em dash compliance.
+- [x] **Task 184.1:** Grothendieck dessins d'enfants engine modeling Belyi functions f: X -> P^1 ramified over {0, 1, infty}, bipartite graph tessellations, and permutation monodromy representations.
+- [x] **Task 184.2:** Absolute Galois group action visualizer rendering Gal(Q-bar/Q) tree transformations, ribbon graph orientations, and modular curve j-invariants in dark titanium SVG.
+- [x] **Task 184.3:** Interactive CLI suite (`dessins-enfants`, `belyi-map`, `monodromy-graph`, `galois-dessin-loom`) with full unit test coverage and zero em dash compliance.
+
+### Phase 185: Autonomous Cognitive Spatial Non-Abelian Chabauty & Kim Motivic Fundamental Group Loom
+- [ ] **Task 185.1:** Non-abelian Chabauty engine modeling Minhyong Kim's Selmer varieties, unipotent motivic fundamental groups pi_1^mot(X), and p-adic iterated integrals.
+- [ ] **Task 185.2:** P-adic locus visualizer rendering Chabauty-Kim cutting equations, Frobenius crystalline invariants, and rational point bounding trajectories in dark titanium SVG.
+- [ ] **Task 185.3:** Interactive CLI suite (`nonabelian-chabauty`, `chabauty-kim`, `unipotent-selmer`, `p-adic-points-loom`) with full unit test coverage and zero em dash compliance.
 
 ---
 
@@ -984,7 +989,8 @@
 | **Cycle 176** | 2026-09-12 00:22 | Autonomous Cognitive Spatial Geometric Satake Equivalence & Mirkovic-Vilonen Cycles Loom | `scripts/geometric_satake_loom.py`, `tests/test_geometric_satake_loom.py`, `scripts/dx_cli.py`, `index.html` | `8cc0af6` |
 | **Cycle 177** | 2026-09-12 00:32 | Autonomous Cognitive Spatial Categorical Langlands & Ind-Coherent Sheaves on Bun_G Loom | `scripts/categorical_langlands_loom.py`, `tests/test_categorical_langlands_loom.py`, `scripts/dx_cli.py`, `index.html` | `b831e01` |
 | **Cycle 178** | 2026-09-12 00:42 | Autonomous Cognitive Spatial Chromatic Homotopy Theory & Morava K-Theory Loom | `scripts/chromatic_homotopy_loom.py`, `tests/test_chromatic_homotopy_loom.py`, `scripts/dx_cli.py`, `index.html` | `7fb68f7` |
-| **Cycle 179** | 2026-09-12 00:52 | Autonomous Cognitive Spatial Geometric Class Field Theory & Langlands Duality for Function Fields Loom | `scripts/geometric_cft_loom.py`, `tests/test_geometric_cft_loom.py`, `scripts/dx_cli.py`, `index.html` | `ebc457c` |
+| **Cycle 179** | 2026-09-12 00:52 | Autonomous Cognitive Spatial Geometric Class Field Theory & Langlands Duality for Function Fields Loom | `scripts/geometric_cft_loom.py`, `tests/test_geometric_cft_loom.py`, `scripts/dx_cli.py`, `index.html` | `1034a63` |
+| **Cycle 180** | 2026-09-12 01:02 | Autonomous Cognitive Spatial Grothendieck Dessins d'Enfants & Belyi Map Galois Ramification Loom | `scripts/dessins_enfants_loom.py`, `tests/test_dessins_enfants_loom.py`, `scripts/dx_cli.py`, `index.html` | `42ac823` |
 
 
 

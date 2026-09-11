@@ -1648,6 +1648,14 @@ def main():
     p_cft.add_argument("--svg", default="", help="Output Geometric CFT SVG filepath")
     p_cft.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_cft.add_argument("--demo", action="store_true", help="Run with demonstration generalized Jacobians, Deligne Hecke descent, and L-function zeros")
+    # dessins-enfants / belyi-map / monodromy-graph / galois-dessin-loom
+    p_des = subparsers.add_parser("dessins-enfants", aliases=["belyi-map", "monodromy-graph", "galois-dessin-loom"], help="Autonomous cognitive spatial Grothendieck Dessins d'Enfants and Belyi Map Galois Ramification Loom")
+    p_des.add_argument("--degree", "-d", type=int, default=4, choices=[2, 3, 4, 5, 6], help="Belyi morphism degree d (default: 4)")
+    p_des.add_argument("--genus", "-g", type=int, default=0, choices=[0, 1, 2], help="Riemann surface genus g (default: 0)")
+    p_des.add_argument("--archetype", default="shabat", choices=["shabat", "clean_tree", "elliptic", "fermat"], help="Dessin topology archetype (default: shabat)")
+    p_des.add_argument("--svg", default="", help="Output Dessins d'Enfants SVG filepath")
+    p_des.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_des.add_argument("--demo", action="store_true", help="Run with demonstration bipartite ribbon graphs, monodromy triad, and Galois orbit")
     args = parser.parse_args()
 
 
@@ -9389,6 +9397,55 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_geometric_cft_svg())
             print(f"[DxSkills] Geometric CFT SVG written to: {args.svg}")
+    elif args.command in ["dessins-enfants", "belyi-map", "monodromy-graph", "galois-dessin-loom"]:
+        from scripts.dessins_enfants_loom import (
+            GrothendieckDessinLoom,
+            DessinArchetype,
+        )
+        arch_map = {
+            "shabat": DessinArchetype.SHABAT_POLYNOMIAL_TREE.value,
+            "clean_tree": DessinArchetype.CLEAN_TREE_RATIONAL.value,
+            "elliptic": DessinArchetype.ELLIPTIC_J_INVARIANT.value,
+            "fermat": DessinArchetype.FERMAT_CURVE_DESSIN.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, DessinArchetype.SHABAT_POLYNOMIAL_TREE.value)
+
+        loom = GrothendieckDessinLoom(
+            belyi_degree=args.degree,
+            curve_genus=args.genus,
+            default_archetype=chosen_arch,
+        )
+        mono = loom.monodromy_records[0]
+        orb = loom.galois_orbits[0]
+        conj = loom.compute_galois_conjugation("ORBIT-CLI-01")
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Grothendieck Dessins d'Enfants & Belyi Map Galois Loom")
+            print("=================================================================")
+            print(f"Belyi Degree & Curve Genus:    Degree d = {mono.degree_d} | Genus g = {mono.genus_calculated}")
+            print(f"Dessin Topology Archetype:     {loom.default_archetype}")
+            print(f"Bipartite Vertices Count:      {len(loom.vertices)} vertices (2 Black roots, 2 White critical)")
+            print(f"Monodromy Triad in S_{mono.degree_d}:")
+            print(f"  sigma_0 (Black Vertices):     {mono.sigma_0_cycles} (Cycle count = {len(mono.sigma_0_cycles)})")
+            print(f"  sigma_1 (White Vertices):     {mono.sigma_1_cycles} (Cycle count = {len(mono.sigma_1_cycles)})")
+            print(f"  sigma_infty (Poles / Faces):  {mono.sigma_infty_cycles} (Cycle count = {len(mono.sigma_infty_cycles)})")
+            print(f"Transitivity & Relation:       Transitive = {mono.is_transitive} | sigma_0 * sigma_1 * sigma_infty = 1")
+            print(f"Euler Characteristic:          chi = V_0 + V_1 + F - d = {mono.euler_characteristic} (g = {mono.genus_calculated})")
+            print(f"Number Field of Moduli:        {orb.moduli_field} (Delta = {orb.field_discriminant})")
+            print(f"Belyi Function Formula:        {orb.belyi_function_formula}")
+            print(f"Galois Orbit Size:             |Gal(Q-bar/Q) . D| = {orb.galois_orbit_size} dessins in orbit")
+            print(f"Conjugate Dessin Orbit:        {conj.orbit_id} (Faithful = {conj.is_galois_faithful})")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f: 
+                f.write(loom.generate_dessin_svg())
+            print(f"[DxSkills] Dessins d'Enfants SVG written to: {args.svg}")
     else:
         parser.print_help()
 
