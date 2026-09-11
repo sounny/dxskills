@@ -3,6 +3,7 @@
 > **Open-standard AI skills, prompts, and cognitive scaffolding that make agentic AI naturally dyslexia-friendly.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-DxSkills-0077B5.svg?logo=linkedin&logoColor=white)](https://www.linkedin.com/company/146509128/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/sounny/dxskills/pulls)
 
 ---
