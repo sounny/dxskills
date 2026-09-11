@@ -683,6 +683,15 @@ def main():
     p_aperture.add_argument("--json", "-j", action="store_true", help="Output raw JSON aperture telemetry")
     p_aperture.add_argument("--demo", action="store_true", help="Run with demonstration multi-tier cognitive working memory field")
 
+    # dialectic-synthesizer / triad / dialectic-mesh / aufhebung
+    p_triad = subparsers.add_parser("dialectic-synthesizer", aliases=["triad", "dialectic-mesh", "aufhebung"], help="Autonomous cognitive spatial associative multi-perspective dialectic synthesizer and synthesis mesh")
+    p_triad.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or polarity JSON file")
+    p_triad.add_argument("--min-tension", "-t", type=float, default=0.35, help="Minimum tension intensity threshold to trigger synthesis")
+    p_triad.add_argument("--output-canvas", "-o", default="", help="Output triadic synthesis Obsidian .canvas filepath")
+    p_triad.add_argument("--svg", default="", help="Output dialectic triad SVG diagram filepath")
+    p_triad.add_argument("--json", "-j", action="store_true", help="Output raw JSON dialectic telemetry")
+    p_triad.add_argument("--demo", action="store_true", help="Run with demonstration architectural polarity tensions")
+
     args = parser.parse_args()
 
 
@@ -2826,6 +2835,52 @@ def main():
         if args.svg:
             harness.to_svg(args.svg)
             print(f"[DxSkills] Cognitive aperture SVG written to: {args.svg}")
+    elif args.command in ["dialectic-synthesizer", "triad", "dialectic-mesh", "aufhebung"]:
+        import scripts.dialectic_synthesizer as dsynt
+
+        synthesizer = dsynt.DialecticSynthesizer(min_tension_threshold=args.min_tension)
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data:
+                synthesizer.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                synthesizer.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_polarity = {
+                "poles": {
+                    "pole_latency": {
+                        "name": "Sub-Millisecond In-Memory Ingestion",
+                        "core_values": ["speed", "low_latency", "stream"],
+                        "strengths": ["sub_millisecond_write", "real_time_responsiveness"],
+                        "overuse_vulnerabilities": ["data_loss_risk", "memory_saturation"],
+                    },
+                    "pole_durability": {
+                        "name": "Immutable Multi-Region Durability",
+                        "core_values": ["durability", "acid_guarantees", "batch"],
+                        "strengths": ["zero_loss_audit", "cryptographic_trace"],
+                        "overuse_vulnerabilities": ["elevated_commit_latency", "disk_io_choke"],
+                    },
+                },
+                "tensions": [["pole_latency", "pole_durability"]],
+            }
+            synthesizer.load_dict(demo_polarity)
+
+        tensions, syntheses, telemetry = synthesizer.analyze_mesh()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + synthesizer.render_ascii_mesh(telemetry))
+
+        if args.output_canvas:
+            synthesizer.to_canvas(args.output_canvas, canvas_title="Dialectic Synthesis Mesh")
+            print(f"[DxSkills] Dialectic synthesis canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            synthesizer.to_svg(args.svg)
+            print(f"[DxSkills] Dialectic synthesis SVG written to: {args.svg}")
     else:
         parser.print_help()
 
