@@ -1799,6 +1799,14 @@ def main():
     p_at.add_argument("--svg", default="", help="Output Arthur-Selberg SVG filepath")
     p_at.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_at.add_argument("--demo", action="store_true", help="Run with demonstration geometric orbital sums, endoscopic transfer, and Arthur packets")
+    # relative-trace-ggp / ggp-loom / ichino-ikeda / gan-gross-prasad
+    p_rtf = subparsers.add_parser("relative-trace-ggp", aliases=["ggp-loom", "ichino-ikeda", "gan-gross-prasad"], help="Autonomous cognitive spatial Relative Trace Formula and Gan-Gross-Prasad Conjectures Loom")
+    p_rtf.add_argument("--spectral-s", "-s", type=float, default=1.0, help="Spectral parameter s (default: 1.0)")
+    p_rtf.add_argument("--truncation", "-t", type=float, default=2.0, help="Subgroup truncation parameter T (default: 2.0)")
+    p_rtf.add_argument("--archetype", default="u3_u2", choices=["u3_u2", "so5_so4", "waldspurger", "aggp"], help="RTF and GGP setting archetype (default: u3_u2)")
+    p_rtf.add_argument("--svg", default="", help="Output Relative Trace GGP SVG filepath")
+    p_rtf.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_rtf.add_argument("--demo", action="store_true", help="Run with demonstration spherical relative integrals, GGP branching, and Ichino-Ikeda central L-value ratio")
     args = parser.parse_args()
 
 
@@ -10429,6 +10437,64 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_svg())
             print(f"[DxSkills] Arthur-Selberg SVG written to: {out_path}")
+    elif args.command in ["relative-trace-ggp", "ggp-loom", "ichino-ikeda", "gan-gross-prasad"]:
+        from scripts.relative_trace_ggp_loom import (
+            RelativeTraceGGPLoom,
+            GGPArchetype,
+        )
+        arch_map = {
+            "u3_u2": GGPArchetype.UNITARY_U3_U2.value,
+            "so5_so4": GGPArchetype.ORTHOGONAL_SO5_SO4.value,
+            "waldspurger": GGPArchetype.UNITARY_U2_U1_WALDSPURGER.value,
+            "aggp": GGPArchetype.ARITHMETIC_AGGP_CURVE.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, GGPArchetype.UNITARY_U3_U2.value)
+
+        loom = RelativeTraceGGPLoom(
+            spectral_parameter=args.spectral_s,
+            subgroup_truncation=args.truncation,
+            default_archetype=chosen_arch,
+        )
+        ev = loom.evaluate_relative_trace()
+        sd = loom.spherical_data
+        rp = loom.rep_pair
+        ii = loom.ichino_ikeda
+        ag = loom.aggp_height
+
+        if args.json:
+            import json
+            print(json.dumps(loom.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Relative Trace Formula & Gan-Gross-Prasad (GGP) Loom")
+            print("=================================================================")
+            print(f"Setting Archetype:             {loom.archetype_str}")
+            if sd:
+                print(f"Spherical Group Pair:          {sd.group_g_label} with {sd.subgroup_h_label}")
+            if rp:
+                print(f"GGP Representation Pair:       {rp.rep_pi1_label[:35]} x {rp.rep_pi2_label[:35]}")
+                print(f"Branching Multiplicity:        dim Hom_H = {rp.hom_multiplicity} <= 1 (Vogan Size = {rp.vogan_packet_size})")
+                print(f"Distinguished Representation:  {rp.is_distinguished_by_h} (Root Sign = {rp.local_root_number_sign})")
+            print(f"RTF Geometric Total:           I_geom_H = {ev.rtf_geometric_total:.4f} ({len(loom.relative_orbitals)} orbits)")
+            print(f"RTF Spectral Total:            I_spec_H = {ev.rtf_spectral_total:.4f}")
+            print(f"RTF Identity Residual:         {ev.rtf_residual:.5f} (Period Active: {ev.period_non_vanishing})")
+            if ag and ag.is_exceptional_vanishing:
+                print(f"Arithmetic AGGP Derivative:    L'(1/2) = {ag.central_derivative_l_prime:.4f}")
+                print(f"Beilinson-Bloch Height:        <Z, Z>_BB = {ag.beilinson_bloch_height:.4f}")
+            elif ii:
+                print(f"Ichino-Ikeda Central L-Value:  L(1/2) = {ii.central_l_value:.4f}")
+                print(f"Normalized Period Square:      |P_H(phi)|^2 / <phi,phi> = {ii.normalized_period_square:.5f}")
+            print(f"Cognitive Resonance Score:     {ev.cognitive_resonance_score:.4f}")
+            print(f"Spatial Stability Index:       {ev.spatial_stability_index:.4f}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "relative_trace_ggp_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_svg())
+            print(f"[DxSkills] Relative Trace GGP SVG written to: {out_path}")
     else:
         parser.print_help()
 
