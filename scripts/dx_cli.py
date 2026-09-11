@@ -1743,6 +1743,13 @@ def main():
     p_sm.add_argument("--svg", default="", help="Output Serre Modularity SVG filepath")
     p_sm.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_sm.add_argument("--demo", action="store_true", help="Run with demonstration Serre invariants, tame inertia actions, and Khare-Wintenberger theorem")
+    # perfectoid-tilting / scholze-tilting / almost-mathematics-loom / perfectoid-category
+    p_ps = subparsers.add_parser("perfectoid-tilting", aliases=["scholze-tilting", "almost-mathematics-loom", "perfectoid-category"], help="Autonomous cognitive spatial Perfectoid Spaces and Scholze Tilting Equivalence Loom")
+    p_ps.add_argument("--prime", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11, 13], help="Base prime p (default: 5)")
+    p_ps.add_argument("--archetype", default="cyclotomic", choices=["cyclotomic", "roots", "algebraic", "shimura"], help="Perfectoid field pair archetype (default: cyclotomic)")
+    p_ps.add_argument("--svg", default="", help="Output Perfectoid Tilting SVG filepath")
+    p_ps.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_ps.add_argument("--demo", action="store_true", help="Run with demonstration tilting equivalence, adic spectrum Spa(R, R^+), and Shimura variety torsion vanishing towers")
     args = parser.parse_args()
 
 
@@ -10011,6 +10018,58 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_serre_svg())
             print(f"[DxSkills] Serre Modularity SVG written to: {out_path}")
+    elif args.command in ["perfectoid-tilting", "scholze-tilting", "almost-mathematics-loom", "perfectoid-category"]:
+        from scripts.perfectoid_spaces_loom import (
+            PerfectoidSpacesLoom,
+            PerfectoidSpacesArchetype,
+        )
+        arch_map = {
+            "cyclotomic": PerfectoidSpacesArchetype.CYCLOTOMIC_PERFECTOID_FIELD.value,
+            "roots": PerfectoidSpacesArchetype.PERFECTOID_P_POWER_ROOTS.value,
+            "algebraic": PerfectoidSpacesArchetype.ALGEBRAIC_CLOSURE_C_P.value,
+            "shimura": PerfectoidSpacesArchetype.TORSION_SHIMURA_VARIETY.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, PerfectoidSpacesArchetype.CYCLOTOMIC_PERFECTOID_FIELD.value)
+
+        loom = PerfectoidSpacesLoom(
+            prime_p=args.prime,
+            default_archetype=chosen_arch,
+        )
+        pair = loom.field_pairs[0]
+        equiv = loom.tilting_equivalences[0]
+        adic = loom.adic_spaces[0]
+        axioms = loom.evaluate_perfectoid_axioms(
+            frobenius_surjective=pair.is_frobenius_surjective,
+            non_discrete_valuation=True,
+            complete_topology=True,
+        )
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Perfectoid Spaces & Scholze Tilting Equivalence Loom")
+            print("=================================================================")
+            print(f"Base Prime:                    Prime p = {pair.prime_p}")
+            print(f"Field Pair:                    {pair.pair_id} ({loom.default_archetype.split('(')[0].strip()})")
+            print(f"Characteristic 0 Field K:      {pair.field_char_zero}")
+            print(f"Tilted Characteristic p K^flat:{pair.field_char_p_tilt}")
+            print(f"Frobenius on O_K / p:          Surjective ({pair.is_frobenius_surjective}) | Valuation Rank: {pair.valuation_rank}")
+            print(f"Pseudo-Uniformizer:            pi = {pair.pseudo_uniformizer_symbol}")
+            print(f"Tilting Equivalence:           {equiv.equivalence_label} ({axioms['axiomatic_verdict']})")
+            print(f"Topological Homeomorphism:     |X| = |X^flat| ({equiv.is_topological_homeomorphism})")
+            print(f"Etale Site Equivalence:        X_et = X^flat_et ({equiv.is_etale_site_equivalent})")
+            print(f"Almost Purity Theorem:         {equiv.almost_purity_theorem_verified} (H^i(X, O_X)^a = 0 for i > 0)")
+            print(f"Adic Spectrum Geometry:        {adic.space_label} ({adic.rational_subsets_count} Rational Subsets)")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "perfectoid_tilting_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_perfectoid_svg())
+            print(f"[DxSkills] Perfectoid Tilting SVG written to: {out_path}")
     else:
         parser.print_help()
 
