@@ -1726,6 +1726,14 @@ def main():
     p_cl.add_argument("--svg", default="", help="Output Coleman Family SVG filepath")
     p_cl.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_cl.add_argument("--demo", action="store_true", help="Run with demonstration overconvergent Banach spaces, Fredholm series, slope decompositions, and eigencurve")
+    # fontaine-mazur / geometric-galois / de-rham-representation / galois-deformation-loom
+    p_fm = subparsers.add_parser("fontaine-mazur", aliases=["geometric-galois", "de-rham-representation", "galois-deformation-loom"], help="Autonomous cognitive spatial Fontaine-Mazur Conjecture and Geometric Galois Representations Loom")
+    p_fm.add_argument("--dimension", "-d", type=int, default=2, help="Galois representation dimension (default: 2)")
+    p_fm.add_argument("--prime", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11], help="Base prime p (default: 5)")
+    p_fm.add_argument("--archetype", default="elliptic", choices=["elliptic", "delta", "dirichlet", "exotic"], help="Geometric Galois representation archetype (default: elliptic)")
+    p_fm.add_argument("--svg", default="", help="Output Fontaine-Mazur SVG filepath")
+    p_fm.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_fm.add_argument("--demo", action="store_true", help="Run with demonstration period rings, Hodge-Tate weights, and modularity isomorphism R = T")
     args = parser.parse_args()
 
 
@@ -9888,6 +9896,58 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_coleman_svg())
             print(f"[DxSkills] Coleman Family SVG written to: {out_path}")
+    elif args.command in ["fontaine-mazur", "geometric-galois", "de-rham-representation", "galois-deformation-loom"]:
+        from scripts.fontaine_mazur_loom import (
+            FontaineMazurLoom,
+            FontaineMazurArchetype,
+        )
+        arch_map = {
+            "elliptic": FontaineMazurArchetype.ELLIPTIC_CURVE_TATE_MODULE.value,
+            "delta": FontaineMazurArchetype.RAMANUJAN_DELTA_REP.value,
+            "dirichlet": FontaineMazurArchetype.DIRICHLET_TATE_TWIST.value,
+            "exotic": FontaineMazurArchetype.NON_GEOMETRIC_UNRAMIFIED.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, FontaineMazurArchetype.ELLIPTIC_CURVE_TATE_MODULE.value)
+
+        loom = FontaineMazurLoom(
+            dimension=args.dimension,
+            prime_p=args.prime,
+            default_archetype=chosen_arch,
+        )
+        rings = {r.ring_name.split()[0]: r for r in loom.period_rings}
+        ht = loom.hodge_tate_data[0]
+        gm = loom.geometric_modularity[0]
+        verdict = loom.evaluate_fontaine_mazur_conjecture(
+            unramified_ae=gm.is_unramified_almost_everywhere,
+            de_rham=gm.is_de_rham_at_p,
+            dimension=loom.dimension,
+        )
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Fontaine-Mazur Conjecture & Geometric Galois Representations Loom")
+            print("=================================================================")
+            print(f"Dimension & Base Prime:        Dim = {loom.dimension} | Prime p = {loom.prime_p}")
+            print(f"Galois Representation:         {gm.representation_label} ({loom.default_archetype.split('(')[0].strip()})")
+            print(f"Hodge-Tate Weights HT(rho):    {ht.hodge_tate_weights}")
+            print(f"Sen Polynomial Theta_V(T):     Coefficients = {ht.sen_polynomial_coefficients}")
+            print(f"Fontaine Period Rings:         B_HT Admissible: {rings.get('B_HT').is_admissible} | B_dR Admissible: {rings.get('B_dR').is_admissible}")
+            print(f"Crystalline & Semi-Stable:     B_cris: {rings.get('B_cris').is_admissible} | B_st: {rings.get('B_st').is_admissible} (Monodromy N = {rings.get('B_st').monodromy_nilpotent_order})")
+            print(f"Frobenius Eigenvalues:         {rings.get('B_cris').frobenius_eigenvalues}")
+            print(f"Fontaine-Mazur Geometric:      {gm.is_geometric_representation} ({verdict['fontaine_mazur_verdict']})")
+            print(f"Associated Variety / Motive:   {gm.associated_motive_or_variety}")
+            print(f"Modularity Deformation R = T:  {gm.deformation_ring_status}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "fontaine_mazur_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_fontaine_mazur_svg())
+            print(f"[DxSkills] Fontaine-Mazur SVG written to: {out_path}")
     else:
         parser.print_help()
 
