@@ -735,9 +735,14 @@
 - [x] **Task 171.3:** Interactive CLI suite (`motivic-cohomology`, `beilinson-regulator`, `higher-chow`, `deligne-period`) with full unit test coverage and zero em dash compliance.
 
 ### Phase 172: Autonomous Cognitive Spatial Arithmetic Dynamics & Post-Critically Finite Julia-Fatou Loom
-- [ ] **Task 172.1:** Arithmetic dynamical engine modeling post-critically finite rational maps, Call-Silverman canonical heights, and preperiodic orbit trees.
-- [ ] **Task 172.2:** Julia-Fatou arithmetic visualizer rendering fractal Julia boundary basins, Berkovich projective trees, and post-critical orbit graphs in dark titanium SVG.
-- [ ] **Task 172.3:** Interactive CLI suite (`arithmetic-dynamics`, `julia-fatou`, `canonical-height`, `post-critical`) with full unit test coverage and zero em dash compliance.
+- [x] **Task 172.1:** Arithmetic dynamical engine modeling post-critically finite rational maps, Call-Silverman canonical heights, and preperiodic orbit trees.
+- [x] **Task 172.2:** Julia-Fatou arithmetic visualizer rendering fractal Julia boundary basins, Berkovich projective trees, and post-critical orbit graphs in dark titanium SVG.
+- [x] **Task 172.3:** Interactive CLI suite (`arithmetic-dynamics`, `julia-fatou`, `canonical-height`, `post-critical`) with full unit test coverage and zero em dash compliance.
+
+### Phase 173: Autonomous Cognitive Spatial Arithmetic Topology & Knots-Primes Kapranov-Reznikov Loom
+- [ ] **Task 173.1:** Arithmetic topology engine modeling the Mazur dictionary (primes as knots, rings of integers as 3-manifolds), Legendre-linking numbers, and etale fundamental groups.
+- [ ] **Task 173.2:** Kapranov-Reznikov arithmetic topological visualizer rendering 3-manifold branched covers, Alexander-Iwasawa polynomials, and Chern-Simons arithmetic invariants in dark titanium SVG.
+- [ ] **Task 173.3:** Interactive CLI suite (`arithmetic-topology`, `knots-primes`, `kapranov-reznikov`, `legendre-linking`) with full unit test coverage and zero em dash compliance.
 
 ---
 
@@ -913,6 +918,7 @@
 | **Cycle 165** | 2026-09-11 22:32 | Autonomous Cognitive Spatial Perfectoid Spaces & Fargues-Fontaine Curve Loom | `scripts/perfectoid_space_loom.py`, `tests/test_perfectoid_space_loom.py`, `scripts/dx_cli.py`, `index.html` | `ee07a7a` |
 | **Cycle 166** | 2026-09-11 22:42 | Autonomous Cognitive Spatial Arithmetic Geometry & Langlands-Shimura Variety Loom | `scripts/shimura_variety_loom.py`, `tests/test_shimura_variety_loom.py`, `scripts/dx_cli.py`, `index.html` | `9045b67` |
 | **Cycle 167** | 2026-09-11 22:52 | Autonomous Cognitive Spatial Motivic Cohomology & Beilinson-Soule Regulators Loom | `scripts/motivic_cohomology_loom.py`, `tests/test_motivic_cohomology_loom.py`, `scripts/dx_cli.py`, `index.html` | `19c6cd2` |
+| **Cycle 168** | 2026-09-11 23:02 | Autonomous Cognitive Spatial Arithmetic Dynamics & Post-Critically Finite Julia-Fatou Loom | `scripts/arithmetic_dynamics_loom.py`, `tests/test_arithmetic_dynamics_loom.py`, `scripts/dx_cli.py`, `index.html` | `499424c` |
 
 
 

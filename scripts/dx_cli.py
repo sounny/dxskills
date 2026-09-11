@@ -1543,6 +1543,15 @@ def main():
     p_motivic.add_argument("--svg", default="", help="Output motivic complexes and Deligne Jacobian SVG filepath")
     p_motivic.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_motivic.add_argument("--demo", action="store_true", help="Run with demonstration higher Chow cycle, Deligne Jacobian, and Beilinson regulator")
+    # arithmetic-dynamics / julia-fatou / canonical-height / post-critical
+    p_dyn = subparsers.add_parser("arithmetic-dynamics", aliases=["julia-fatou", "canonical-height", "post-critical"], help="Autonomous cognitive spatial Arithmetic Dynamics and Post-Critically Finite Julia-Fatou Loom")
+    p_dyn.add_argument("--family", default="Misiurewicz Quadratic Polynomials f(z) = z^2 + c", choices=["Misiurewicz Quadratic Polynomials f(z) = z^2 + c", "Chebyshev Polynomials T_d(z)", "Lattes Maps on Elliptic Curves", "Unicritical Polynomials f(z) = z^d + c"], help="Rational map family")
+    p_dyn.add_argument("--c-param", "-c", type=float, default=-2.0, help="Parameter c for quadratic/unicritical family (default: -2.0)")
+    p_dyn.add_argument("--degree", "-d", type=int, default=2, help="Degree of rational map (default: 2)")
+    p_dyn.add_argument("--point-x", "-x", type=float, default=0.0, help="Coordinate x to test canonical height (default: 0.0)")
+    p_dyn.add_argument("--svg", default="", help="Output arithmetic dynamics and Julia-Fatou phase partition SVG filepath")
+    p_dyn.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_dyn.add_argument("--demo", action="store_true", help="Run with demonstration PCF map, Call-Silverman height, and Berkovich tree")
     args = parser.parse_args()
 
 
@@ -8713,6 +8722,46 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_motivic_svg())
             print(f"[DxSkills] Motivic Cohomology SVG written to: {args.svg}")
+    elif args.command in ["arithmetic-dynamics", "julia-fatou", "canonical-height", "post-critical"]:
+        from scripts.arithmetic_dynamics_loom import (
+            ArithmeticDynamicsLoom,
+            MapFamily,
+            DynamicalLocus,
+            BerkovichNodeType,
+        )
+        loom = ArithmeticDynamicsLoom(
+            family=args.family,
+            parameter_c=args.c_param,
+            degree=args.degree,
+        )
+        pt = loom.compute_canonical_height("PT-DEMO-01", coordinate_x=args.point_x)
+        part = loom.evaluate_julia_fatou_partition("PART-DEMO-01")
+        tree = loom.construct_berkovich_tree("TREE-DEMO-01", prime_p=2, depth=3)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            m = loom.rational_maps[0]
+            print("=================================================================")
+            print("  Arithmetic Dynamics & Post-Critically Finite Julia-Fatou Loom")
+            print("=================================================================")
+            print(f"Map Family:                    {loom.family}")
+            print(f"Degree d & Parameter c:        Deg={m.degree} | c={m.parameter_c}")
+            print(f"Post-Critically Finite (PCF):  {'YES (All critical orbits finite)' if m.is_post_critically_finite else 'NO'}")
+            print(f"Critical Orbits:               {m.post_critical_orbits}")
+            print(f"Sample Point Evaluation:       x={pt.coordinate_x}")
+            print(f"Call-Silverman Height h_hat:   {pt.canonical_height:.6f} [Preperiodic: {pt.is_preperiodic}]")
+            print(f"Preperiod & Period:            Preperiod={pt.preperiodic_preperiod} | Period={pt.preperiodic_period}")
+            print(f"Julia Box Dimension:           {part.julia_box_dimension:.4f}")
+            print(f"Julia Connectivity:            {'Connected' if part.is_julia_connected else 'Cantor Dust'}")
+            print(f"Berkovich P^1 Tree:            Prime p={tree.prime_p} | Depth={tree.tree_depth} | Gauss={tree.gauss_point_id}")
+            print(f"Reduction Type:                {tree.reduction_type}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_dynamics_svg())
+            print(f"[DxSkills] Arithmetic Dynamics SVG written to: {args.svg}")
     else:
         parser.print_help()
 
