@@ -1682,6 +1682,14 @@ def main():
     p_mot.add_argument("--svg", default="", help="Output Beilinson Motives SVG filepath")
     p_mot.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_mot.add_argument("--demo", action="store_true", help="Run with demonstration Chow motives, Beilinson regulator maps, and special values")
+    # bloch-kato / tamagawa-numbers / crystalline-exponential / selmer-lattice-loom
+    p_bk = subparsers.add_parser("bloch-kato", aliases=["tamagawa-numbers", "crystalline-exponential", "selmer-lattice-loom"], help="Autonomous cognitive spatial Tamagawa Numbers and Bloch-Kato Exponential Map Loom")
+    p_bk.add_argument("--prime", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11], help="Base prime p (default: 5)")
+    p_bk.add_argument("--dim", "-d", type=int, default=2, choices=[1, 2, 3, 4], help="Representation dimension (default: 2)")
+    p_bk.add_argument("--archetype", default="elliptic", choices=["elliptic", "tate", "modular", "calabi_yau"], help="Motivic Galois archetype (default: elliptic)")
+    p_bk.add_argument("--svg", default="", help="Output Bloch-Kato SVG filepath")
+    p_bk.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_bk.add_argument("--demo", action="store_true", help="Run with demonstration Selmer conditions, exponential map, and Tamagawa numbers")
     args = parser.parse_args()
 
 
@@ -9608,6 +9616,53 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_beilinson_svg())
             print(f"[DxSkills] Beilinson Motives SVG written to: {args.svg}")
+    elif args.command in ["bloch-kato", "tamagawa-numbers", "crystalline-exponential", "selmer-lattice-loom"]:
+        from scripts.bloch_kato_loom import (
+            BlochKatoExponentialLoom,
+            MotivicGaloisArchetype,
+        )
+        arch_map = {
+            "elliptic": MotivicGaloisArchetype.ELLIPTIC_CURVE_P_ADIC.value,
+            "tate": MotivicGaloisArchetype.TATE_TWIST_Q_P.value,
+            "modular": MotivicGaloisArchetype.MODULAR_FORM_DELIGNE.value,
+            "calabi_yau": MotivicGaloisArchetype.CALABI_YAU_P_ADIC.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, MotivicGaloisArchetype.ELLIPTIC_CURVE_P_ADIC.value)
+
+        loom = BlochKatoExponentialLoom(
+            base_prime=args.prime,
+            dimension_v=args.dim,
+            default_archetype=chosen_arch,
+        )
+        cond = loom.local_conditions[0]
+        exp_m = loom.exponential_maps[0]
+        tam = loom.tamagawa_data[0]
+        eval_exp = loom.evaluate_bloch_kato_exponential(tangent_vector_norm=1.5)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Tamagawa Numbers & Bloch-Kato Exponential Map Loom")
+            print("=================================================================")
+            print(f"Galois Representation:         {cond.representation_label} | Prime p = {cond.prime_v}")
+            print(f"Motivic Galois Archetype:      {loom.default_archetype}")
+            print(f"Local Selmer Subspaces:        H_e^1 [{cond.dim_h_exponential}D] <= H_f^1 [{cond.dim_h_finite}D] <= H_g^1 [{cond.dim_h_geometric}D] <= H^1 [{cond.dim_h_total}D]")
+            print(f"Local Tamagawa Factor:         c_v = [H_f^1 : H_e^1] = {cond.local_tamagawa_factor_c_v}")
+            print(f"Bloch-Kato Exponential Map:    exp_BK: {exp_m.source_tangent_space} -> {exp_m.target_selmer_space}")
+            print(f"Isomorphism on Lie Algebra:    {exp_m.is_isomorphism} (Kernel Dim = {exp_m.exponential_kernel_dim})")
+            print(f"Tangent Evaluation:            ||v|| = 1.5 -> ||exp_BK(v)|| = {eval_exp['cohomology_image_norm']:.4f}")
+            print(f"Global Tamagawa Formula:       Tam(M) = #Sha * prod c_v / (#H^0 * #H^0(M^*(1)))")
+            print(f"Computed Tam(M):               {tam.tamagawa_number_tam_m:.4f} (#Sha = {tam.sha_order}, prod c_v = {tam.product_local_tamagawa})")
+            print(f"Bloch-Kato Leading Value:      L^*(M, 0) in Tam(M) * R_BK * Q^x (Verified = {tam.conjecture_satisfied})")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_bloch_kato_svg())
+            print(f"[DxSkills] Bloch-Kato SVG written to: {args.svg}")
     else:
         parser.print_help()
 
