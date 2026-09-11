@@ -766,6 +766,17 @@ def main():
     p_aflow.add_argument("--json", "-j", action="store_true", help="Output raw JSON attention flow telemetry")
     p_aflow.add_argument("--demo", action="store_true", help="Run with demonstration uneven density spatial cards")
 
+    # working-set / cowan-pruner / set-pruner / bead-pruner
+    p_wset = subparsers.add_parser("working-set", aliases=["cowan-pruner", "set-pruner", "bead-pruner"], help="Autonomous cognitive spatial working memory anchor eviction and dynamic working set pruner")
+    p_wset.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or nodes JSON file")
+    p_wset.add_argument("--max-active", "-m", type=int, default=4, help="Maximum concurrent active focus chunks (default: 4)")
+    p_wset.add_argument("--ghost-opacity", "-g", type=float, default=0.35, help="Visual opacity for peripheral ghosted nodes (default: 0.35)")
+    p_wset.add_argument("--focal", "-f", nargs="*", default=[], help="Explicit focal node IDs to preserve in active working set")
+    p_wset.add_argument("--output-canvas", "-o", default="", help="Output pruned Obsidian .canvas filepath")
+    p_wset.add_argument("--svg", default="", help="Output working set SVG diagram filepath")
+    p_wset.add_argument("--json", "-j", action="store_true", help="Output raw JSON working set telemetry")
+    p_wset.add_argument("--demo", action="store_true", help="Run with demonstration 8-card spatial canvas")
+
     args = parser.parse_args()
 
 
@@ -3342,6 +3353,52 @@ def main():
         if args.svg:
             optimizer.to_svg(args.svg)
             print(f"[DxSkills] Attention heatmap SVG written to: {args.svg}")
+    elif args.command in ["working-set", "cowan-pruner", "set-pruner", "bead-pruner"]:
+        import scripts.working_set_pruner as wset
+
+        pruner = wset.WorkingSetPruner(
+            max_active_working_set=args.max_active,
+            ghost_opacity=args.ghost_opacity,
+        )
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data and isinstance(raw_data["nodes"], list):
+                pruner.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                pruner.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_canvas = {
+                "nodes": [
+                    {"id": "node_active_1", "text": "Active Sprint Task 1", "x": 100, "y": 100, "recency": 8, "fixations": 5},
+                    {"id": "node_active_2", "text": "Active Sprint Task 2", "x": 380, "y": 100, "recency": 7, "fixations": 4},
+                    {"id": "node_active_3", "text": "Active Sprint Task 3", "x": 660, "y": 100, "recency": 6, "fixations": 3},
+                    {"id": "node_active_4", "text": "Active Sprint Task 4", "x": 100, "y": 300, "recency": 5, "fixations": 2},
+                    {"id": "node_ghost_1", "text": "Peripheral Architectural Context", "x": 380, "y": 300, "recency": 3, "fixations": 1},
+                    {"id": "node_ghost_2", "text": "Secondary Service Broker", "x": 660, "y": 300, "recency": 2, "fixations": 1},
+                    {"id": "node_bead_1", "text": "Legacy Q3 Milestones", "x": 100, "y": 550, "recency": 0, "fixations": 0},
+                    {"id": "node_bead_2", "text": "Archived Performance Benchmarks", "x": 380, "y": 550, "recency": 0, "fixations": 0}
+                ],
+                "edges": []
+            }
+            pruner.load_dict(demo_canvas)
+
+        focal_ids = args.focal if args.focal else None
+        profiles, telemetry = pruner.prune_working_set(focal_ids=focal_ids)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + pruner.render_ascii_report(telemetry))
+
+        if args.output_canvas:
+            pruner.to_canvas(args.output_canvas, canvas_title="Pruned Working Set Canvas")
+            print(f"[DxSkills] Pruned working set canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            pruner.to_svg(args.svg)
+            print(f"[DxSkills] Working set SVG diagram written to: {args.svg}")
     else:
         parser.print_help()
 

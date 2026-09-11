@@ -416,12 +416,16 @@
 - [x] **Task 95.2:** Dynamic visual entropy regulator redistributing card densities to equalize ocular reading velocity.
 
 ### Phase 96: Autonomous Cognitive Spatial Working Memory Anchor Eviction & Dynamic Working Set Pruner
-- [ ] **Task 96.1:** Least-recently-fixated node tracker identifying stale spatial entities in large active workspaces.
-- [ ] **Task 96.2:** Non-destructive peripheral ghosting compressor archiving background clusters into high-density reference beads.
+- [x] **Task 96.1:** Least-recently-fixated node tracker identifying stale spatial entities in large active workspaces.
+- [x] **Task 96.2:** Non-destructive peripheral ghosting compressor archiving background clusters into high-density reference beads.
 
 ### Phase 97: Autonomous Cognitive Spatial Multi-Perspective Dialectic Reification & Synthesis Loom
 - [ ] **Task 97.1:** Structural tension mapper identifying antithetical polarities in multi-card architectural arguments.
 - [ ] **Task 97.2:** Aufhebung bridge generator weaving thesis and antithesis into concrete emergent architectural implementations.
+
+### Phase 98: Autonomous Cognitive Spatial Dynamic Lexical Pacing & Bionic Fixation Anchor Synthesizer
+- [ ] **Task 98.1:** Sub-lexical fixation point synthesizer computing weighted prefix anchors for dense technical prose.
+- [ ] **Task 98.2:** Adaptive reading speed governor pacing visual guides to prevent saccadic regression cascades.
 
 ---
 
@@ -521,3 +525,4 @@
 | **Cycle 89** | 2026-09-11 09:52 | Autonomous Cognitive Spatial Working Memory Saccade Velocity & Gaze Path Calibrator | `scripts/saccade_calibrator.py`, `tests/test_saccade_calibrator.py`, `index.html` | `342c434` |
 | **Cycle 90** | 2026-09-11 10:02 | Autonomous Cognitive Spatial Schema Morphing & Cross-Scale Projection Engine | `scripts/schema_projection_engine.py`, `tests/test_schema_projection_engine.py`, `index.html` | `01a7aba` |
 | **Cycle 91** | 2026-09-11 10:12 | Autonomous Cognitive Spatial Multi-Scale Attention Heatmap & Density Flow Optimizer | `scripts/attention_flow_optimizer.py`, `tests/test_attention_flow_optimizer.py`, `index.html` | `fefaff9` |
+| **Cycle 92** | 2026-09-11 10:22 | Autonomous Cognitive Spatial Working Memory Anchor Eviction & Dynamic Working Set Pruner | `scripts/working_set_pruner.py`, `tests/test_working_set_pruner.py`, `index.html` | `c723fd5` |
