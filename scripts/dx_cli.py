@@ -907,6 +907,15 @@ def main():
     p_nreconcile.add_argument("--json", "-j", action="store_true", help="Output raw JSON reconciliation telemetry")
     p_nreconcile.add_argument("--demo", action="store_true", help="Run with demonstration divergent architectural pathways")
 
+    # topological-homotopy / homotopy-engine / topology-visualizer / deformation-engine
+    p_thomotopy = subparsers.add_parser("topological-homotopy", aliases=["homotopy-engine", "topology-visualizer", "deformation-engine"], help="Autonomous cognitive spatial topological invariant and homotopy visualizer")
+    p_thomotopy.add_argument("input", nargs="?", default="", help="Input topological nodes and edges JSON file")
+    p_thomotopy.add_argument("--steps", "-s", type=int, default=5, help="Number of intermediate deformation steps (default: 5)")
+    p_thomotopy.add_argument("--audit", default="", help="Output topological invariant audit markdown filepath")
+    p_thomotopy.add_argument("--svg", default="", help="Output homotopy diagram SVG filepath")
+    p_thomotopy.add_argument("--json", "-j", action="store_true", help="Output raw JSON homotopy telemetry")
+    p_thomotopy.add_argument("--demo", action="store_true", help="Run with demonstration triangle cyclic topology")
+
     args = parser.parse_args()
 
 
@@ -4249,6 +4258,54 @@ def main():
         if args.svg:
             reconciler.export_svg(result, args.svg)
             print(f"[DxSkills] Narrative reconciliation map SVG written to: {args.svg}")
+    elif args.command in ["topological-homotopy", "homotopy-engine", "topology-visualizer", "deformation-engine"]:
+        import scripts.topological_homotopy_engine as the_mod
+
+        engine = the_mod.TopologicalHomotopyEngine(steps_count=args.steps)
+
+        raw_nodes = []
+        raw_edges = []
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                if isinstance(raw_data, dict):
+                    raw_nodes = raw_data.get("nodes", [])
+                    raw_edges = raw_data.get("edges", [])
+                elif isinstance(raw_data, list):
+                    raw_nodes = raw_data
+            except json.JSONDecodeError:
+                raw_nodes = [{"id": f"n_{idx+1}", "label": line.strip()} for idx, line in enumerate(content.splitlines()) if line.strip()]
+        elif args.demo or not args.input:
+            raw_nodes = [
+                {"id": "n1", "label": "Perceptual Anchor", "start_x": 100.0, "start_y": 100.0, "end_x": 600.0, "end_y": 100.0},
+                {"id": "n2", "label": "Epistemic Node", "start_x": 200.0, "start_y": 250.0, "end_x": 700.0, "end_y": 250.0},
+                {"id": "n3", "label": "Action Horizon", "start_x": 100.0, "start_y": 250.0, "end_x": 600.0, "end_y": 250.0},
+            ]
+            raw_edges = [
+                {"source": "n1", "target": "n2"},
+                {"source": "n2", "target": "n3"},
+                {"source": "n3", "target": "n1"},
+            ]
+
+        result = engine.evaluate_and_deform(nodes=raw_nodes, edges=raw_edges)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + engine.generate_ascii_report(result))
+            print("\n" + result.invariant_audit_md)
+
+        if args.audit:
+            with open(args.audit, "w", encoding="utf-8") as f:
+                f.write(result.invariant_audit_md)
+            print(f"[DxSkills] Invariant audit report written to: {args.audit}")
+
+        if args.svg:
+            engine.export_svg(result, args.svg)
+            print(f"[DxSkills] Homotopy diagram SVG written to: {args.svg}")
     else:
         parser.print_help()
 
