@@ -1319,6 +1319,15 @@ def main():
     p_cyau.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_cyau.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_cyau.add_argument("--demo", action="store_true", help="Run with demonstration Calabi-Yau quintic threefold and flux vacua")
+
+    # sheaf-cohomology / epistemic-gluing / cech-cohomology / sheaf-loom
+    p_sheaf = subparsers.add_parser("sheaf-cohomology", aliases=["epistemic-gluing", "cech-cohomology", "sheaf-loom"], help="Autonomous cognitive spatial Sheaf-Theoretic Cohomology and Epistemic Gluing Loom")
+    p_sheaf.add_argument("input", nargs="?", default="", help="Input epistemic cover configuration JSON filepath")
+    p_sheaf.add_argument("--report", default="", help="Output sheaf cohomology diagnostic markdown filepath")
+    p_sheaf.add_argument("--svg", default="", help="Output epistemic nerve complex SVG filepath")
+    p_sheaf.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_sheaf.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_sheaf.add_argument("--demo", action="store_true", help="Run with demonstration 5-lens epistemic cover")
     args = parser.parse_args()
 
 
@@ -7354,6 +7363,71 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.to_html())
             print(f"[DxSkills] Calabi-Yau interactive HTML written to: {args.html}")
+    elif args.command in ["sheaf-cohomology", "epistemic-gluing", "cech-cohomology", "sheaf-loom"]:
+        from scripts.sheaf_cohomology_loom import (
+            SheafCohomologyLoom,
+            OpenSet,
+        )
+        if args.demo or not args.input:
+            loom = SheafCohomologyLoom.create_default_epistemic_cover()
+        else:
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            sec_dim = data.get("section_dim", 2)
+            loom = SheafCohomologyLoom(section_dim=sec_dim)
+            for lens_data in data.get("open_sets", []):
+                coords = lens_data.get("center", [100.0, 100.0])
+                loom.add_lens(
+                    OpenSet(
+                        lens_id=lens_data.get("lens_id", "L"),
+                        label=lens_data.get("label", "Lens"),
+                        domain=lens_data.get("domain", "Domain"),
+                        center_x=float(coords[0]),
+                        center_y=float(coords[1]),
+                        radius=float(lens_data.get("radius", 100.0)),
+                        section_val=lens_data.get("section_val", [1.0] * sec_dim),
+                        uncertainty=float(lens_data.get("uncertainty", 0.05)),
+                    )
+                )
+
+        result = loom.build_cech_complex()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Sheaf-Theoretic Cohomology & Epistemic Gluing Loom")
+            print("=================================================================")
+            print(f"Open Sets (Lenses):            {len(result.open_sets)}")
+            print(f"Pairwise Overlaps (1-cells):   {len(result.overlaps)}")
+            print(f"Triple Overlaps (2-cells):     {len(result.triples)}")
+            print(f"C^0 Dimension:                 {result.dim_c0}")
+            print(f"C^1 Dimension:                 {result.dim_c1}")
+            print(f"Coboundary delta^0 Rank:       {result.rank_delta0}")
+            print(f"Coboundary delta^1 Rank:       {result.rank_delta1}")
+            print(f"Global Sections (H^0 Dim):     {result.betti_h0}")
+            print(f"Gluing Obstruction (H^1 Dim):  {result.betti_h1}")
+            print(f"Euler Characteristic (chi):    {result.euler_characteristic}")
+            print(f"Global Gluing Energy:          {result.global_gluing_energy:.4f}")
+            print(f"Consensus Synthesis Index:     {result.consensus_index * 100:.1f}%")
+            print(f"Obstruction Status:            {'DETECTED' if result.gluing_obstruction_detected else 'TRIVIAL (CONSENSUS)'}")
+            print(f"Summary:                       {result.obstruction_summary}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Sheaf cohomology report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Epistemic nerve complex SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Sheaf interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
