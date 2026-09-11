@@ -1259,6 +1259,15 @@ def main():
     p_tlat.add_argument("--svg", default="", help="Output tensegrity lattice interactive SVG filepath")
     p_tlat.add_argument("--json", "-j", action="store_true", help="Output raw JSON tensegrity telemetry")
     p_tlat.add_argument("--demo", action="store_true", help="Run with demonstration tensegrity prism")
+    # voronoi-isochrone / isochrone-tessellator / concept-territories / proximity-loom / voronoi-loom
+    p_viso = subparsers.add_parser("voronoi-isochrone", aliases=["isochrone-tessellator", "concept-territories", "proximity-loom", "voronoi-loom"], help="Autonomous cognitive spatial iso-chronous Voronoi isochrone tessellator and proximity loom engine")
+    p_viso.add_argument("input", nargs="?", default="", help="Input concept generator sites JSON filepath")
+    p_viso.add_argument("--cost-step", type=float, default=30.0, help="Isochrone wavefront cost step interval (default: 30.0)")
+    p_viso.add_argument("--max-cost", type=float, default=90.0, help="Isochrone wavefront maximum cost horizon (default: 90.0)")
+    p_viso.add_argument("--report", default="", help="Output Voronoi isochrone diagnostic markdown filepath")
+    p_viso.add_argument("--svg", default="", help="Output Voronoi isochrone interactive SVG filepath")
+    p_viso.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_viso.add_argument("--demo", action="store_true", help="Run with demonstration semantic cluster territories")
     args = parser.parse_args()
 
 
@@ -6798,6 +6807,88 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Tensegrity SVG written to: {args.svg}")
+    elif args.command in ["voronoi-isochrone", "isochrone-tessellator", "concept-territories", "proximity-loom", "voronoi-loom"]:
+        import scripts.isochronous_voronoi_tessellator as ivt_mod
+        tessellator = ivt_mod.IsochronousVoronoiTessellator()
+
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                raw_sites = data.get("sites", [])
+                for i, s in enumerate(raw_sites):
+                    tessellator.add_site(
+                        ivt_mod.ConceptSite(
+                            site_id=str(s.get("site_id", s.get("id", f"site-{i}"))),
+                            label=str(s.get("label", f"Site {i}")),
+                            x=float(s["x"]),
+                            y=float(s["y"]),
+                            influence_weight=float(s.get("influence_weight", s.get("weight", 1.0))),
+                            color=str(s.get("color", "#00e5ff")),
+                        )
+                    )
+            telemetry = tessellator.compute_tessellation(
+                cost_step=args.cost_step,
+                max_cost=args.max_cost,
+            )
+        else:
+            telemetry = tessellator.simulate_demo_concept_territories()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print(f"[DxSkills] Iso-Chronous Voronoi Tessellator Telemetry")
+            print(f"Total Sites: {telemetry.total_sites}")
+            print(f"Territory Cells: {telemetry.total_cells}")
+            print(f"Delaunay Dual Edges: {telemetry.total_delaunay_edges}")
+            print(f"Isochrone Wavefronts: {telemetry.total_isochrone_rings}")
+            print(f"Mean Cell Area: {telemetry.mean_cell_area_px:.0f} px")
+            print(f"Territory Coverage: {telemetry.territory_coverage_pct:.1f}%")
+            if telemetry.warnings:
+                for w in telemetry.warnings:
+                    print(f"Note: {w}")
+
+        if args.report:
+            md_lines = [
+                "# Iso-Chronous Voronoi Isochrone Tessellator Diagnostic Report",
+                "",
+                f"**Total Concept Sites:** {telemetry.total_sites}",
+                f"- **Voronoi Territory Cells:** {telemetry.total_cells}",
+                f"- **Delaunay Dual Connections:** {telemetry.total_delaunay_edges}",
+                f"- **Isochrone Wavefront Rings:** {telemetry.total_isochrone_rings}",
+                f"- **Mean Territorial Cell Area:** {telemetry.mean_cell_area_px:.0f} px",
+                f"- **Bounding Coverage Percentage:** {telemetry.territory_coverage_pct:.1f}%",
+                "",
+                "## Concept Sites & Influence Weights",
+                "",
+                "| Site ID | Label | Coordinates (X, Y) | Influence Weight | Color Code |",
+                "| :--- | :--- | :--- | :--- | :--- |",
+            ]
+            for s in telemetry.sites:
+                md_lines.append(
+                    f"| `{s.site_id}` | {s.label} | ({s.x:.1f}, {s.y:.1f}) | {s.influence_weight:.2f} | `{s.color}` |"
+                )
+            md_lines.extend([
+                "",
+                "## Delaunay Dual Adjacencies",
+                "",
+                "| Site A | Site B | Distance |",
+                "| :--- | :--- | :--- |",
+            ])
+            for de in telemetry.delaunay_edges:
+                md_lines.append(f"| `{de.site_a_id}` | `{de.site_b_id}` | {de.length:.1f} px |")
+            if telemetry.warnings:
+                md_lines.extend(["", "## Diagnostic Notes", ""])
+                for w in telemetry.warnings:
+                    md_lines.append(f"- [TESSELLATION] {w}")
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write("\n".join(md_lines) + "\n")
+            print(f"[DxSkills] Voronoi report written to: {args.report}")
+
+        if args.svg:
+            svg_code = tessellator.render_isochronous_voronoi_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Voronoi SVG written to: {args.svg}")
     else:
         parser.print_help()
 
