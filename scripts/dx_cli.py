@@ -1073,6 +1073,16 @@ def main():
     p_dtensor.add_argument("--json", "-j", action="store_true", help="Output raw JSON tensor telemetry")
     p_dtensor.add_argument("--demo", action="store_true", help="Run with demonstration dialectic vector set")
 
+    # anchor-eviction / horizon-pacer / memory-sunset / decay-eviction
+    p_aevict = subparsers.add_parser("anchor-eviction", aliases=["horizon-pacer", "memory-sunset", "decay-eviction"], help="Autonomous cognitive spatial working memory anchor eviction and graceful horizon pacer")
+    p_aevict.add_argument("input", nargs="?", default="", help="Input decaying anchors JSON filepath")
+    p_aevict.add_argument("--threshold", type=float, default=4.5, help="Working memory pressure threshold (default: 4.5)")
+    p_aevict.add_argument("--time", type=float, default=1000.0, help="Current simulation timestamp in seconds (default: 1000.0)")
+    p_aevict.add_argument("--report", default="", help="Output anchor eviction audit markdown filepath")
+    p_aevict.add_argument("--svg", default="", help="Output anchor sunset horizon SVG filepath")
+    p_aevict.add_argument("--json", "-j", action="store_true", help="Output raw JSON eviction telemetry")
+    p_aevict.add_argument("--demo", action="store_true", help="Run with demonstration decaying anchor set")
+
     args = parser.parse_args()
 
 
@@ -5444,6 +5454,74 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Dialectic tensor SVG written to: {args.svg}")
+    elif args.command in ["anchor-eviction", "horizon-pacer", "memory-sunset", "decay-eviction"]:
+        import scripts.anchor_eviction_horizon_pacer as aehp_mod
+        pacer = aehp_mod.AnchorEvictionHorizonPacer(pressure_threshold=args.threshold)
+
+        anchors = []
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                items = data.get("anchors", data) if isinstance(data, dict) else data
+                for item in items:
+                    anchors.append(
+                        aehp_mod.DecayingAnchor(
+                            anchor_id=item.get("id", item.get("anchor_id", "anc")),
+                            title=item.get("title", "Anchor"),
+                            created_at_s=float(item.get("created_at_s", 0.0)),
+                            last_accessed_s=float(item.get("last_accessed_s", 0.0)),
+                            base_saliency=float(item.get("base_saliency", 1.0)),
+                            half_life_s=float(item.get("half_life_s", 300.0)),
+                            pos_x=float(item.get("pos_x", 0.0)),
+                            pos_y=float(item.get("pos_y", 0.0)),
+                        )
+                    )
+        else:
+            anchors = aehp_mod.sample_decaying_anchors(base_time_s=args.time)
+
+        telemetry = pacer.evaluate_session(anchors, current_time_s=args.time)
+
+        if args.json:
+            out_dict = {
+                "current_time_s": telemetry.current_time_s,
+                "total_anchors": telemetry.total_anchors,
+                "fresh_count": telemetry.fresh_count,
+                "maturing_count": telemetry.maturing_count,
+                "sunset_count": telemetry.sunset_count,
+                "breadcrumb_count": telemetry.breadcrumb_count,
+                "evicted_count": telemetry.evicted_count,
+                "working_memory_pressure": telemetry.working_memory_pressure,
+                "overload_warning": telemetry.overload_warning,
+                "anchor_states": [
+                    {
+                        "anchor_id": s.anchor_id,
+                        "title": s.title,
+                        "retention_score": s.retention_score,
+                        "lifecycle_state": s.lifecycle_state,
+                        "opacity": s.opacity,
+                        "visual_radius_px": s.visual_radius_px,
+                        "pos_x": s.pos_x,
+                        "pos_y": s.pos_y,
+                    }
+                    for s in telemetry.anchor_states
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = pacer.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = pacer.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Anchor eviction report written to: {args.report}")
+
+        if args.svg:
+            svg_code = pacer.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Anchor sunset horizon SVG written to: {args.svg}")
     else:
         parser.print_help()
 
