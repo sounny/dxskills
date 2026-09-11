@@ -898,6 +898,15 @@ def main():
     p_stransfer.add_argument("--json", "-j", action="store_true", help="Output raw JSON analogy transfer telemetry")
     p_stransfer.add_argument("--demo", action="store_true", help="Run with demonstration hydraulic to electrical circuit transfer")
 
+    # narrative-reconcile / branch-reconciler / divergence-bridge / fork-synthesizer
+    p_nreconcile = subparsers.add_parser("narrative-reconcile", aliases=["branch-reconciler", "divergence-bridge", "fork-synthesizer"], help="Autonomous cognitive spatial multiscale narrative branching and divergence reconciler")
+    p_nreconcile.add_argument("input", nargs="?", default="", help="Input narrative branches JSON file or trajectory specification")
+    p_nreconcile.add_argument("--threshold", "-t", type=float, default=0.35, help="Drift threshold triggering reconciliation bridges (default: 0.35)")
+    p_nreconcile.add_argument("--synthesis", default="", help="Output executive synthesis markdown filepath")
+    p_nreconcile.add_argument("--svg", default="", help="Output narrative reconciliation map SVG diagram filepath")
+    p_nreconcile.add_argument("--json", "-j", action="store_true", help="Output raw JSON reconciliation telemetry")
+    p_nreconcile.add_argument("--demo", action="store_true", help="Run with demonstration divergent architectural pathways")
+
     args = parser.parse_args()
 
 
@@ -4156,6 +4165,90 @@ def main():
         if args.svg:
             engine.export_svg(projection, args.svg)
             print(f"[DxSkills] Isomorphic projection SVG written to: {args.svg}")
+    elif args.command in ["narrative-reconcile", "branch-reconciler", "divergence-bridge", "fork-synthesizer"]:
+        import scripts.narrative_branch_reconciler as nbr_mod
+
+        reconciler = nbr_mod.NarrativeBranchReconciler(drift_threshold=args.threshold)
+
+        raw_branches = []
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                if isinstance(raw_data, dict):
+                    raw_branches = raw_data.get("branches", [])
+                elif isinstance(raw_data, list):
+                    raw_branches = raw_data
+            except json.JSONDecodeError:
+                raw_branches = [{"id": f"br_{idx+1}", "name": line.strip(), "origin_id": "root", "waypoints": []} for idx, line in enumerate(content.splitlines()) if line.strip()]
+        elif args.demo or not args.input:
+            raw_branches = [
+                {
+                    "id": "br_a",
+                    "name": "Branch Alpha: Monolithic Memory Store",
+                    "origin_id": "root_fork",
+                    "intent": "Maximize raw in-memory lookup performance",
+                    "terminal_state": "Zero-latency in-memory cache",
+                    "waypoints": [
+                        {
+                            "id": "wp_a1",
+                            "label": "Shared SharedArrayBuffer Pool",
+                            "phase_order": 1,
+                            "assumptions": ["Dedicated multi-core hardware available"],
+                            "tradeoffs": {"latency": 0.05, "ram_usage": 0.85, "portability": 0.30},
+                        },
+                        {
+                            "id": "wp_a2",
+                            "label": "Direct Binary Pointer Dereference",
+                            "phase_order": 2,
+                            "assumptions": ["Static layout offsets remain unchanged"],
+                            "tradeoffs": {"latency": 0.02, "ram_usage": 0.90, "portability": 0.20},
+                        },
+                    ],
+                },
+                {
+                    "id": "br_b",
+                    "name": "Branch Beta: Distributed Micro-Vaults",
+                    "origin_id": "root_fork",
+                    "intent": "Maximize multi-tenant isolation and fault tolerance",
+                    "terminal_state": "Decoupled immutable snapshot replicas",
+                    "waypoints": [
+                        {
+                            "id": "wp_b1",
+                            "label": "Ephemeral Local IndexedDB Clones",
+                            "phase_order": 1,
+                            "assumptions": ["Browser quota allows 50MB storage"],
+                            "tradeoffs": {"latency": 0.45, "ram_usage": 0.20, "portability": 0.90},
+                        },
+                        {
+                            "id": "wp_b2",
+                            "label": "Event-Driven Sync Message Mesh",
+                            "phase_order": 2,
+                            "assumptions": ["Eventual consistency within 100ms"],
+                            "tradeoffs": {"latency": 0.50, "ram_usage": 0.25, "portability": 0.95},
+                        },
+                    ],
+                },
+            ]
+
+        result = reconciler.analyze_and_reconcile(raw_branches=raw_branches)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + reconciler.generate_ascii_report(result))
+            print("\n" + result.executive_synthesis_md)
+
+        if args.synthesis:
+            with open(args.synthesis, "w", encoding="utf-8") as f:
+                f.write(result.executive_synthesis_md)
+            print(f"[DxSkills] Executive synthesis written to: {args.synthesis}")
+
+        if args.svg:
+            reconciler.export_svg(result, args.svg)
+            print(f"[DxSkills] Narrative reconciliation map SVG written to: {args.svg}")
     else:
         parser.print_help()
 
