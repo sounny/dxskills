@@ -1609,6 +1609,14 @@ def main():
     p_aqft.add_argument("--svg", default="", help="Output Arithmetic QFT and Dijkgraaf-Witten SVG filepath")
     p_aqft.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_aqft.add_argument("--demo", action="store_true", help="Run with demonstration prime knot link, gauge holonomies, and partition phasor")
+    # padic-hodge / fontaine-rings / crystalline-module / padic-loom
+    p_padic = subparsers.add_parser("padic-hodge", aliases=["fontaine-rings", "crystalline-module", "padic-loom"], help="Autonomous cognitive spatial p-Adic Hodge Theory and Fontaine Period Rings Loom")
+    p_padic.add_argument("--prime-p", "-p", type=int, default=5, choices=[2, 3, 5, 7, 11, 13], help="Base p-adic prime p (default: 5)")
+    p_padic.add_argument("--archetype", default="crystalline", choices=["crystalline", "semistable", "de_rham", "hodge_tate"], help="p-Adic Galois representation reduction archetype (default: crystalline)")
+    p_padic.add_argument("--dim", type=int, default=2, choices=[1, 2, 3, 4], help="Representation dimension (default: 2)")
+    p_padic.add_argument("--svg", default="", help="Output p-Adic Hodge Theory and Fontaine Rings SVG filepath")
+    p_padic.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_padic.add_argument("--demo", action="store_true", help="Run with demonstration period rings tower, Newton-Hodge polygons, and filtered module")
     args = parser.parse_args()
 
 
@@ -9113,6 +9121,53 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_aqft_svg())
             print(f"[DxSkills] Arithmetic QFT SVG written to: {args.svg}")
+    elif args.command in ["padic-hodge", "fontaine-rings", "crystalline-module", "padic-loom"]:
+        from scripts.padic_hodge_loom import (
+            PAdicHodgeLoom,
+            FontaineRingType,
+            ReductionArchetype,
+        )
+        arch_map = {
+            "crystalline": ReductionArchetype.GOOD_REDUCTION_CRYSTALLINE.value,
+            "semistable": ReductionArchetype.SEMISTABLE_NON_CRYSTALLINE.value,
+            "de_rham": ReductionArchetype.POTENTIALLY_SEMISTABLE_DERHAM.value,
+            "hodge_tate": ReductionArchetype.HODGE_TATE_GENERIC.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, ReductionArchetype.GOOD_REDUCTION_CRYSTALLINE.value)
+
+        loom = PAdicHodgeLoom(
+            base_prime_p=args.prime_p,
+            default_archetype=chosen_arch,
+            dimension=args.dim,
+        )
+        rep = loom.representations[0]
+        mod = loom.evaluate_filtered_module("MOD-RUN-01")
+        poly = loom.compute_newton_hodge_polygons("POLY-RUN-01")
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  p-Adic Hodge Theory & Fontaine Period Rings Loom")
+            print("=================================================================")
+            print(f"Base Prime p & Dimension:      Prime p = {loom.base_prime_p} | Dim = {rep.representation_dimension}")
+            print(f"Reduction Archetype:           {rep.reduction_archetype}")
+            print(f"Hodge-Tate Weights:            {rep.hodge_tate_weights}")
+            print(f"Classification Hierarchy:      Cryst={rep.is_crystalline} | Semistable={rep.is_semistable} | de Rham={rep.is_de_rham} | HT={rep.is_hodge_tate}")
+            print(f"Fontaine Period Rings Tower:   {[r.ring_type.split()[0] for r in loom.rings]}")
+            print(f"Frobenius phi Slopes:          {mod.frobenius_slopes}")
+            print(f"Monodromy N Nilpotency Order:  {mod.monodromy_nilpotency_order} (N^{mod.monodromy_nilpotency_order} = 0)")
+            print(f"Hodge Polygon Vertices:        {poly.hodge_vertices}")
+            print(f"Newton Polygon Vertices:       {poly.newton_vertices}")
+            print(f"Endpoints Match Condition:     {poly.endpoints_match} (t_H = t_N)")
+            print(f"Weak Admissibility (P_N >= P_H): {'SATISFIED (Colmez-Fontaine theorem holds)' if poly.newton_above_hodge else 'FAILED'}")
+            print(f"Newton-Hodge Gap Area:         Gap = {poly.gap_area:.4f}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_padic_svg())
+            print(f"[DxSkills] p-Adic Hodge Theory SVG written to: {args.svg}")
     else:
         parser.print_help()
 
