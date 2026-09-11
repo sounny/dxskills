@@ -583,6 +583,15 @@ def main():
     p_cons.add_argument("--svg", "-s", default="", help="Output consensus radar SVG filepath")
     p_cons.add_argument("--json", "-j", action="store_true", help="Output raw JSON consensus scorecard")
     p_cons.add_argument("--demo", action="store_true", help="Run with demonstration divergent multi-agent canvases")
+
+    # gaze / inertia / saccade-velocity
+    p_gaze = subparsers.add_parser("gaze", aliases=["inertia", "saccade-velocity"], help="Autonomous cognitive spatial working memory saccade velocity and gaze inertia balancer")
+    p_gaze.add_argument("canvas", nargs="?", default="", help="Target Obsidian .canvas filepath")
+    p_gaze.add_argument("--sequence", "-q", nargs="*", default=[], help="Optional ordered node ID reading traverse sequence")
+    p_gaze.add_argument("--output-canvas", "-o", default="", help="Output stabilized .canvas filepath with stepping stones")
+    p_gaze.add_argument("--svg", "-s", default="", help="Output saccadic velocity profile SVG filepath")
+    p_gaze.add_argument("--json", "-j", action="store_true", help="Output raw JSON gaze inertia telemetry")
+    p_gaze.add_argument("--demo", action="store_true", help="Run with demonstration spatial canvas layout")
     
     args = parser.parse_args()
 
@@ -2339,6 +2348,40 @@ def main():
         if args.svg:
             svg_code = synthesizer.export_svg_consensus_radar(scorecard, output_path=args.svg)
             print(f"[DxSkills] Workspace consensus radar SVG exported to: {args.svg}")
+    elif args.command in ["gaze", "inertia", "saccade-velocity"]:
+        import scripts.gaze_inertia_balancer as gib
+        balancer = gib.GazeInertiaBalancer()
+        canvas_data = None
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                canvas_data = json.load(f)
+        elif args.demo or not args.canvas:
+            canvas_data = {
+                "nodes": [
+                    {"id": "node_entry", "x": 0, "y": 0, "width": 240, "height": 130, "text": "### Entry Point\nInitial request ingress and protocol routing."},
+                    {"id": "node_auth", "x": 180, "y": 120, "width": 240, "height": 130, "text": "### Auth Token Validator\nJWT cryptographic validation loop."},
+                    {"id": "node_distant_db", "x": 1100, "y": 950, "width": 260, "height": 140, "text": "### Distributed Shard Mesh\nCross-datacenter consensus and persistent state."},
+                    {"id": "node_distant_cold", "x": 1600, "y": 1400, "width": 260, "height": 140, "text": "### Cold Archival Glacier\nMultipart compressed snapshots and audit log."},
+                ],
+                "edges": []
+            }
+
+        seq = args.sequence if args.sequence else None
+        stabilized_canvas, telemetry = balancer.balance_gaze_inertia(canvas_data, reading_sequence=seq)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + balancer.generate_markdown_report(telemetry))
+
+        if args.output_canvas:
+            with open(args.output_canvas, "w", encoding="utf-8") as f:
+                json.dump(stabilized_canvas, f, indent=2)
+            print(f"\n[DxSkills] Stabilized .canvas exported to: {args.output_canvas}")
+
+        if args.svg:
+            svg_code = balancer.export_svg_velocity_profile(telemetry, output_path=args.svg)
+            print(f"[DxSkills] Saccade velocity profile SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
