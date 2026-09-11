@@ -1012,6 +1012,17 @@ def main():
     p_afunnel.add_argument("--json", "-j", action="store_true", help="Output raw JSON funnel telemetry")
     p_afunnel.add_argument("--demo", action="store_true", help="Run with demonstration architectural canvas entities")
 
+    # semantic-gravity / gravity-well / conceptual-orbit / thesis-attractor
+    p_sgravity = subparsers.add_parser("semantic-gravity", aliases=["gravity-well", "conceptual-orbit", "thesis-attractor"], help="Autonomous cognitive spatial semantic gravity well and conceptual orbit engine")
+    p_sgravity.add_argument("input", nargs="?", default="", help="Input conceptual system JSON filepath")
+    p_sgravity.add_argument("--gravitational-constant", "-g", type=float, default=15000.0, help="Gravitational constant G (default: 15000.0)")
+    p_sgravity.add_argument("--base-radius", "-b", type=float, default=95.0, help="Base orbital radius in px (default: 95.0)")
+    p_sgravity.add_argument("--spacing", "-s", type=float, default=1.42, help="Orbital harmonic spacing factor (default: 1.42)")
+    p_sgravity.add_argument("--report", default="", help="Output semantic gravity markdown audit filepath")
+    p_sgravity.add_argument("--svg", default="", help="Output conceptual orbit SVG diagram filepath")
+    p_sgravity.add_argument("--json", "-j", action="store_true", help="Output raw JSON gravity telemetry")
+    p_sgravity.add_argument("--demo", action="store_true", help="Run with demonstration conceptual thesis system")
+
     args = parser.parse_args()
 
 
@@ -4930,6 +4941,90 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Attentional funnel SVG written to: {args.svg}")
+    elif args.command in ["semantic-gravity", "gravity-well", "conceptual-orbit", "thesis-attractor"]:
+        import scripts.semantic_gravity_well as sgw_mod
+
+        engine = sgw_mod.SemanticGravityWell(
+            gravitational_constant_g=args.gravitational_constant,
+            base_orbit_radius_px=args.base_radius,
+            orbit_spacing_factor=args.spacing
+        )
+
+        core = None
+        satellites = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+            try:
+                raw_data = json.loads(raw_text)
+                core_data = raw_data.get("core", {})
+                core = sgw_mod.ConceptualBody(
+                    body_id=str(core_data.get("id", "core")),
+                    title=str(core_data.get("title", "Core Thesis")),
+                    mass=float(core_data.get("mass", 50.0)),
+                    domain_tag=str(core_data.get("domain", "general")),
+                    affinity_to_core=1.0
+                )
+                sat_list = raw_data.get("satellites", [])
+                for idx, item in enumerate(sat_list, 1):
+                    satellites.append(sgw_mod.ConceptualBody(
+                        body_id=str(item.get("id", f"sat-{idx}")),
+                        title=str(item.get("title", f"Satellite {idx}")),
+                        mass=float(item.get("mass", 15.0)),
+                        domain_tag=str(item.get("domain", "supporting")),
+                        affinity_to_core=float(item.get("affinity", 0.70)),
+                        initial_theta_rad=float(item.get("theta", 0.0))
+                    ))
+            except json.JSONDecodeError:
+                pass
+
+        if not core or args.demo:
+            core, satellites = sgw_mod.sample_semantic_system()
+
+        telemetry = engine.solve_orbital_system(core, satellites)
+
+        if args.json:
+            out_dict = {
+                "core_id": telemetry.core_id,
+                "core_title": telemetry.core_title,
+                "core_mass": telemetry.core_mass,
+                "capture_radius_px": telemetry.capture_radius_px,
+                "escape_radius_px": telemetry.escape_radius_px,
+                "total_satellites": telemetry.total_satellites,
+                "orbit_count": telemetry.orbit_count,
+                "mean_stability_score": telemetry.mean_stability_score,
+                "cowan_overflow_count": telemetry.cowan_overflow_count,
+                "orbital_states": [
+                    {
+                        "id": s.body.body_id,
+                        "title": s.body.title,
+                        "domain": s.body.domain_tag,
+                        "semi_major_px": s.semi_major_axis_px,
+                        "eccentricity": s.eccentricity,
+                        "period_s": s.orbital_period_s,
+                        "escape_risk": s.escape_risk,
+                        "stability": s.stability_status,
+                        "position": [s.pos_x, s.pos_y]
+                    }
+                    for s in telemetry.orbital_states
+                ]
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = engine.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = engine.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Semantic gravity report written to: {args.report}")
+
+        if args.svg:
+            svg_code = engine.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Conceptual orbit SVG written to: {args.svg}")
     else:
         parser.print_help()
 
