@@ -847,6 +847,18 @@ def main():
     p_fhorizon.add_argument("--json", "-j", action="store_true", help="Output raw JSON horizon telemetry")
     p_fhorizon.add_argument("--demo", action="store_true", help="Run with demonstration deep zoom transition")
 
+    # attention-gradient / saccade-shaper / eccentricity-damper / acuity-gradient
+    p_agradient = subparsers.add_parser("attention-gradient", aliases=["saccade-shaper", "eccentricity-damper", "acuity-gradient"], help="Autonomous cognitive spatial dynamic attention gradient and peripheral saccade shaper")
+    p_agradient.add_argument("input", nargs="?", default="", help="Input workspace cards JSON filepath")
+    p_agradient.add_argument("--gaze-x", type=float, default=200.0, help="Focal gaze center X coordinate (default: 200.0)")
+    p_agradient.add_argument("--gaze-y", type=float, default=200.0, help="Focal gaze center Y coordinate (default: 200.0)")
+    p_agradient.add_argument("--target-x", type=float, default=900.0, help="Saccade target X coordinate (default: 900.0)")
+    p_agradient.add_argument("--target-y", type=float, default=300.0, help="Saccade target Y coordinate (default: 300.0)")
+    p_agradient.add_argument("--css", default="", help="Output peripheral attenuation CSS filepath")
+    p_agradient.add_argument("--svg", default="", help="Output attention gradient SVG diagram filepath")
+    p_agradient.add_argument("--json", "-j", action="store_true", help="Output raw JSON gradient telemetry")
+    p_agradient.add_argument("--demo", action="store_true", help="Run with demonstration multi-card eccentricity workspace")
+
     args = parser.parse_args()
 
 
@@ -3814,6 +3826,45 @@ def main():
         if args.svg:
             tracker.export_svg(result, args.svg)
             print(f"[DxSkills] Foveal horizon SVG written to: {args.svg}")
+    elif args.command in ["attention-gradient", "saccade-shaper", "eccentricity-damper", "acuity-gradient"]:
+        import scripts.attention_gradient_shaper as ags_mod
+
+        shaper = ags_mod.AttentionGradientShaper()
+
+        cards_input = []
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            cards_input = raw_data if isinstance(raw_data, list) else raw_data.get("cards", raw_data.get("nodes", []))
+        elif args.demo or not args.input:
+            cards_input = [
+                {"id": "card_focal", "x": 100.0, "y": 100.0, "width": 200.0, "height": 200.0, "title": "Focal Anchor Node"},
+                {"id": "card_para", "x": 550.0, "y": 150.0, "width": 200.0, "height": 160.0, "title": "Parafoveal Context Card"},
+                {"id": "card_target", "x": 800.0, "y": 250.0, "width": 220.0, "height": 180.0, "title": "Saccade Target Node"},
+                {"id": "card_distract_1", "x": 1200.0, "y": 800.0, "width": 200.0, "height": 160.0, "title": "Peripheral Distractor A"},
+                {"id": "card_distract_2", "x": 200.0, "y": 950.0, "width": 200.0, "height": 160.0, "title": "Peripheral Distractor B"},
+            ]
+
+        result = shaper.calculate_gradient(
+            gaze_x=args.gaze_x,
+            gaze_y=args.gaze_y,
+            cards=cards_input,
+            saccade_target={"x": args.target_x, "y": args.target_y},
+        )
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("\n" + shaper.generate_ascii_report(result))
+
+        if args.css:
+            with open(args.css, "w", encoding="utf-8") as f:
+                f.write(result.attenuation_css)
+            print(f"[DxSkills] Peripheral attenuation CSS written to: {args.css}")
+
+        if args.svg:
+            shaper.export_svg(result, args.svg)
+            print(f"[DxSkills] Attention gradient SVG written to: {args.svg}")
     else:
         parser.print_help()
 
