@@ -1562,6 +1562,17 @@ def main():
     p_topo.add_argument("--svg", default="", help="Output arithmetic topology and Mazur dictionary SVG filepath")
     p_topo.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_topo.add_argument("--demo", action="store_true", help="Run with demonstration arithmetic knots, Legendre link, Alexander-Iwasawa system, and Borromean triple")
+    # anabelian-geometry / section-conjecture / outer-galois / profinite-pi1
+    p_anab = subparsers.add_parser("anabelian-geometry", aliases=["section-conjecture", "outer-galois", "profinite-pi1"], help="Autonomous cognitive spatial Anabelian Geometry and Grothendieck Section Conjecture Loom")
+    p_anab.add_argument("--field", default="Rational Field Q", help="Base arithmetic field")
+    p_anab.add_argument("--archetype", default="Projective Line Minus Three Points P^1 - {0, 1, oo} (g=0, r=3)", choices=["Projective Line Minus Three Points P^1 - {0, 1, oo} (g=0, r=3)", "Modular Curve Y(2) (g=0, r=4)", "Punctured Elliptic Curve E - {O} (g=1, r=1)", "Compact Hyperbolic Curve of Genus Two (g=2, r=0)", "Compact Shimura Curve of Genus Three (g=3, r=0)"], help="Hyperbolic curve archetype")
+    p_anab.add_argument("--prime-p", "-p", type=int, default=2, help="Pro-p prime for outer Galois representation (default: 2)")
+    p_anab.add_argument("--depth", "-d", type=int, default=3, help="Nilpotent depth of pro-p fundamental group quotient (default: 3)")
+    p_anab.add_argument("--point-x", "-x", type=float, default=0.5, help="Rational point coordinate x (default: 0.5)")
+    p_anab.add_argument("--point-y", "-y", type=float, default=0.0, help="Rational point coordinate y (default: 0.0)")
+    p_anab.add_argument("--svg", default="", help="Output anabelian geometry and Section Conjecture SVG filepath")
+    p_anab.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_anab.add_argument("--demo", action="store_true", help="Run with demonstration hyperbolic curve, Galois section, outer Galois representation, and Neukirch-Uchida reconstruction")
     args = parser.parse_args()
 
 
@@ -8817,6 +8828,55 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_topology_svg())
             print(f"[DxSkills] Arithmetic Topology SVG written to: {args.svg}")
+    elif args.command in ["anabelian-geometry", "section-conjecture", "outer-galois", "profinite-pi1"]:
+        from scripts.anabelian_geometry_loom import (
+            AnabelianGeometryLoom,
+            HyperbolicCurveArchetype,
+            BaseFieldType,
+        )
+        loom = AnabelianGeometryLoom(
+            base_field=args.field,
+            default_archetype=args.archetype,
+        )
+        c = loom.curves[0]
+        sec = loom.evaluate_galois_section(
+            section_id="SEC-DEMO-01",
+            point_label="x_0",
+            coordinates=(args.point_x, args.point_y),
+            is_rational=True,
+            is_cuspidal=False,
+        )
+        rep = loom.evaluate_outer_galois_representation(
+            rep_id="REP-DEMO-01",
+            pro_p_prime=args.prime_p,
+            nilpotent_depth=args.depth,
+        )
+        rec = loom.evaluate_anabelian_reconstruction("REC-DEMO-01")
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Anabelian Geometry & Grothendieck Section Conjecture Loom")
+            print("=================================================================")
+            print(f"Base Arithmetic Field:         {loom.base_field}")
+            print(f"Hyperbolic Curve Archetype:    {c.archetype}")
+            print(f"Topological Moduli:            Genus={c.genus} | Punctures={c.punctures} | chi={c.euler_characteristic} (< 0)")
+            print(f"Algebraic Curve Equation:      {c.curve_equation}")
+            print(f"Fundamental pi_1 Generators:   {c.topological_generators_count} topological generators")
+            print(f"Galois Section Splitting:      {sec.section_id} at ({sec.coordinates[0]}, {sec.coordinates[1]})")
+            print(f"Section Conjugacy Class:       {sec.splitting_conjugacy_class}")
+            print(f"Brauer-Manin Obstruction:      {'VANISHES (Rational point confirmed)' if sec.obstruction_class_vanishes else 'OBSTRUCTED'}")
+            print(f"Outer Galois Representation:   rho_X: G_k -> Out(pi_1(X_bar)) (Pro-{rep.pro_p_prime}, Depth {rep.nilpotent_depth})")
+            print(f"Deligne-Ihara Lie Dimension:   Dim={rep.graded_lie_dimension} | Conductor={rep.galois_conductor}")
+            print(f"Neukirch-Uchida Field Status:  {'RECONSTRUCTED (G_k determines k)' if rec.neukirch_uchida_reconstructed else 'FAILED'}")
+            print(f"Section Conjecture Status:     {rec.section_conjecture_status}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_anabelian_svg())
+            print(f"[DxSkills] Anabelian Geometry SVG written to: {args.svg}")
     else:
         parser.print_help()
 
