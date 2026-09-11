@@ -655,6 +655,15 @@ def main():
     p_pivot.add_argument("--json", "-j", action="store_true", help="Output raw JSON pivot telemetry")
     p_pivot.add_argument("--demo", action="store_true", help="Run with demonstration spatial pivot layout")
 
+    # concept-lattice / lattice / fca / resonance-compiler
+    p_lattice = subparsers.add_parser("concept-lattice", aliases=["lattice", "fca", "resonance-compiler"], help="Autonomous cognitive spatial associative resonance and concept lattice compiler")
+    p_lattice.add_argument("input", nargs="?", default="", help="Input JSON context filepath or Obsidian .canvas file")
+    p_lattice.add_argument("--min-resonance", "-r", type=float, default=0.35, help="Minimum threshold for associative resonance leap detection")
+    p_lattice.add_argument("--output-canvas", "-o", default="", help="Output Obsidian .canvas filepath for lattice visualization")
+    p_lattice.add_argument("--svg", default="", help="Output SVG filepath for publication lattice diagram")
+    p_lattice.add_argument("--json", "-j", action="store_true", help="Output raw JSON lattice and resonance telemetry")
+    p_lattice.add_argument("--demo", action="store_true", help="Run with demonstration cross-domain cognitive architecture context")
+
     args = parser.parse_args()
 
 
@@ -2663,6 +2672,64 @@ def main():
         if args.svg:
             pivot.export_svg_trajectory(telemetry, args.svg)
             print(f"[DxSkills] Saccadic trajectory SVG exported to: {args.svg}")
+    elif args.command in ["concept-lattice", "lattice", "fca", "resonance-compiler"]:
+        import scripts.concept_lattice as clat
+
+        compiler = clat.ConceptLatticeCompiler(min_resonance=args.min_resonance)
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data:
+                compiler.load_from_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                compiler.load_context(raw_data)
+        elif args.demo or not args.input:
+            demo_context = {
+                "mechanical_damper": ["energy_dissipation", "resilience", "hardware", "analog"],
+                "viscoelastic_mount": ["energy_dissipation", "resilience", "hardware", "isolation"],
+                "rate_limiter": ["energy_dissipation", "resilience", "software", "backpressure"],
+                "circuit_breaker": ["resilience", "software", "fault_tolerance", "isolation"],
+                "biological_homeostasis": ["resilience", "adaptation", "feedback_loop", "organic"],
+                "immune_system": ["resilience", "fault_tolerance", "adaptation", "organic"],
+            }
+            compiler.load_context(demo_context)
+
+        concepts, edges, leaps, telemetry = compiler.compute_lattice()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + "=" * 64)
+            print("  Formal Concept Lattice & Associative Resonance Telemetry")
+            print("=" * 64)
+            print(f"  Total Objects:              {telemetry.total_objects}")
+            print(f"  Total Attributes:           {telemetry.total_attributes}")
+            print(f"  Formal Concepts Discovered: {telemetry.total_concepts}")
+            print(f"  Hasse Cover Edges:          {telemetry.total_hasse_edges}")
+            print(f"  Max Topological Depth:      {telemetry.max_lattice_depth}")
+            print(f"  Associative Leaps Found:    {telemetry.associative_leaps_count}")
+            print(f"  Top Resonance Score:        {telemetry.top_resonance_score:.3f}")
+            print(f"  Galois Connectivity Index:  {telemetry.galois_connectivity_index:.3f}")
+            print("-" * 64)
+            if leaps:
+                print("  Top Cross-Domain Associative Leaps (Eide & Eide I-Strength):")
+                for idx, leap in enumerate(leaps[:5], 1):
+                    src_str = ", ".join(leap.source_extent[:2])
+                    tgt_str = ", ".join(leap.target_extent[:2])
+                    inv_str = ", ".join(leap.shared_intent)
+                    print(f"    {idx}. [{leap.category.value}] Score: {leap.resonance_score:.2f}")
+                    print(f"       Bridge: ({src_str}) <---> ({tgt_str})")
+                    print(f"       Invariants: {inv_str}")
+            print("=" * 64 + "\n")
+
+        if args.output_canvas:
+            compiler.to_canvas(args.output_canvas, canvas_title="Formal Concept Lattice")
+            print(f"[DxSkills] Concept lattice .canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            compiler.to_svg(args.svg)
+            print(f"[DxSkills] Concept lattice SVG written to: {args.svg}")
     else:
         parser.print_help()
 
