@@ -548,12 +548,16 @@
 - [x] **Task 128.2:** Interactive hyper-graph weaver rendering consolidated knowledge webs in dark titanium SVG.
 
 ### Phase 129: Autonomous Cognitive Spatial Semantic Entropy Decoupler & Syntactic De-noising Gate
-- [ ] **Task 129.1:** Information-theoretic Shannon entropy auditor calculating conceptual signal-to-noise ratio across dense canvas nodes.
-- [ ] **Task 129.2:** Dynamic syntactic de-noising gate attenuating superficial stylistic friction while preserving invariant cognitive core structures.
+- [x] **Task 129.1:** Information-theoretic Shannon entropy auditor calculating conceptual signal-to-noise ratio across dense canvas nodes.
+- [x] **Task 129.2:** Dynamic syntactic de-noising gate attenuating superficial stylistic friction while preserving invariant cognitive core structures.
 
 ### Phase 130: Autonomous Cognitive Spatial Conceptual Dimensionality Folder & Polyhedral Schema Crystallizer
 - [ ] **Task 130.1:** High-dimensional semantic projection solver flattening complex concept networks into regular polyhedral net faces.
 - [ ] **Task 130.2:** Interactive polyhedral schema crystallizer rendering foldable 3D geometric nets in dark titanium SVG.
+
+### Phase 131: Autonomous Cognitive Spatial Allocentric Landmark Polar Grid & Dynamic Bearing Synthesizer
+- [ ] **Task 131.1:** Radial polar landmark grid generator calculating cardinal ray angles and bearing drift relative to primary architectural nodes.
+- [ ] **Task 131.2:** Dynamic bearing synthesizer projecting vector guidance cones and distance rings in dark titanium SVG.
 
 ---
 
@@ -686,6 +690,7 @@
 | **Cycle 122** | 2026-09-11 15:22 | Autonomous Cognitive Spatial Working Memory Anchor Eviction & Graceful Horizon Pacer | `scripts/anchor_eviction_horizon_pacer.py`, `tests/test_anchor_eviction_horizon_pacer.py`, `scripts/dx_cli.py`, `index.html` | `313488b` |
 | **Cycle 123** | 2026-09-11 15:32 | Autonomous Cognitive Spatial Working Memory Saccadic Trajectory Predictor & Predictive Pre-fetcher | `scripts/saccadic_trajectory_predictor.py`, `tests/test_saccadic_trajectory_predictor.py`, `scripts/dx_cli.py`, `index.html` | `7dee867` |
 | **Cycle 124** | 2026-09-11 15:42 | Autonomous Cognitive Spatial Knowledge Mesh Consolidator & Semantic Hyper-Graph Weaver | `scripts/knowledge_mesh_weaver.py`, `tests/test_knowledge_mesh_weaver.py`, `scripts/dx_cli.py`, `index.html` | `7e0bec5` |
+| **Cycle 125** | 2026-09-11 15:52 | Autonomous Cognitive Spatial Semantic Entropy Decoupler & Syntactic De-noising Gate | `scripts/semantic_entropy_decoupler.py`, `tests/test_semantic_entropy_decoupler.py`, `scripts/dx_cli.py`, `index.html` | `fdbe9aa` |
 
 
 

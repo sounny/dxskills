@@ -1100,6 +1100,14 @@ def main():
     p_kmesh.add_argument("--svg", default="", help="Output knowledge hyper-graph SVG filepath")
     p_kmesh.add_argument("--json", "-j", action="store_true", help="Output raw JSON mesh telemetry")
     p_kmesh.add_argument("--demo", action="store_true", help="Run with demonstration multi-domain knowledge mesh")
+    # entropy-decoupler / semantic-denoiser / snr-gate / syntax-denoiser
+    p_edec = subparsers.add_parser("entropy-decoupler", aliases=["semantic-denoiser", "snr-gate", "syntax-denoiser"], help="Autonomous cognitive spatial semantic entropy decoupler and syntactic de-noising gate")
+    p_edec.add_argument("input", nargs="?", default="", help="Input text or nodes JSON filepath")
+    p_edec.add_argument("--threshold", type=float, default=3.0, help="Signal-to-noise ratio alert threshold in dB (default: 3.0)")
+    p_edec.add_argument("--report", default="", help="Output entropy audit markdown filepath")
+    p_edec.add_argument("--svg", default="", help="Output entropy spectrum SVG filepath")
+    p_edec.add_argument("--json", "-j", action="store_true", help="Output raw JSON entropy telemetry")
+    p_edec.add_argument("--demo", action="store_true", help="Run with demonstration noisy text nodes")
     args = parser.parse_args()
 
 
@@ -5686,6 +5694,66 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Knowledge hyper-graph SVG written to: {args.svg}")
+    elif args.command in ["entropy-decoupler", "semantic-denoiser", "snr-gate", "syntax-denoiser"]:
+        import scripts.semantic_entropy_decoupler as sed_mod
+        decoupler = sed_mod.SemanticEntropyDecoupler(snr_alert_threshold_db=args.threshold)
+
+        nodes = []
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                items = data.get("nodes", data) if isinstance(data, dict) else data
+                if isinstance(items, list):
+                    for item in items:
+                        nodes.append({
+                            "id": str(item.get("id", item.get("node_id", "node"))),
+                            "title": str(item.get("title", "Node")),
+                            "text": str(item.get("text", item.get("content", ""))),
+                        })
+                elif isinstance(data, str):
+                    nodes.append({"id": "input-1", "title": "Input Text", "text": data})
+        else:
+            nodes = sed_mod.sample_noisy_nodes()
+
+        telemetry = decoupler.analyze_nodes(nodes)
+
+        if args.json:
+            out_dict = {
+                "node_count": telemetry.node_count,
+                "mean_entropy_bits": telemetry.mean_entropy_bits,
+                "mean_snr_db": telemetry.mean_snr_db,
+                "mean_noise_ratio": telemetry.mean_noise_ratio,
+                "high_noise_nodes_count": telemetry.high_noise_nodes_count,
+                "profiles": [
+                    {
+                        "node_id": p.node_id,
+                        "title": p.title,
+                        "total_tokens": p.total_tokens,
+                        "unique_tokens": p.unique_tokens,
+                        "shannon_entropy_bits": p.shannon_entropy_bits,
+                        "syntactic_noise_ratio": p.syntactic_noise_ratio,
+                        "signal_to_noise_ratio_db": p.signal_to_noise_ratio_db,
+                        "de_noised_text": p.de_noised_text,
+                    }
+                    for p in telemetry.profiles
+                ],
+            }
+            print(json.dumps(out_dict, indent=2))
+        else:
+            report_md = decoupler.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = decoupler.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Semantic entropy report written to: {args.report}")
+
+        if args.svg:
+            svg_code = decoupler.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Semantic entropy SVG written to: {args.svg}")
     else:
         parser.print_help()
 
