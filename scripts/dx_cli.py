@@ -1398,6 +1398,17 @@ def main():
     p_stack.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_stack.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_stack.add_argument("--demo", action="store_true", help="Run with demonstration cognitive derived stack atlas")
+    # perverse-sheaves / intersection-cohomology / bbdg-loom / stratified-loom
+    p_perverse = subparsers.add_parser("perverse-sheaves", aliases=["intersection-cohomology", "bbdg-loom", "stratified-loom"], help="Autonomous cognitive spatial Perverse Sheaves and Intersection Cohomology Loom")
+    p_perverse.add_argument("input", nargs="?", default="", help="Input stratified space configuration JSON filepath")
+    p_perverse.add_argument("--name", default="Cognitive Multi-Modal Locus X", help="Stratified space identifier")
+    p_perverse.add_argument("--dim", type=int, default=4, help="Ambient space dimension")
+    p_perverse.add_argument("--perversity", default="Lower Middle (m)", choices=["Lower Middle (m)", "Upper Middle (n)", "Zero Perversity (0)", "Top Perversity (t)"], help="Perversity function type")
+    p_perverse.add_argument("--report", default="", help="Output perverse sheaves telemetry markdown filepath")
+    p_perverse.add_argument("--svg", default="", help="Output stratification strata and BBDG direct sum SVG filepath")
+    p_perverse.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_perverse.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_perverse.add_argument("--demo", action="store_true", help="Run with demonstration stratified cone space and BBDG decomposition")
     args = parser.parse_args()
 
 
@@ -7866,6 +7877,72 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Derived stack interactive HTML written to: {args.html}")
+    elif args.command in ["perverse-sheaves", "intersection-cohomology", "bbdg-loom", "stratified-loom"]:
+        from scripts.perverse_sheaves_loom import (
+            PerverseSheavesLoom,
+            Stratum,
+            PerversityType,
+        )
+        loom = PerverseSheavesLoom(space_name=args.name, ambient_dim=args.dim)
+        if args.demo or not args.input:
+            loom = PerverseSheavesLoom.create_default_stratified_loom()
+            loom.space_name = args.name
+            loom.ambient_dim = args.dim
+        else:
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loom.space_name = data.get("space_name", args.name)
+            loom.ambient_dim = int(data.get("ambient_dimension", args.dim))
+            for s_data in data.get("strata", []):
+                loom.add_stratum(
+                    Stratum(
+                        stratum_id=s_data.get("stratum_id", "S"),
+                        dimension=int(s_data.get("dimension", 0)),
+                        codimension=int(s_data.get("codimension", 0)),
+                        description=s_data.get("description", ""),
+                        local_monodromy=s_data.get("local_monodromy", "Trivial"),
+                        is_dense_open=bool(s_data.get("is_dense_open", False)),
+                        color=s_data.get("color", "#58a6ff"),
+                    )
+                )
+
+        result = loom.evaluate_intersection_cohomology(perversity_type=args.perversity)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Perverse Sheaves & Intersection Cohomology Loom")
+            print("=================================================================")
+            print(f"Stratified Space:              {result.space_name}")
+            print(f"Ambient Dimension:             {result.ambient_dimension}")
+            print(f"Perversity Function:           {result.perversity_profile.perversity_type}")
+            print(f"Poincare-Verdier Duality:      {'VERIFIED' if result.poincare_verdier_verified else 'UNSATISFIED'}")
+            print("Stratification Strata:")
+            for s in result.strata:
+                print(f"  {s.stratum_id}: Dim {s.dimension} (Codim {s.codimension}) - {s.description}")
+            print("Intersection Cohomology Betti Numbers IH^k_p(X):")
+            for ih in result.intersection_cohomology:
+                print(f"  IH^{ih.degree}: Dim={ih.dimension_betti} (Dual to IH^{ih.poincare_dual_degree})")
+            print("BBDG Direct Sum Decomposition Summands:")
+            for sm in result.bbdg_summands:
+                print(f"  {sm.summand_id}: {sm.perverse_sheaf_type} on {sm.stratum} (Shift [-{sm.shift_degree}])")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Perverse sheaves report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Stratification strata and BBDG SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Perverse sheaves interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
