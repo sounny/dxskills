@@ -1632,6 +1632,13 @@ def main():
     p_glc.add_argument("--svg", default="", help="Output Categorical Langlands and Bun_G SVG filepath")
     p_glc.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_glc.add_argument("--demo", action="store_true", help="Run with demonstration D(Bun_G), Hecke correspondence, and IndCoh_Nilp")
+    # chromatic-homotopy / morava-k-theory / lubin-tate / chromatic-loom
+    p_chr = subparsers.add_parser("chromatic-homotopy", aliases=["morava-k-theory", "lubin-tate", "chromatic-loom"], help="Autonomous cognitive spatial Chromatic Homotopy Theory and Morava K-Theory Loom")
+    p_chr.add_argument("--prime-p", "-p", type=int, default=3, choices=[2, 3, 5, 7], help="Base prime p (default: 3)")
+    p_chr.add_argument("--height", "-n", type=int, default=2, choices=[0, 1, 2, 3, 4], help="Chromatic height n (default: 2)")
+    p_chr.add_argument("--svg", default="", help="Output Chromatic Homotopy and Morava K-Theory SVG filepath")
+    p_chr.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_chr.add_argument("--demo", action="store_true", help="Run with demonstration formal group laws, K(n) periodicity ladder, and fracture square")
     args = parser.parse_args()
 
 
@@ -9285,6 +9292,45 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_langlands_svg())
             print(f"[DxSkills] Categorical Langlands SVG written to: {args.svg}")
+    elif args.command in ["chromatic-homotopy", "morava-k-theory", "lubin-tate", "chromatic-loom"]:
+        from scripts.chromatic_homotopy_loom import ChromaticHomotopyLoom
+
+        loom = ChromaticHomotopyLoom(
+            base_prime_p=args.prime_p,
+            chromatic_height=args.height,
+        )
+        fgl = loom.formal_groups[0]
+        kt = loom.k_theories[0]
+        stab = loom.stabilizer_groups[0]
+        tow = loom.evaluate_chromatic_tower("TOWER-CLI-01")
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Chromatic Homotopy Theory & Morava K-Theory Loom")
+            print("=================================================================")
+            print(f"Base Prime p & Height n:       Prime p = {loom.base_prime_p} | Height n = {loom.chromatic_height}")
+            print(f"Formal Group Law p-Series:     {fgl.p_series_expansion}")
+            print(f"Generator v_n Degree:          |v_{loom.chromatic_height}| = {fgl.v_n_degree} (Periodicity = {kt.periodicity})")
+            print(f"Lubin-Tate Deformations:       {fgl.lubin_tate_parameters_count} parameter(s) | Ring: {fgl.lubin_tate_ring_label}")
+            print(f"Morava K-Theory Spectrum:      {kt.theory_id} (Field Spectrum = {kt.is_field_spectrum})")
+            print(f"Coefficient Ring:              {kt.coefficient_ring}")
+            print(f"Morava Stabilizer Group S_n:   {stab.group_id} (Division Alg Dim = {stab.division_algebra_dim})")
+            print(f"Max Finite Subgroup Order:     Order {stab.maximal_finite_subgroup_order} | Invariant = {stab.invariant_rational}")
+            print(f"Chromatic Tower Stages:        {tow.bousfield_classes}")
+            print(f"Monochromatic Layers:          {tow.monochromatic_layers}")
+            print(f"Convergence Verification:      {'VERIFIED (X =~ holim L_n X)' if tow.convergence_verified else 'PENDING'}")
+            print(f"Adams-Novikov E_2 Elements:    alpha_1: {tow.adams_novikov_e2_sample.get('alpha_1', '')}")
+            print(f"                               beta_1:  {tow.adams_novikov_e2_sample.get('beta_1', '')}")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_chromatic_svg())
+            print(f"[DxSkills] Chromatic Homotopy SVG written to: {args.svg}")
     else:
         parser.print_help()
 
