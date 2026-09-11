@@ -1807,6 +1807,14 @@ def main():
     p_rtf.add_argument("--svg", default="", help="Output Relative Trace GGP SVG filepath")
     p_rtf.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_rtf.add_argument("--demo", action="store_true", help="Run with demonstration spherical relative integrals, GGP branching, and Ichino-Ikeda central L-value ratio")
+    # beyond-endoscopy / langlands-functoriality / poisson-trace / altug-loom
+    p_be = subparsers.add_parser("beyond-endoscopy", aliases=["langlands-functoriality", "poisson-trace", "altug-loom"], help="Autonomous cognitive spatial Beyond Endoscopy and Langlands Functoriality Loom")
+    p_be.add_argument("--energy", "-e", type=float, default=1.0, help="Test energy parameter (default: 1.0)")
+    p_be.add_argument("--epsilon", "-eps", type=float, default=0.05, help="Altug unipotent smoothing parameter epsilon (default: 0.05)")
+    p_be.add_argument("--archetype", default="sym2", choices=["sym2", "rankin", "adjoint", "altug"], help="Beyond Endoscopy archetype (default: sym2)")
+    p_be.add_argument("--svg", default="", help="Output Beyond Endoscopy SVG filepath")
+    p_be.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_be.add_argument("--demo", action="store_true", help="Run with demonstration Poisson summation, L-pole residue isolation, and Altug smoothing")
     args = parser.parse_args()
 
 
@@ -10495,6 +10503,57 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_svg())
             print(f"[DxSkills] Relative Trace GGP SVG written to: {out_path}")
+    elif args.command in ["beyond-endoscopy", "langlands-functoriality", "poisson-trace", "altug-loom"]:
+        from scripts.beyond_endoscopy_loom import (
+            BeyondEndoscopyLoom,
+            BeyondEndoscopyArchetype,
+        )
+        arch_map = {
+            "sym2": BeyondEndoscopyArchetype.GL2_SYMMETRIC_SQUARE.value,
+            "rankin": BeyondEndoscopyArchetype.GL2_TIMES_GL2_RANKIN.value,
+            "adjoint": BeyondEndoscopyArchetype.GL3_ADJOINT_OCTET.value,
+            "altug": BeyondEndoscopyArchetype.ALTUG_POISSON_GL2.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, BeyondEndoscopyArchetype.GL2_SYMMETRIC_SQUARE.value)
+
+        loom = BeyondEndoscopyLoom(
+            test_energy_parameter=args.energy,
+            smoothing_epsilon=args.epsilon,
+            default_archetype=chosen_arch,
+        )
+        ev = loom.evaluate_beyond_endoscopy()
+        dr = loom.dual_rep
+        ak = loom.altug_kernel
+
+        if args.json:
+            import json
+            print(json.dumps(loom.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Beyond Endoscopy & Langlands Functoriality Loom")
+            print("=================================================================")
+            print(f"Setting Archetype:             {loom.archetype_str}")
+            if dr:
+                print(f"Dual Representation:           {dr.dual_group_label} with {dr.representation_r_label}")
+                print(f"Dimension & Self-Duality:      dim(r) = {dr.representation_dimension} | Self-Dual = {dr.is_self_dual}")
+                print(f"Functorial Target:             {dr.functorial_target_group}")
+            print(f"Poisson Geometric Total:       I_Poisson = {ev.poisson_geometric_total:.4f} ({len(loom.poisson_harmonics)} harmonics)")
+            print(f"Spectral L-Pole Residue Total: sum Res_(s=1) = {ev.spectral_pole_residue_total:.4f} ({len(loom.spectral_filters)} representations)")
+            print(f"Trace Matching Residual:       {ev.trace_matching_residual:.5f} (Isolated: {ev.functorial_lift_isolated})")
+            print(f"Cancellation Efficiency:       {ev.cancellation_efficiency_ratio * 100:.2f}%")
+            if ak:
+                print(f"Altug Unipotent Subtraction:   eps = {ak.smoothing_parameter_epsilon} | sub = {ak.unipotent_subtraction_value:.4f}")
+            print(f"Cognitive Resonance Score:     {ev.cognitive_resonance_score:.4f}")
+            print(f"Spatial Stability Index:       {ev.spatial_stability_index:.4f}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "beyond_endoscopy_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_svg())
+            print(f"[DxSkills] Beyond Endoscopy SVG written to: {out_path}")
     else:
         parser.print_help()
 
