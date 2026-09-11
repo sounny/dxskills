@@ -739,6 +739,15 @@ def main():
     p_weaver.add_argument("--json", "-j", action="store_true", help="Output raw JSON resonance telemetry")
     p_weaver.add_argument("--demo", action="store_true", help="Run with demonstration cross-domain knowledge nodes")
 
+    # saccade-calibrator / gaze-path-calibrator / ovp-calibrator / saccade-envelope
+    p_scalib = subparsers.add_parser("saccade-calibrator", aliases=["gaze-path-calibrator", "ovp-calibrator", "saccade-envelope"], help="Autonomous cognitive spatial working memory saccade velocity and gaze path calibrator")
+    p_scalib.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or nodes JSON file")
+    p_scalib.add_argument("--max-jump", "-m", type=float, default=450.0, help="Maximum comfortable ballistic jump distance in pixels (default: 450.0)")
+    p_scalib.add_argument("--output-canvas", "-o", default="", help="Output calibrated Obsidian .canvas filepath")
+    p_scalib.add_argument("--svg", default="", help="Output gaze path velocity SVG diagram filepath")
+    p_scalib.add_argument("--json", "-j", action="store_true", help="Output raw JSON gaze telemetry")
+    p_scalib.add_argument("--demo", action="store_true", help="Run with demonstration multi-column spatial cards")
+
     args = parser.parse_args()
 
 
@@ -3203,6 +3212,44 @@ def main():
         if args.svg:
             weaver.to_svg(args.svg)
             print(f"[DxSkills] Resonance bridge SVG written to: {args.svg}")
+    elif args.command in ["saccade-calibrator", "gaze-path-calibrator", "ovp-calibrator", "saccade-envelope"]:
+        import scripts.saccade_calibrator as scalib
+
+        calibrator = scalib.SaccadeVelocityGazeCalibrator(max_comfortable_jump_px=args.max_jump)
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data and isinstance(raw_data["nodes"], list):
+                calibrator.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                calibrator.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_canvas = {
+                "nodes": [
+                    {"id": "card_overview", "text": "Executive Strategic Overview and Mission Objectives", "x": 100, "y": 100, "width": 260, "height": 140},
+                    {"id": "card_tactical", "text": "Tactical Saccadic Stepping Stones and Micro Milestones", "x": 420, "y": 120, "width": 260, "height": 140},
+                    {"id": "card_far_east", "text": "Distant Architecture Colony and Deep Async Pipeline", "x": 980, "y": 150, "width": 260, "height": 140},
+                    {"id": "card_bottom_tier", "text": "Foundation Storage Layer and Persistent Memory Stores", "x": 400, "y": 550, "width": 260, "height": 140}
+                ],
+                "edges": []
+            }
+            calibrator.load_canvas(demo_canvas)
+
+        steps, telemetry = calibrator.calibrate_gaze_paths()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + calibrator.render_ascii_report(telemetry))
+
+        if args.output_canvas:
+            calibrator.to_canvas(args.output_canvas, canvas_title="Calibrated Gaze Paths Canvas")
+            print(f"[DxSkills] Calibrated gaze path canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            calibrator.to_svg(args.svg)
+            print(f"[DxSkills] Gaze velocity SVG diagram written to: {args.svg}")
     else:
         parser.print_help()
 
