@@ -1674,6 +1674,14 @@ def main():
     p_hk.add_argument("--svg", default="", help="Output Hyodo-Kato SVG filepath")
     p_hk.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_hk.add_argument("--demo", action="store_true", help="Run with demonstration log-crystalline operators, weight filtration, and Hyodo-Kato isomorphism")
+    # motivic-regulator / beilinson-conjectures / chow-motives / motivic-l-loom
+    p_mot = subparsers.add_parser("motivic-regulator", aliases=["beilinson-conjectures", "chow-motives", "motivic-l-loom"], help="Autonomous cognitive spatial Motives and Beilinson Conjectures on Special Values Loom")
+    p_mot.add_argument("--weight", "-w", type=int, default=1, choices=[0, 1, 2, 3], help="Weight w of motive (default: 1)")
+    p_mot.add_argument("--twist", "-n", type=int, default=1, choices=[0, 1, 2, 3], help="Tate twist n (default: 1)")
+    p_mot.add_argument("--archetype", default="elliptic", choices=["elliptic", "k3", "calabi_yau", "tate"], help="Motivic weight archetype (default: elliptic)")
+    p_mot.add_argument("--svg", default="", help="Output Beilinson Motives SVG filepath")
+    p_mot.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_mot.add_argument("--demo", action="store_true", help="Run with demonstration Chow motives, Beilinson regulator maps, and special values")
     args = parser.parse_args()
 
 
@@ -9554,6 +9562,52 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_hyodo_kato_svg())
             print(f"[DxSkills] Hyodo-Kato SVG written to: {args.svg}")
+    elif args.command in ["motivic-regulator", "beilinson-conjectures", "chow-motives", "motivic-l-loom"]:
+        from scripts.motives_beilinson_loom import (
+            MotivesBeilinsonLoom,
+            MotivicWeightArchetype,
+        )
+        arch_map = {
+            "elliptic": MotivicWeightArchetype.ELLIPTIC_CURVE_H1.value,
+            "k3": MotivicWeightArchetype.K3_SURFACE_CHOW.value,
+            "calabi_yau": MotivicWeightArchetype.CALABI_YAU_THREEFOLD.value,
+            "tate": MotivicWeightArchetype.PURE_TATE_MOTIVE.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, MotivicWeightArchetype.ELLIPTIC_CURVE_H1.value)
+
+        loom = MotivesBeilinsonLoom(
+            motive_weight=args.weight,
+            tate_twist=args.twist,
+            default_archetype=chosen_arch,
+        )
+        mot = loom.motives[0]
+        reg = loom.regulators[0]
+        sp = loom.special_values[0]
+        eval_reg = loom.evaluate_motivic_cohomology(weight_i=mot.idempotent_degree + 1, twist_n=mot.tate_twist_n, test_rank=reg.motivic_cohomology_rank)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Motives & Beilinson Conjectures on Special Values Loom")
+            print("=================================================================")
+            print(f"Chow Motive ID & Variety:      {mot.motive_id} | {mot.underlying_variety}")
+            print(f"Motivic Archetype:             {loom.default_archetype}")
+            print(f"Realization Dimensions:        dim H_Betti = {mot.betti_dimension} | dim H_dR = {mot.de_rham_dimension}")
+            print(f"Hodge Diamond Row:             {mot.hodge_diamond_row}")
+            print(f"Beilinson Regulator Map:       {reg.source_motivic_cohomology} -> {reg.target_deligne_cohomology}")
+            print(f"Regulator Lattice Determinant: vol(R_D) = {reg.regulator_determinant:.4f} (Non-Zero Volume = {reg.is_lattice_volume_non_zero})")
+            print(f"L-Function Special Value:      {sp.l_function_label} | Order of Vanishing r = {sp.order_of_vanishing_r}")
+            print(f"Leading Coefficient L^*(M, s): {sp.leading_coefficient_value:.4f}")
+            print(f"Beilinson Conjecture Ratio:    L^*(M, s) / (c_M * R_M) = {sp.beilinson_conjecture_ratio:.4f} in Q^x (Verified = {sp.conjecture_verified})")
+            print("=================================================================")
+
+        if args.svg:
+            if os.path.dirname(args.svg):
+                os.makedirs(os.path.dirname(args.svg), exist_ok=True)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_beilinson_svg())
+            print(f"[DxSkills] Beilinson Motives SVG written to: {args.svg}")
     else:
         parser.print_help()
 
