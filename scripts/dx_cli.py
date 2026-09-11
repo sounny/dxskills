@@ -1880,6 +1880,12 @@ def main():
     p_km.add_argument("--svg", default="", help="Output Kudla-Millson SVG filepath")
     p_km.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_km.add_argument("--demo", action="store_true", help="Run demonstration Kudla-Millson Schwartz form, theta series, and Poincare duality pairings")
+    # borcherds-lift / singular-theta / borcherds-products / weyl-chambers
+    p_bl = subparsers.add_parser("borcherds-lift", aliases=["singular-theta", "borcherds-products", "weyl-chambers"], help="Autonomous cognitive spatial Borcherds Lift and Singular Theta Correspondence Loom")
+    p_bl.add_argument("--lattice", "-l", default="O_2_2", choices=["O_2_2", "O_2_10"], help="Even lattice model signature (2,n) (default: O_2_2)")
+    p_bl.add_argument("--svg", default="", help="Output Borcherds Lift SVG filepath")
+    p_bl.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_bl.add_argument("--demo", action="store_true", help="Run demonstration weakly holomorphic input, singular theta integral, and Borcherds infinite product")
     args = parser.parse_args()
 
 
@@ -11046,6 +11052,44 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.render_svg(result))
             print(f"[DxSkills] Kudla-Millson SVG written to: {out_path}")
+    elif args.command in ["borcherds-lift", "singular-theta", "borcherds-products", "weyl-chambers"]:
+        from scripts.borcherds_lift_loom import (
+            BorcherdsLiftLoom,
+        )
+        loom = BorcherdsLiftLoom(args.lattice)
+        result = loom.analyze()
+
+        if args.json:
+            import json
+            from dataclasses import asdict
+            res_dict = {
+                "lattice": asdict(result.lattice),
+                "input_form": asdict(result.input_form),
+                "product": asdict(result.product),
+                "weyl_chamber_walls": result.weyl_chamber_walls_count,
+                "monster_lie_algebra": result.monster_lie_algebra_connection,
+            }
+            print(json.dumps(res_dict, indent=2))
+        else:
+            print("=================================================================")
+            print("  Borcherds Lift & Singular Theta Correspondence Loom")
+            print("=================================================================")
+            print(f"Even Lattice:                 {result.lattice.name} (Signature {result.lattice.signature_pos},{result.lattice.signature_neg})")
+            print(f"Input Weakly Holomorphic Form: Weight 1-n/2 = {result.input_form.weight} (Constant c(0) = {result.input_form.constant_term_c0})")
+            print(f"Automorphic Form Weight:      k = c(0)/2 = {result.product.automorphic_weight}")
+            print(f"Weyl Vector Norm:             ||rho|| = {result.product.weyl_vector_norm:.5f}")
+            print(f"Heegner Divisors:             {len(result.product.divisors)} divisor singularities tracked")
+            print(f"Borcherds Infinite Product:   {result.product.infinite_product_factors_count} factors (Modularity: {result.product.borcherds_modularity_proven})")
+            print(f"Fake Monster Lie Algebra:     {result.monster_lie_algebra_connection}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "borcherds_lift_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Borcherds Lift SVG written to: {out_path}")
     else:
         parser.print_help()
 

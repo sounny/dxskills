@@ -940,9 +940,14 @@
 - [x] **Task 212.3:** Interactive CLI suite (`kudla-millson`, `arithmetic-cohomology`, `poincare-theta`, `millson-loom`) with full unit test coverage and zero em dash compliance.
 
 ### Phase 213: Autonomous Cognitive Spatial Borcherds Lift & Singular Theta Correspondence Loom
-- [ ] **Task 213.1:** Borcherds lift engine modeling singular theta lifts from weakly holomorphic modular forms of weight 1 - n/2 to meromorphic automorphic forms with known divisor singularities (Borcherds products).
-- [ ] **Task 213.2:** Visualizer rendering singular theta kernel integration, Weyl chamber walls, and infinite product expansions along Heegner divisors in dark titanium SVG.
-- [ ] **Task 213.3:** Interactive CLI suite (`borcherds-lift`, `singular-theta`, `borcherds-products`, `weyl-chambers`) with full unit test coverage and zero em dash compliance.
+- [x] **Task 213.1:** Borcherds lift engine modeling singular theta lifts from weakly holomorphic modular forms of weight 1 - n/2 to meromorphic automorphic forms with known divisor singularities (Borcherds products).
+- [x] **Task 213.2:** Visualizer rendering singular theta kernel integration, Weyl chamber walls, and infinite product expansions along Heegner divisors in dark titanium SVG.
+- [x] **Task 213.3:** Interactive CLI suite (`borcherds-lift`, `singular-theta`, `borcherds-products`, `weyl-chambers`) with full unit test coverage and zero em dash compliance.
+
+### Phase 214: Autonomous Cognitive Spatial Shintani Descent & Base Change for GL(n) Loom
+- [ ] **Task 214.1:** Shintani descent engine modeling cyclic base change for GL(n), twisted conjugacy classes, character relations between GL(n, E) and GL(n, F), and local-global Shintani correspondence.
+- [ ] **Task 214.2:** Visualizer rendering twisted orbital integrals, base change transfer factors, and automorphic representation descent in dark titanium SVG.
+- [ ] **Task 214.3:** Interactive CLI suite (`shintani-descent`, `cyclic-base-change`, `twisted-conjugacy`, `shintani-loom`) with full unit test coverage and zero em dash compliance.
 
 ---
 
@@ -1158,7 +1163,8 @@
 | **Cycle 205** | 2026-09-12 05:12 | Autonomous Cognitive Spatial Beilinson-Flach Elements & Asymmetric Euler Systems Loom | `scripts/beilinson_flach_loom.py`, `tests/test_beilinson_flach_loom.py`, `scripts/dx_cli.py`, `index.html` | `d8e2dea` |
 | **Cycle 206** | 2026-09-12 05:22 | Autonomous Cognitive Spatial Gross-Kohnen-Zagier Theorem & Higher Modular Forms Loom | `scripts/gross_kohnen_zagier_loom.py`, `tests/test_gross_kohnen_zagier_loom.py`, `scripts/dx_cli.py`, `index.html` | `c276537` |
 | **Cycle 207** | 2026-09-12 05:32 | Autonomous Cognitive Spatial Kudla Program & Arithmetic Siegel-Weil Formula Loom | `scripts/arithmetic_siegel_weil_loom.py`, `tests/test_arithmetic_siegel_weil_loom.py`, `scripts/dx_cli.py`, `index.html` | `5696ad4` |
-| **Cycle 208** | 2026-09-12 05:42 | Autonomous Cognitive Spatial Kudla-Millson Forms & Arithmetic Cohomology Loom | `scripts/kudla_millson_loom.py`, `tests/test_kudla_millson_loom.py`, `scripts/dx_cli.py`, `index.html` | `5582ad0` |
+| **Cycle 208** | 2026-09-12 05:42 | Autonomous Cognitive Spatial Kudla-Millson Forms & Arithmetic Cohomology Loom | `scripts/kudla_millson_loom.py`, `tests/test_kudla_millson_loom.py`, `scripts/dx_cli.py`, `index.html` | `31f952d` |
+| **Cycle 209** | 2026-09-12 05:52 | Autonomous Cognitive Spatial Borcherds Lift & Singular Theta Correspondence Loom | `scripts/borcherds_lift_loom.py`, `tests/test_borcherds_lift_loom.py`, `scripts/dx_cli.py`, `index.html` | `4c436a5` |
 
 
 
