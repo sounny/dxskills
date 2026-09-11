@@ -702,6 +702,15 @@ def main():
     p_density.add_argument("--json", "-j", action="store_true", help="Output raw JSON density telemetry")
     p_density.add_argument("--demo", action="store_true", help="Run with demonstration high-density crowded canvas")
 
+    # code-symbol-mesh / code-mesh / ast-mesh / symbol-mesh / interface-mapper
+    p_mesh = subparsers.add_parser("code-symbol-mesh", aliases=["code-mesh", "ast-mesh", "symbol-mesh", "interface-mapper"], help="Autonomous cognitive spatial multi-modal code signature synthesizer and symbol mesh")
+    p_mesh.add_argument("source", nargs="?", default="", help="Input Python source code filepath, JSON symbol spec, or Obsidian .canvas")
+    p_mesh.add_argument("--max-coupling", "-c", type=int, default=5, help="Maximum allowed fan-out coupling before boundary leak warning (default: 5)")
+    p_mesh.add_argument("--output-canvas", "-o", default="", help="Output symbol mesh Obsidian .canvas filepath")
+    p_mesh.add_argument("--svg", default="", help="Output symbol mesh SVG diagram filepath")
+    p_mesh.add_argument("--json", "-j", action="store_true", help="Output raw JSON symbol mesh telemetry")
+    p_mesh.add_argument("--demo", action="store_true", help="Run with demonstration multi-tier architectural symbols")
+
     args = parser.parse_args()
 
 
@@ -2931,6 +2940,101 @@ def main():
         if args.svg:
             calibrator.to_svg(args.svg)
             print(f"[DxSkills] Attention density SVG written to: {args.svg}")
+    elif args.command in ["code-symbol-mesh", "code-mesh", "ast-mesh", "symbol-mesh", "interface-mapper"]:
+        import scripts.code_symbol_mesh as csm
+
+        mesh = csm.CodeSymbolMesh(max_allowed_coupling=args.max_coupling)
+
+        if args.source and os.path.isfile(args.source):
+            file_ext = os.path.splitext(args.source)[1].lower()
+            if file_ext in [".json", ".canvas"]:
+                with open(args.source, "r", encoding="utf-8") as f:
+                    raw_data = json.load(f)
+                if "nodes" in raw_data:
+                    mesh.load_canvas(raw_data)
+                elif isinstance(raw_data, dict):
+                    mesh.load_dict(raw_data)
+            else:
+                with open(args.source, "r", encoding="utf-8", errors="ignore") as f:
+                    src_code = f.read()
+                mesh.load_source_text(src_code, filename=os.path.basename(args.source))
+        elif args.demo or not args.source:
+            demo_symbols = {
+                "symbols": {
+                    "sym_gateway": {
+                        "name": "APIGateway",
+                        "kind": "class",
+                        "file_path": "gateway/router.py",
+                        "signatures": ["route_request(req)", "validate_jwt(token)"],
+                        "dependencies": ["sym_auth", "sym_rate_limit", "sym_telemetry"],
+                        "cyclomatic_complexity": 3.5,
+                    },
+                    "sym_auth": {
+                        "name": "AuthService",
+                        "kind": "interface",
+                        "file_path": "security/auth.py",
+                        "signatures": ["verify_credentials(u, p)", "sign_claims(claims)"],
+                        "dependencies": ["sym_user_repo", "sym_vault"],
+                        "cyclomatic_complexity": 2.0,
+                    },
+                    "sym_god_controller": {
+                        "name": "LegacyGodController",
+                        "kind": "class",
+                        "file_path": "monolith/controller.py",
+                        "signatures": ["dispatch_everything(ctx)"],
+                        "dependencies": ["sym_auth", "sym_gateway", "sym_user_repo", "sym_vault", "sym_billing", "sym_mailer"],
+                        "cyclomatic_complexity": 8.5,
+                    },
+                    "sym_user_repo": {
+                        "name": "UserRepository",
+                        "kind": "class",
+                        "file_path": "db/users.py",
+                        "signatures": ["get_by_id(id)", "save(entity)"],
+                        "dependencies": [],
+                        "cyclomatic_complexity": 1.5,
+                    },
+                    "sym_vault": {
+                        "name": "KeyVault",
+                        "kind": "interface",
+                        "file_path": "security/vault.py",
+                        "signatures": ["get_secret(key)"],
+                        "dependencies": [],
+                        "cyclomatic_complexity": 1.0,
+                    },
+                    "sym_billing": {
+                        "name": "StripeBilling",
+                        "kind": "class",
+                        "file_path": "finance/stripe.py",
+                        "signatures": ["charge(card, amt)"],
+                        "dependencies": [],
+                        "cyclomatic_complexity": 2.0,
+                    },
+                    "sym_mailer": {
+                        "name": "Mailer",
+                        "kind": "class",
+                        "file_path": "comms/mail.py",
+                        "signatures": ["send_email(to, body)"],
+                        "dependencies": [],
+                        "cyclomatic_complexity": 1.5,
+                    },
+                }
+            }
+            mesh.load_dict(demo_symbols)
+
+        symbols, edges, telemetry = mesh.analyze_mesh()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + mesh.render_ascii_mesh(telemetry))
+
+        if args.output_canvas:
+            mesh.to_canvas(args.output_canvas, canvas_title="Code Architecture Symbol Canvas")
+            print(f"[DxSkills] Code symbol mesh canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            mesh.to_svg(args.svg)
+            print(f"[DxSkills] Code symbol mesh SVG written to: {args.svg}")
     else:
         parser.print_help()
 
