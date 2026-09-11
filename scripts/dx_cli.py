@@ -942,6 +942,16 @@ def main():
     p_sfilter.add_argument("--json", "-j", action="store_true", help="Output raw JSON filter telemetry")
     p_sfilter.add_argument("--demo", action="store_true", help="Run with demonstration spatial nodes layout")
 
+    # drift-compensator / recenter-harness / allocentric-drift / magnetic-anchor
+    p_drift = subparsers.add_parser("drift-compensator", aliases=["recenter-harness", "allocentric-drift", "magnetic-anchor"], help="Autonomous cognitive spatial working memory drift compensator and re-centering harness")
+    p_drift.add_argument("input", nargs="?", default="", help="Input waypoints and anchors JSON filepath")
+    p_drift.add_argument("--threshold", "-t", type=float, default=350.0, help="Allocentric drift threshold in px (default: 350.0)")
+    p_drift.add_argument("--spring", "-s", type=float, default=0.05, help="Magnetic attractor spring constant (default: 0.05)")
+    p_drift.add_argument("--report", default="", help="Output drift audit markdown filepath")
+    p_drift.add_argument("--svg", default="", help="Output drift vector field SVG filepath")
+    p_drift.add_argument("--json", "-j", action="store_true", help="Output raw JSON drift telemetry")
+    p_drift.add_argument("--demo", action="store_true", help="Run with demonstration exploratory path and anchors")
+
     args = parser.parse_args()
 
 
@@ -4416,6 +4426,58 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(result.saliency_map_svg)
             print(f"[DxSkills] Saccade saliency map SVG written to: {args.svg}")
+    elif args.command in ["drift-compensator", "recenter-harness", "allocentric-drift", "magnetic-anchor"]:
+        import scripts.drift_compensator as dc_mod
+
+        compensator = dc_mod.WorkingMemoryDriftCompensator(
+            drift_threshold=args.threshold,
+            spring_constant=args.spring
+        )
+
+        waypoints = []
+        anchors = []
+
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                content = f.read()
+            try:
+                raw_data = json.loads(content)
+                if isinstance(raw_data, dict):
+                    waypoints = raw_data.get("waypoints", [])
+                    anchors = raw_data.get("anchors", [])
+                elif isinstance(raw_data, list):
+                    waypoints = raw_data
+            except json.JSONDecodeError:
+                pass
+        elif args.demo or not args.input:
+            anchors = [
+                {"id": "root", "label": "Core Problem Definition", "x": 400.0, "y": 300.0, "mass": 6.0, "type": "root"},
+                {"id": "synthesis", "label": "Architectural Nexus", "x": 700.0, "y": 300.0, "mass": 4.0, "type": "synthesis_nexus"}
+            ]
+            waypoints = [
+                {"x": 420.0, "y": 310.0, "duration_ms": 400.0},
+                {"x": 480.0, "y": 350.0, "duration_ms": 500.0},
+                {"x": 580.0, "y": 420.0, "duration_ms": 600.0},
+                {"x": 750.0, "y": 550.0, "duration_ms": 700.0},
+                {"x": 900.0, "y": 680.0, "duration_ms": 800.0},
+            ]
+
+        result = compensator.compute_drift(waypoints, anchors)
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print(result.audit_report_md)
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(result.audit_report_md)
+            print(f"[DxSkills] Drift audit report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(result.drift_field_svg)
+            print(f"[DxSkills] Drift vector field SVG written to: {args.svg}")
     else:
         parser.print_help()
 
