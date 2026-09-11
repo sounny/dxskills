@@ -1152,6 +1152,15 @@ def main():
     p_holo.add_argument("--svg", default="", help="Output concept hologram interference SVG filepath")
     p_holo.add_argument("--json", "-j", action="store_true", help="Output raw JSON holographic field telemetry")
     p_holo.add_argument("--demo", action="store_true", help="Run with demonstration multimodal concept field")
+    # gaze-corridor-resonator / corridor-resonator / focal-conduit / parafoveal-preview
+    p_cres = subparsers.add_parser("gaze-corridor-resonator", aliases=["corridor-resonator", "focal-conduit", "parafoveal-preview"], help="Autonomous cognitive spatial dynamic attentional funnel and gaze corridor resonator")
+    p_cres.add_argument("input", nargs="?", default="", help="Input ocular gaze samples JSON filepath")
+    p_cres.add_argument("--latency", type=float, default=180.0, help="Estimated saccadic latency in ms (default: 180.0)")
+    p_cres.add_argument("--aperture", type=float, default=45.0, help="Base foveal focal aperture width in pixels (default: 45.0)")
+    p_cres.add_argument("--report", default="", help="Output gaze corridor diagnostic markdown filepath")
+    p_cres.add_argument("--svg", default="", help="Output gaze corridor interactive SVG filepath")
+    p_cres.add_argument("--json", "-j", action="store_true", help="Output raw JSON corridor telemetry")
+    p_cres.add_argument("--demo", action="store_true", help="Run with demonstration technical architecture scanpath")
     args = parser.parse_args()
 
 
@@ -6080,6 +6089,47 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Concept hologram SVG written to: {args.svg}")
+    elif args.command in ["gaze-corridor-resonator", "corridor-resonator", "focal-conduit", "parafoveal-preview"]:
+        import scripts.gaze_corridor_resonator as gcr_mod
+        resonator = gcr_mod.GazeCorridorResonator(
+            saccadic_latency_ms=args.latency,
+            base_aperture_px=args.aperture,
+        )
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                samples = [
+                    gcr_mod.GazeSample(
+                        sample_id=str(s.get("id", f"gs-{i}")),
+                        x=float(s.get("x", 0.0)),
+                        y=float(s.get("y", 0.0)),
+                        timestamp_ms=float(s.get("timestamp_ms", i * 150.0)),
+                        dwell_ms=float(s.get("dwell_ms", 120.0)),
+                        modality=str(s.get("modality", "TEXT")),
+                    )
+                    for i, s in enumerate(data.get("samples", data.get("gaze_samples", [])))
+                ]
+                telemetry = resonator.synchronize_corridor(samples)
+        else:
+            telemetry = gcr_mod.GazeCorridorResonator.create_demo_telemetry()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            report_md = resonator.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = resonator.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Gaze corridor report written to: {args.report}")
+
+        if args.svg:
+            svg_code = resonator.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Gaze corridor SVG written to: {args.svg}")
     else:
         parser.print_help()
 
