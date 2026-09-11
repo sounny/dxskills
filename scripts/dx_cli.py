@@ -711,6 +711,15 @@ def main():
     p_mesh.add_argument("--json", "-j", action="store_true", help="Output raw JSON symbol mesh telemetry")
     p_mesh.add_argument("--demo", action="store_true", help="Run with demonstration multi-tier architectural symbols")
 
+    # anchor-stacking / anchor-stack / stack-compactor / breadcrumb-trail
+    p_stack = subparsers.add_parser("anchor-stacking", aliases=["anchor-stack", "stack-compactor", "breadcrumb-trail"], help="Autonomous cognitive spatial working memory anchor stacking and compaction harness")
+    p_stack.add_argument("stack", nargs="?", default="", help="Input Obsidian .canvas filepath or subgraphs JSON file")
+    p_stack.add_argument("--max-capacity", "-c", type=int, default=4, help="Maximum concurrent active working memory slots (default: 4)")
+    p_stack.add_argument("--output-canvas", "-o", default="", help="Output compacted anchor stack Obsidian .canvas filepath")
+    p_stack.add_argument("--svg", default="", help="Output anchor stack SVG diagram filepath")
+    p_stack.add_argument("--json", "-j", action="store_true", help="Output raw JSON stack telemetry")
+    p_stack.add_argument("--demo", action="store_true", help="Run with demonstration hierarchical multi-scale subgraphs")
+
     args = parser.parse_args()
 
 
@@ -3035,6 +3044,66 @@ def main():
         if args.svg:
             mesh.to_svg(args.svg)
             print(f"[DxSkills] Code symbol mesh SVG written to: {args.svg}")
+    elif args.command in ["anchor-stacking", "anchor-stack", "stack-compactor", "breadcrumb-trail"]:
+        import scripts.anchor_stacking as astk
+
+        compactor = astk.AnchorStackCompactor(max_working_memory_capacity=args.max_capacity)
+
+        if args.stack and os.path.isfile(args.stack):
+            with open(args.stack, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data:
+                compactor.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                compactor.load_dict(raw_data)
+        elif args.demo or not args.stack:
+            demo_stack = {
+                "subgraphs": {
+                    "sg_auth": {
+                        "title": "Authentication Core",
+                        "status": "resolved",
+                        "nodes": ["JWT Signature Verifier", "OAuth Provider", "Token Revocation Cache", "PKCE Challenge"],
+                        "depth": 1,
+                        "insights": ["Security boundary stabilized with HMAC-SHA256 tokens"],
+                    },
+                    "sg_cache": {
+                        "title": "Distributed Cache Sub-System",
+                        "status": "resolved",
+                        "nodes": ["Redis Cluster Ring", "Consistent Hash Ring", "TTL Eviction Watcher"],
+                        "depth": 1,
+                        "insights": ["99.8% hit rate achieved on hot route keys"],
+                    },
+                    "sg_query_planner": {
+                        "title": "Active Query Planner",
+                        "status": "active",
+                        "nodes": ["AST Optimizer", "Cost Evaluator", "Join Reorder Pass"],
+                        "depth": 2,
+                        "insights": ["Current bottleneck: multi-table predicate pushdown"],
+                    },
+                    "sg_archive": {
+                        "title": "Cold Tier Storage",
+                        "status": "archived",
+                        "nodes": ["S3 Parquet Exporter", "Compaction Janitor"],
+                        "depth": 0,
+                    },
+                }
+            }
+            compactor.load_dict(demo_stack)
+
+        tokens, breadcrumbs, telemetry = compactor.compact_stack()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + compactor.render_ascii_stack(telemetry))
+
+        if args.output_canvas:
+            compactor.to_canvas(args.output_canvas, canvas_title="Compacted Working Memory Stack")
+            print(f"[DxSkills] Compacted anchor stack canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            compactor.to_svg(args.svg)
+            print(f"[DxSkills] Anchor stack SVG written to: {args.svg}")
     else:
         parser.print_help()
 
