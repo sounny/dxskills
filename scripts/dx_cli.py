@@ -645,6 +645,16 @@ def main():
     p_dual.add_argument("--json", "-j", action="store_true", help="Output raw JSON dual-code telemetry")
     p_dual.add_argument("--demo", action="store_true", help="Run with demonstration dual-code architecture pair")
 
+    # saccadic-pivot / pivot / anchor-restore
+    p_pivot = subparsers.add_parser("saccadic-pivot", aliases=["pivot", "anchor-restore"], help="Autonomous cognitive spatial dual-foveal saccadic pivot and anchor restorer")
+    p_pivot.add_argument("canvas", nargs="?", default="", help="Target Obsidian .canvas filepath")
+    p_pivot.add_argument("--source", "-s", default="src", help="Source node ID of prior gaze focus")
+    p_pivot.add_argument("--target", "-t", default="tgt", help="Target node ID of re-entry focus")
+    p_pivot.add_argument("--output-canvas", "-o", default="", help="Output enriched Obsidian .canvas filepath with anchor beacon")
+    p_pivot.add_argument("--svg", default="", help="Output saccadic trajectory SVG filepath")
+    p_pivot.add_argument("--json", "-j", action="store_true", help="Output raw JSON pivot telemetry")
+    p_pivot.add_argument("--demo", action="store_true", help="Run with demonstration spatial pivot layout")
+
     args = parser.parse_args()
 
 
@@ -2617,6 +2627,42 @@ def main():
         if args.svg:
             interleaver.export_svg_dual_track(telemetry, args.svg)
             print(f"[DxSkills] Dual-track SVG exported to: {args.svg}")
+    elif args.command in ["saccadic-pivot", "pivot", "anchor-restore"]:
+        import scripts.saccadic_pivot as spiv
+
+        pivot = spiv.DualFovealSaccadicPivot()
+
+        canvas_data = {}
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                canvas_data = json.load(f)
+        elif args.demo or not args.canvas:
+            canvas_data = {
+                "nodes": [
+                    {"id": "node-editor", "x": 0, "y": 0, "width": 260, "height": 160, "text": "Source Editor Buffer\n\nActive code implementation in progress."},
+                    {"id": "node-architecture", "x": 950, "y": 500, "width": 300, "height": 180, "text": "Target Architecture Topology\n\nConsensus state machine cluster specifications."},
+                ],
+                "edges": []
+            }
+
+        source_id = args.source if args.source != "src" else canvas_data["nodes"][0]["id"]
+        target_id = args.target if args.target != "tgt" else canvas_data["nodes"][-1]["id"]
+
+        enriched_canvas, telemetry = pivot.plan_saccadic_pivot(canvas_data, source_id, target_id)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + pivot.render_ascii_pivot(telemetry))
+
+        if args.output_canvas:
+            with open(args.output_canvas, "w", encoding="utf-8") as f:
+                json.dump(enriched_canvas, f, indent=2)
+            print(f"[DxSkills] Enriched .canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            pivot.export_svg_trajectory(telemetry, args.svg)
+            print(f"[DxSkills] Saccadic trajectory SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
