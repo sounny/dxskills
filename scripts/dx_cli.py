@@ -614,6 +614,16 @@ def main():
     p_metronome.add_argument("--json", "-j", action="store_true", help="Output raw JSON metronome telemetry")
     p_metronome.add_argument("--demo", action="store_true", help="Run with demonstration technical specification prose")
 
+    # chunk-pacer / chunk / syntactic-chunk
+    p_chunk = subparsers.add_parser("chunk-pacer", aliases=["chunk", "syntactic-chunk"], help="Autonomous cognitive spatial visual chunk pacer and ocular fixation metronome")
+    p_chunk.add_argument("input", nargs="?", default="", help="Target text or markdown filepath to chunk and pace")
+    p_chunk.add_argument("--wpm", "-w", type=float, default=200.0, help="Target reading words per minute (default: 200)")
+    p_chunk.add_argument("--tokens", "-t", type=int, default=3, help="Target tokens per syntactic phrase chunk (default: 3)")
+    p_chunk.add_argument("--canvas", default="", help="Output Obsidian .canvas filepath")
+    p_chunk.add_argument("--svg", "-s", default="", help="Output syntactic chunk strip SVG filepath")
+    p_chunk.add_argument("--json", "-j", action="store_true", help="Output raw JSON chunk pacing telemetry")
+    p_chunk.add_argument("--demo", action="store_true", help="Run with demonstration technical specification prose")
+
     args = parser.parse_args()
 
 
@@ -2471,6 +2481,35 @@ def main():
         if args.svg:
             metronome.export_svg_strip(telemetry, args.svg)
             print(f"[DxSkills] Metronome strip SVG exported to: {args.svg}")
+    elif args.command in ["chunk-pacer", "chunk", "syntactic-chunk"]:
+        import scripts.visual_chunk_pacer as vcp
+
+        pacer = vcp.VisualChunkPacer(base_wpm=args.wpm, target_chunk_tokens=args.tokens)
+
+        raw_text = ""
+        if args.input and os.path.isfile(args.input):
+            with open(args.input, "r", encoding="utf-8", errors="ignore") as f:
+                raw_text = f.read()
+        elif args.demo or not args.input:
+            raw_text = (
+                "Distributed asynchronous state machines coordinate deterministic consensus across cluster boundaries. "
+                "Syntactic chunking and morphemic decomposition minimize lexical retrieval latency for spatial-first cognition."
+            )
+
+        telemetry = pacer.pace_chunks(raw_text)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + pacer.render_ascii_cadence(telemetry))
+
+        if args.canvas:
+            pacer.export_canvas(telemetry, args.canvas)
+            print(f"[DxSkills] Syntactic chunk .canvas exported to: {args.canvas}")
+
+        if args.svg:
+            pacer.export_svg_strip(telemetry, args.svg)
+            print(f"[DxSkills] Syntactic chunk strip SVG exported to: {args.svg}")
     else:
         parser.print_help()
 
