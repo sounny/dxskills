@@ -1465,6 +1465,18 @@ def main():
     p_tqft.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_tqft.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_tqft.add_argument("--demo", action="store_true", help="Run with demonstration 2D Frobenius algebra and pants cobordisms")
+    # higher-topos / infinity-category / quasi-category / joyal-kan
+    p_topos = subparsers.add_parser("higher-topos", aliases=["infinity-category", "quasi-category", "joyal-kan"], help="Autonomous cognitive spatial Higher Category Theory and Lurie (infinity, 1)-Topos Loom")
+    p_topos.add_argument("input", nargs="?", default="", help="Input higher topos configuration JSON filepath")
+    p_topos.add_argument("--name", default="Cognitive Higher Universe X", help="Universe schema identifier")
+    p_topos.add_argument("--topos", default="Sh_infinity(Smooth Manifolds; Spaces)", help="Higher topos name")
+    p_topos.add_argument("--base-site", default="Smooth Cognitive Manifolds Site", help="Base site category")
+    p_topos.add_argument("--max-dim", type=int, default=3, help="Maximum simplex dimension")
+    p_topos.add_argument("--report", default="", help="Output higher topos telemetry markdown filepath")
+    p_topos.add_argument("--svg", default="", help="Output 2-simplex and inner horn filler SVG filepath")
+    p_topos.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_topos.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_topos.add_argument("--demo", action="store_true", help="Run with demonstration smooth manifolds higher topos and Joyal Kan fillers")
     args = parser.parse_args()
 
 
@@ -8263,6 +8275,65 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] TQFT interactive HTML written to: {args.html}")
+    elif args.command in ["higher-topos", "infinity-category", "quasi-category", "joyal-kan"]:
+        from scripts.higher_topos_loom import (
+            HigherToposLoom,
+            HornType,
+            DescentAxiomType,
+        )
+        loom = HigherToposLoom(
+            schema_name=args.name,
+            topos_name=args.topos,
+            base_site=args.base_site,
+            max_simplex_dim=args.max_dim,
+        )
+        if not (args.demo or not args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loom.schema_name = data.get("schema_name", args.name)
+            loom.topos_name = data.get("topos_name", args.topos)
+            loom.base_site = data.get("base_site", args.base_site)
+            loom.max_simplex_dim = int(data.get("max_simplex_dim", args.max_dim))
+
+        result = loom.evaluate_higher_topos()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Higher Category Theory & Lurie (infinity, 1)-Topos Loom")
+            print("=================================================================")
+            print(f"Target Universe:               {result.schema_name}")
+            print(f"Topos Classification:          {result.topos_name}")
+            print(f"Base Site Category:            {result.base_site_category}")
+            print(f"Quasi-Category Status:         {'VERIFIED (Joyal Inners Filled)' if result.is_quasi_category else 'UNVERIFIED'}")
+            print(f"Hypercomplete Topos Status:    {'VERIFIED (Lurie-Giraud Axioms)' if result.is_hypercomplete_topos else 'FAILED'}")
+            print("Simplicial Nerve Simplices:")
+            for n in result.simplicial_nodes:
+                src_tgt = f"{n.source_id or 'Init'} -> {n.target_id or 'Term'}"
+                print(f"  * {n.node_id} ({n.dimension}-Simplex): {n.label} [{src_tgt}]")
+            print("Simplicial Horn Fillers Lambda^n_k:")
+            for h in result.horn_fillings:
+                print(f"  * {h.horn_id} ({'Inner' if h.is_inner_horn else 'Outer'}): Filler='{h.filler_simplex_id[:36]}...' | Status={'FILLED' if h.has_filler else 'OPEN'}")
+            print("Lurie-Giraud Higher Descent Axioms:")
+            for d in result.descent_conditions:
+                print(f"  * {d.axiom_type[:28]}: {'VERIFIED' if d.is_satisfied else 'FAILED'} | Property: {d.formal_property[:40]}...")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Higher topos report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Higher topos SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Higher topos interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
