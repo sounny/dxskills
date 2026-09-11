@@ -1419,6 +1419,16 @@ def main():
     p_motivic.add_argument("--html", default="", help="Output interactive HTML application filepath")
     p_motivic.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_motivic.add_argument("--demo", action="store_true", help="Run with demonstration KGL algebraic K-theory spectrum and slice tower")
+    # condensed-math / clausen-scholze / liquid-loom / solid-abelian
+    p_condensed = subparsers.add_parser("condensed-math", aliases=["clausen-scholze", "liquid-loom", "solid-abelian"], help="Autonomous cognitive spatial Condensed Mathematics and Clausen-Scholze Analytic Loom")
+    p_condensed.add_argument("input", nargs="?", default="", help="Input condensed schema configuration JSON filepath")
+    p_condensed.add_argument("--name", default="Cognitive Intuitive Continuum X", help="Condensed schema identifier")
+    p_condensed.add_argument("--liquid-p", type=float, default=1.0, help="Liquid convex parameter p in (0, 1]")
+    p_condensed.add_argument("--report", default="", help="Output condensed mathematics telemetry markdown filepath")
+    p_condensed.add_argument("--svg", default="", help="Output profinite hyper-cover and liquid module SVG filepath")
+    p_condensed.add_argument("--html", default="", help="Output interactive HTML application filepath")
+    p_condensed.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_condensed.add_argument("--demo", action="store_true", help="Run with demonstration Stone space probes and liquid vector spaces")
     args = parser.parse_args()
 
 
@@ -8000,6 +8010,57 @@ def main():
             with open(args.html, "w", encoding="utf-8") as f:
                 f.write(loom.generate_html_viewer(result))
             print(f"[DxSkills] Motivic interactive HTML written to: {args.html}")
+    elif args.command in ["condensed-math", "clausen-scholze", "liquid-loom", "solid-abelian"]:
+        from scripts.condensed_mathematics_loom import (
+            CondensedMathematicsLoom,
+        )
+        loom = CondensedMathematicsLoom(schema_name=args.name, liquid_p=args.liquid_p)
+        if not (args.demo or not args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loom.schema_name = data.get("schema_name", args.name)
+            loom.liquid_p = float(data.get("liquid_parameter_p", args.liquid_p))
+
+        result = loom.evaluate_condensed_schema()
+
+        if args.json:
+            print(json.dumps(result.to_dict(), indent=2))
+        else:
+            print("=================================================================")
+            print("  Condensed Mathematics & Clausen-Scholze Analytic Loom")
+            print("=================================================================")
+            print(f"Target Schema:                 {result.schema_name}")
+            print(f"Condensed Classification:      {result.condensed_type}")
+            print(f"Base Analytic Ring:            {result.solid_module.base_ring}")
+            print(f"Solid Tensor Rank:             {result.solid_module.solid_tensor_rank}")
+            print(f"Liquid Convex Parameter:       p={result.solid_module.liquid_parameter_p:.2f}")
+            print(f"Abelian Exactness:             {'VERIFIED (Exact Colimits & Limits)' if result.abelian_exactness_verified else 'UNSATISFIED'}")
+            print(f"Liquid Convergence:            {'VERIFIED (Derived Tensor Exists)' if result.liquid_convergence_verified else 'DIVERGENT'}")
+            print("Profinite Stone Test Probes:")
+            for pts in result.profinite_test_sets:
+                print(f"  {pts.set_id}: {pts.cardinality_type} (Clopens={pts.clopen_subsets_count}) - {pts.description}")
+            print("Profinite Hyper-Cover Levels:")
+            for hc in result.hyper_cover:
+                print(f"  Level {hc.degree}: {hc.cover_set} (Exactness: {hc.exactness_verified})")
+            print("Derived Condensed Ext Invariants:")
+            for deg, val in result.derived_ext_dimensions.items():
+                print(f"  R^{deg} Hom_Cond: Dim={val}")
+            print("=================================================================")
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(loom.generate_markdown_report(result) + "\n")
+            print(f"[DxSkills] Condensed math report written to: {args.report}")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] Profinite hyper-cover & liquid module SVG written to: {args.svg}")
+
+        if args.html:
+            with open(args.html, "w", encoding="utf-8") as f:
+                f.write(loom.generate_html_viewer(result))
+            print(f"[DxSkills] Condensed math interactive HTML written to: {args.html}")
     else:
         parser.print_help()
 
