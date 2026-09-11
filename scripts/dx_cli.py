@@ -1509,6 +1509,14 @@ def main():
     p_hodge.add_argument("--svg", default="", help="Output moduli spaces and Hitchin fibration SVG filepath")
     p_hodge.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_hodge.add_argument("--demo", action="store_true", help="Run with demonstration Higgs bundle and Simpson correspondence")
+    # geometric-langlands / hecke-eigensheaf / beilinson-drinfeld / automorphic-d-module
+    p_langlands = subparsers.add_parser("geometric-langlands", aliases=["hecke-eigensheaf", "beilinson-drinfeld", "automorphic-d-module"], help="Autonomous cognitive spatial Geometric Langlands and Hecke Eigensheaf Loom")
+    p_langlands.add_argument("--genus", "-g", type=int, default=2, help="Curve genus (default: 2)")
+    p_langlands.add_argument("--pair", default="SL(2, C) Automorphic <-> PGL(2, C) Galois Spectral", choices=["SL(2, C) Automorphic <-> PGL(2, C) Galois Spectral", "GL(2, C) Automorphic <-> GL(2, C) Galois Spectral", "SL(3, C) Automorphic <-> PGL(3, C) Galois Spectral", "Sp(4, C) Automorphic <-> SO(5, C) Galois Spectral"], help="Langlands dual group pair")
+    p_langlands.add_argument("--hecke-rep", default="Fundamental Representation V_std (Dimension r)", choices=["Fundamental Representation V_std (Dimension r)", "Adjoint Representation V_adj (Dimension r^2 - 1)", "Second Exterior Power Wedge^2(V) (Dimension r(r-1)/2)", "Second Symmetric Power Sym^2(V) (Dimension r(r+1)/2)"], help="Hecke functor representation type")
+    p_langlands.add_argument("--svg", default="", help="Output Langlands duality and SYZ mirror symmetry SVG filepath")
+    p_langlands.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_langlands.add_argument("--demo", action="store_true", help="Run with demonstration Galois local system and Hecke eigensheaf")
     args = parser.parse_args()
 
 
@@ -8522,6 +8530,44 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(loom.generate_moduli_svg())
             print(f"[DxSkills] Non-Abelian Hodge moduli SVG written to: {args.svg}")
+    elif args.command in ["geometric-langlands", "hecke-eigensheaf", "beilinson-drinfeld", "automorphic-d-module"]:
+        from scripts.geometric_langlands_loom import (
+            GeometricLanglandsLoom,
+            LanglandsGroupPair,
+            DualitySide,
+            HeckeRepresentationType,
+        )
+        loom = GeometricLanglandsLoom(
+            genus=args.genus,
+            group_pair=args.pair,
+        )
+        ls = loom.create_local_system("LS-DEMO-01", is_oper=True)
+        dmod = loom.synthesize_hecke_eigensheaf("DMOD-DEMO-01", ls.system_id)
+        hecke = loom.evaluate_hecke_action("HECKE-DEMO", marked_point_x="x_0", representation_type=args.hecke_rep)
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            m = loom.mirror_data
+            print("=================================================================")
+            print("  Geometric Langlands Correspondence & Hecke Eigensheaf Loom")
+            print("=================================================================")
+            print(f"Curve Genus g:                 {loom.genus}")
+            print(f"Langlands Dual Groups:         {loom.group_pair}")
+            print(f"Moduli Stack Bun_G Dimension:  {m.bun_g_dimension if m else 0}")
+            print(f"Hitchin Base Dimension:        {m.base_dimension if m else 0}")
+            print(f"SYZ Dual Torus Dimensions:     T_b ({m.fiber_torus_dim if m else 0}) <-> T_b^vee ({m.dual_torus_dim if m else 0})")
+            print(f"Local System (Galois Side):    {ls.system_id} [Oper={ls.is_oper}]")
+            print(f"Hecke Eigensheaf (Auto Side):  {dmod.dmodule_id} (Crit Level k={dmod.critical_level:.1f})")
+            print(f"Hecke Functor H_{{x, V}} Action:  {hecke.operator_id} (Dim={hecke.representation_dimension})")
+            print(f"Hecke Eigenvalue Relation:     {'VERIFIED' if hecke.relation_verified else 'FAILED'}")
+            print(f"Fourier-Mukai Kernel:          {m.fourier_mukai_kernel if m else 'N/A'}")
+            print("=================================================================")
+
+        if args.svg:
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(loom.generate_langlands_svg())
+            print(f"[DxSkills] Geometric Langlands SVG written to: {args.svg}")
     else:
         parser.print_help()
 
