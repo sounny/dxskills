@@ -1847,6 +1847,12 @@ def main():
     p_k3.add_argument("--svg", default="", help="Output K3 Modularity SVG filepath")
     p_k3.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_k3.add_argument("--demo", action="store_true", help="Run demonstration K3 lattice analysis, Shioda-Inose CM modularity, and Borcherds product")
+    # bsd-conjecture / heegner-points / shafarevich-tate / bsd-loom
+    p_bsd = subparsers.add_parser("bsd-conjecture", aliases=["heegner-points", "shafarevich-tate", "bsd-loom"], help="Autonomous cognitive spatial Birch-Swinnerton-Dyer (BSD) Conjecture and Heegner Points Loom")
+    p_bsd.add_argument("--curve", "-c", default="11a1", choices=["11a1", "37a1", "389a1", "5077a1"], help="Elliptic curve label (default: 11a1)")
+    p_bsd.add_argument("--svg", default="", help="Output BSD Conjecture SVG filepath")
+    p_bsd.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_bsd.add_argument("--demo", action="store_true", help="Run demonstration BSD balance, Heegner point canonical height, and Kolyvagin Sha bound")
     args = parser.parse_args()
 
 
@@ -10806,6 +10812,48 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.render_svg(result))
             print(f"[DxSkills] K3 Modularity SVG written to: {out_path}")
+    elif args.command in ["bsd-conjecture", "heegner-points", "shafarevich-tate", "bsd-loom"]:
+        from scripts.bsd_conjecture_loom import (
+            BSDConjectureLoom,
+        )
+        loom = BSDConjectureLoom(args.curve)
+        result = loom.analyze()
+
+        if args.json:
+            import json
+            from dataclasses import asdict
+            res_dict = {
+                "curve": asdict(result.curve),
+                "bsd": asdict(result.bsd),
+                "heegner": asdict(result.heegner),
+                "l_function_profile": result.l_function_profile,
+                "bsd_proven_rank_le_1": result.bsd_proven_rank_le_1,
+                "notes": result.notes,
+            }
+            print(json.dumps(res_dict, indent=2))
+        else:
+            print("=================================================================")
+            print("  Birch-Swinnerton-Dyer (BSD) & Heegner Points Loom")
+            print("=================================================================")
+            print(f"Elliptic Curve E/Q:           {result.curve.label} (Conductor N = {result.curve.conductor_n})")
+            print(f"Mordell-Weil Rank:            r = {result.bsd.algebraic_rank} (Analytic r_an = {result.bsd.analytic_rank})")
+            print(f"Root Number:                  w(E) = {result.bsd.root_number}")
+            print(f"Leading Taylor Derivative:    L^({result.bsd.analytic_rank})(E, 1)/{result.bsd.analytic_rank}! = {result.bsd.leading_l_derivative:.6f}")
+            print(f"Arithmetic RHS:               {result.bsd.arithmetic_rhs_value:.6f}")
+            print(f"BSD Balance Ratio:            {result.bsd.bsd_ratio:.6f} (Exact Match: {result.bsd.exact_match})")
+            print(f"Real Period & Regulator:      Omega = {result.curve.real_period_omega:.4f} | Reg = {result.bsd.neron_tate_regulator:.4f}")
+            print(f"Shafarevich-Tate Order:       #Sha(E) = {result.bsd.sha_order}")
+            print(f"Heegner Point Infinite Order: {result.heegner.has_infinite_order} (Canonical Height = {result.heegner.canonical_height:.4f})")
+            print(f"BSD Proven (Rank <= 1):       {result.bsd_proven_rank_le_1}")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "bsd_conjecture_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.render_svg(result))
+            print(f"[DxSkills] BSD Conjecture SVG written to: {out_path}")
     else:
         parser.print_help()
 
