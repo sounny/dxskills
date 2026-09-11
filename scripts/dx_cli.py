@@ -1204,6 +1204,18 @@ def main():
     p_scond.add_argument("--svg", default="", help="Output saccadic saliency interactive SVG filepath")
     p_scond.add_argument("--json", "-j", action="store_true", help="Output raw JSON saliency telemetry")
     p_scond.add_argument("--demo", action="store_true", help="Run with demonstration technical scanpath")
+    # retinal-latch / drift-dampener / retinal-dampener / working-memory-latch / retinal-stabilizer
+    p_rlatch = subparsers.add_parser("retinal-latch", aliases=["drift-dampener", "retinal-dampener", "working-memory-latch", "retinal-stabilizer"], help="Autonomous cognitive spatial working memory saccadic drift dampener and retinal latch engine")
+    p_rlatch.add_argument("input", nargs="?", default="", help="Input ocular gaze stream or anchor JSON filepath")
+    p_rlatch.add_argument("--rotation-angle", type=float, default=180.0, help="Mental rotation angle in degrees (default: 180.0)")
+    p_rlatch.add_argument("--noise", type=float, default=9.5, help="Simulated fixational tremor noise std in px (default: 9.5)")
+    p_rlatch.add_argument("--damping", type=float, default=0.68, help="Low-pass damping factor (default: 0.68)")
+    p_rlatch.add_argument("--deadband", type=float, default=10.0, help="Deadband suppression radius in px (default: 10.0)")
+    p_rlatch.add_argument("--duration", type=float, default=2400.0, help="Mental rotation duration in ms (default: 2400.0)")
+    p_rlatch.add_argument("--report", default="", help="Output retinal latch diagnostic markdown filepath")
+    p_rlatch.add_argument("--svg", default="", help="Output retinal latch interactive SVG filepath")
+    p_rlatch.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_rlatch.add_argument("--demo", action="store_true", help="Run with demonstration mental rotation simulation")
     args = parser.parse_args()
 
 
@@ -6340,6 +6352,87 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Saccadic conductor SVG written to: {args.svg}")
+    elif args.command in ["retinal-latch", "drift-dampener", "retinal-dampener", "working-memory-latch", "retinal-stabilizer"]:
+        import scripts.saccadic_drift_dampener as sdd_mod
+        cfg = sdd_mod.DriftDampeningConfig(
+            damping_factor=args.damping,
+            deadband_radius_px=args.deadband,
+        )
+        dampener = sdd_mod.SaccadicDriftDampener(config=cfg)
+
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                raw_samples = [
+                    (float(s.get("t", s.get("timestamp_ms", i * 50.0))), float(s["x"]), float(s["y"]))
+                    for i, s in enumerate(data.get("samples", []))
+                ]
+                for a in data.get("anchors", []):
+                    dampener.add_anchor(
+                        sdd_mod.RetinalAnchor(
+                            anchor_id=str(a.get("anchor_id", a.get("id", "anc"))),
+                            label=str(a.get("label", "Anchor")),
+                            x=float(a["x"]),
+                            y=float(a["y"]),
+                            capture_radius_px=float(a.get("capture_radius_px", 35.0)),
+                            latch_strength=float(a.get("latch_strength", 0.85)),
+                        )
+                    )
+                telemetry = dampener.process_stream(raw_samples)
+        else:
+            telemetry = dampener.simulate_mental_rotation_drift(
+                rotation_angle_deg=args.rotation_angle,
+                noise_std=args.noise,
+                duration_ms=args.duration,
+            )
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print(f"[DxSkills] Retinal Latch & Saccadic Drift Telemetry")
+            print(f"Status: {telemetry.stability_status}")
+            print(f"Total Samples: {telemetry.total_samples}")
+            print(f"Drift Reduction: {telemetry.drift_reduction_pct:.1f}%")
+            print(f"Mean Jitter Amplitude: {telemetry.mean_jitter_amplitude_px:.1f} px")
+            print(f"Latch Events: {telemetry.latch_event_count}")
+            print(f"WM Coherence Index: {telemetry.working_memory_coherence_score:.1f} / 100")
+            if telemetry.warnings:
+                for w in telemetry.warnings:
+                    print(f"Warning: {w}")
+
+        if args.report:
+            md_lines = [
+                "# Saccadic Drift Dampener & Retinal Latch Diagnostic Report",
+                "",
+                f"**Stability Status:** `{telemetry.stability_status}`",
+                f"- **Total Samples:** {telemetry.total_samples}",
+                f"- **Raw Path Length:** {telemetry.total_raw_path_length_px:.1f} px",
+                f"- **Damped Path Length:** {telemetry.total_damped_path_length_px:.1f} px",
+                f"- **Drift Reduction:** {telemetry.drift_reduction_pct:.1f}%",
+                f"- **Mean Jitter Amplitude:** {telemetry.mean_jitter_amplitude_px:.1f} px",
+                f"- **Retinal Latch Events:** {telemetry.latch_event_count}",
+                f"- **Working Memory Coherence Score:** {telemetry.working_memory_coherence_score:.1f} / 100",
+                "",
+                "## Registered Retinal Anchors",
+                "",
+                "| Anchor ID | Label | Coordinates (X, Y) | Capture Radius | Latch Strength |",
+                "| :--- | :--- | :--- | :--- | :--- |",
+            ]
+            for a in telemetry.anchors:
+                md_lines.append(f"| `{a.anchor_id}` | {a.label} | ({a.x:.1f}, {a.y:.1f}) | {a.capture_radius_px:.1f} px | {a.latch_strength:.2f} |")
+            if telemetry.warnings:
+                md_lines.extend(["", "## Diagnostic Warnings", ""])
+                for w in telemetry.warnings:
+                    md_lines.append(f"- [WARNING] {w}")
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write("\n".join(md_lines) + "\n")
+            print(f"[DxSkills] Retinal latch report written to: {args.report}")
+
+        if args.svg:
+            svg_code = dampener.render_retinal_latch_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Retinal latch SVG written to: {args.svg}")
     else:
         parser.print_help()
 
