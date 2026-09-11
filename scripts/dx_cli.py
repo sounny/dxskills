@@ -1161,6 +1161,16 @@ def main():
     p_cres.add_argument("--svg", default="", help="Output gaze corridor interactive SVG filepath")
     p_cres.add_argument("--json", "-j", action="store_true", help="Output raw JSON corridor telemetry")
     p_cres.add_argument("--demo", action="store_true", help="Run with demonstration technical architecture scanpath")
+    # kinematic-horizon / artificial-horizon / inertial-frame / gimbal-lock-calibrator
+    p_khor = subparsers.add_parser("kinematic-horizon", aliases=["artificial-horizon", "inertial-frame", "gimbal-lock-calibrator"], help="Allocentric kinematic horizon and inertial frame calibrator engine")
+    p_khor.add_argument("input", nargs="?", default="", help="Input orientation telemetry JSON filepath")
+    p_khor.add_argument("--threshold", type=float, default=75.0, help="Gimbal lock warning threshold in degrees (default: 75.0)")
+    p_khor.add_argument("--radius", type=float, default=150.0, help="Gauge radius in pixels (default: 150.0)")
+    p_khor.add_argument("--pitch-scale", type=float, default=2.5, help="Pitch scale pixels per degree (default: 2.5)")
+    p_khor.add_argument("--report", default="", help="Output kinematic horizon diagnostic markdown filepath")
+    p_khor.add_argument("--svg", default="", help="Output kinematic horizon interactive SVG filepath")
+    p_khor.add_argument("--json", "-j", action="store_true", help="Output raw JSON horizon telemetry")
+    p_khor.add_argument("--demo", action="store_true", help="Run with demonstration 3D map exploration telemetry")
     args = parser.parse_args()
 
 
@@ -6130,6 +6140,48 @@ def main():
             with open(args.svg, "w", encoding="utf-8") as f:
                 f.write(svg_code)
             print(f"[DxSkills] Gaze corridor SVG written to: {args.svg}")
+    elif args.command in ["kinematic-horizon", "artificial-horizon", "inertial-frame", "gimbal-lock-calibrator"]:
+        import scripts.allocentric_kinematic_horizon as akh_mod
+        calibrator = akh_mod.AllocentricKinematicHorizon(
+            gimbal_warning_threshold_deg=args.threshold,
+            gauge_radius_px=args.radius,
+            pitch_scale_px_per_deg=args.pitch_scale,
+        )
+        if args.input and os.path.exists(args.input):
+            with open(args.input, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                raw_samples = data.get("samples", data.get("inertial_samples", []))
+                samples = [
+                    akh_mod.InertialSample(
+                        sample_id=str(s.get("sample_id", s.get("id", f"in-{i}"))),
+                        pitch_deg=float(s.get("pitch_deg", s.get("pitch", 0.0))),
+                        roll_deg=float(s.get("roll_deg", s.get("roll", 0.0))),
+                        yaw_deg=float(s.get("yaw_deg", s.get("yaw", 0.0))),
+                        timestamp_ms=float(s.get("timestamp_ms", i * 100.0)),
+                    )
+                    for i, s in enumerate(raw_samples)
+                ]
+                telemetry = calibrator.calculate_kinematic_frames(samples)
+        else:
+            telemetry = akh_mod.AllocentricKinematicHorizon.create_demo_telemetry()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            report_md = calibrator.generate_markdown_report(telemetry)
+            print(report_md)
+
+        if args.report:
+            report_md = calibrator.generate_markdown_report(telemetry)
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(report_md)
+            print(f"[DxSkills] Kinematic horizon report written to: {args.report}")
+
+        if args.svg:
+            svg_code = calibrator.generate_svg(telemetry)
+            with open(args.svg, "w", encoding="utf-8") as f:
+                f.write(svg_code)
+            print(f"[DxSkills] Kinematic horizon SVG written to: {args.svg}")
     else:
         parser.print_help()
 
