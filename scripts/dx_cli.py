@@ -888,6 +888,16 @@ def main():
     p_vault.add_argument("--json", "-j", action="store_true", help="Output raw JSON vault telemetry")
     p_vault.add_argument("--demo", action="store_true", help="Run with demonstration multi-cluster canvas anchors")
 
+    # schema-transfer / isomorphism-engine / analogy-transfer / domain-mapper
+    p_stransfer = subparsers.add_parser("schema-transfer", aliases=["isomorphism-engine", "analogy-transfer", "domain-mapper"], help="Autonomous cognitive spatial schema isomorphism and cross-domain analogy transfer engine")
+    p_stransfer.add_argument("source", nargs="?", default="", help="Source domain schema JSON file")
+    p_stransfer.add_argument("target", nargs="?", default="", help="Target domain schema JSON file")
+    p_stransfer.add_argument("--threshold", "-t", type=float, default=0.55, help="Minimum alignment threshold for valid homomorphism (default: 0.55)")
+    p_stransfer.add_argument("--report", default="", help="Output analogy transfer markdown report filepath")
+    p_stransfer.add_argument("--svg", default="", help="Output isomorphic projection SVG diagram filepath")
+    p_stransfer.add_argument("--json", "-j", action="store_true", help="Output raw JSON analogy transfer telemetry")
+    p_stransfer.add_argument("--demo", action="store_true", help="Run with demonstration hydraulic to electrical circuit transfer")
+
     args = parser.parse_args()
 
 
@@ -4084,6 +4094,68 @@ def main():
         if args.svg:
             vault.export_svg(result, args.svg)
             print(f"[DxSkills] Vault map SVG written to: {args.svg}")
+    elif args.command in ["schema-transfer", "isomorphism-engine", "analogy-transfer", "domain-mapper"]:
+        import scripts.schema_isomorphism_engine as sie_mod
+
+        engine = sie_mod.SchemaIsomorphismEngine(min_alignment_threshold=args.threshold)
+
+        src_schema = None
+        tgt_schema = None
+
+        if args.source and os.path.isfile(args.source) and args.target and os.path.isfile(args.target):
+            with open(args.source, "r", encoding="utf-8") as f:
+                src_data = json.load(f)
+            with open(args.target, "r", encoding="utf-8") as f:
+                tgt_data = json.load(f)
+            src_schema = sie_mod.DomainSchema.from_dict(src_data)
+            tgt_schema = sie_mod.DomainSchema.from_dict(tgt_data)
+        elif args.demo or not args.source:
+            src_schema = sie_mod.DomainSchema.from_dict({
+                "domain_name": "Hydraulic Power System",
+                "nodes": [
+                    {"id": "pump", "name": "Centrifugal Pump", "role": "SOURCE"},
+                    {"id": "pipe", "name": "Conduit Pipe", "role": "TRANSPORT"},
+                    {"id": "valve", "name": "Flow Constrictor Valve", "role": "REGULATOR"},
+                    {"id": "basin", "name": "Reservoir Basin", "role": "SINK"},
+                ],
+                "relations": [
+                    {"source": "pump", "target": "pipe", "relation": "DRIVES"},
+                    {"source": "pipe", "target": "valve", "relation": "CIRCULATES"},
+                    {"source": "valve", "target": "basin", "relation": "REGULATES"},
+                    {"source": "basin", "target": "pump", "relation": "CIRCULATES"},
+                ],
+            })
+            tgt_schema = sie_mod.DomainSchema.from_dict({
+                "domain_name": "Electrical Direct Current Circuit",
+                "nodes": [
+                    {"id": "battery", "name": "Chemical Battery", "role": "SOURCE"},
+                    {"id": "wire", "name": "Copper Wire", "role": "TRANSPORT"},
+                    {"id": "resistor", "name": "Ceramic Resistor", "role": "REGULATOR"},
+                    {"id": "ground", "name": "Chassis Ground", "role": "SINK"},
+                ],
+                "relations": [
+                    {"source": "battery", "target": "wire", "relation": "DRIVES"},
+                    {"source": "wire", "target": "resistor", "relation": "CIRCULATES"},
+                    {"source": "resistor", "target": "ground", "relation": "REGULATES"},
+                ],
+            })
+
+        projection = engine.synthesize_analogy_transfer(src_schema, tgt_schema)
+
+        if args.json:
+            print(json.dumps(projection.to_dict(), indent=2))
+        else:
+            print("\n" + engine.generate_ascii_report(projection))
+            print("\n" + projection.transfer_report_md)
+
+        if args.report:
+            with open(args.report, "w", encoding="utf-8") as f:
+                f.write(projection.transfer_report_md)
+            print(f"[DxSkills] Analogy transfer report written to: {args.report}")
+
+        if args.svg:
+            engine.export_svg(projection, args.svg)
+            print(f"[DxSkills] Isomorphic projection SVG written to: {args.svg}")
     else:
         parser.print_help()
 
