@@ -673,6 +673,16 @@ def main():
     p_action.add_argument("--json", "-j", action="store_true", help="Output raw JSON sequencing telemetry")
     p_action.add_argument("--demo", action="store_true", help="Run with demonstration non-linear project execution graph")
 
+    # cognitive-aperture / aperture / scope-bound / cowan-lens
+    p_aperture = subparsers.add_parser("cognitive-aperture", aliases=["aperture", "scope-bound", "cowan-lens"], help="Autonomous cognitive spatial dynamic cognitive aperture and scope bounding harness")
+    p_aperture.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or tasks JSON file")
+    p_aperture.add_argument("--capacity", "-c", type=int, default=4, help="Working memory capacity limit (Cowan 4-chunk threshold, default: 4)")
+    p_aperture.add_argument("--focal", nargs="*", default=[], help="Explicit node IDs to pin inside the focal aperture")
+    p_aperture.add_argument("--output-canvas", "-o", default="", help="Output aperture-attenuated Obsidian .canvas filepath")
+    p_aperture.add_argument("--svg", default="", help="Output cognitive aperture concentric radar SVG diagram filepath")
+    p_aperture.add_argument("--json", "-j", action="store_true", help="Output raw JSON aperture telemetry")
+    p_aperture.add_argument("--demo", action="store_true", help="Run with demonstration multi-tier cognitive working memory field")
+
     args = parser.parse_args()
 
 
@@ -2776,6 +2786,46 @@ def main():
         if args.svg:
             sequencer.to_svg(args.svg)
             print(f"[DxSkills] Critical path SVG written to: {args.svg}")
+    elif args.command in ["cognitive-aperture", "aperture", "scope-bound", "cowan-lens"]:
+        import scripts.cognitive_aperture as cap
+
+        harness = cap.CognitiveApertureHarness(capacity_limit=args.capacity)
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data:
+                harness.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                harness.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_tasks = {
+                "task_urgent_bug": {"title": "Fix Critical Production Regression", "cognitive_weight": 8.0, "urgency_score": 0.95, "strategic_alignment": 0.3},
+                "task_auth_audit": {"title": "Resolve Token Refresh Leak", "cognitive_weight": 7.0, "urgency_score": 0.90, "strategic_alignment": 0.4},
+                "task_cli_test": {"title": "Complete Suite Unit Tests", "cognitive_weight": 6.0, "urgency_score": 0.85, "strategic_alignment": 0.5},
+                "task_deploy_run": {"title": "Staging Deployment Runway", "cognitive_weight": 5.0, "urgency_score": 0.80, "strategic_alignment": 0.5},
+                "task_refactor_css": {"title": "Refactor Titanium CSS Variables", "cognitive_weight": 4.0, "urgency_score": 0.50, "strategic_alignment": 0.4},
+                "task_doc_cleanup": {"title": "Review Backlog Markdown Archives", "cognitive_weight": 3.0, "urgency_score": 0.35, "strategic_alignment": 0.3},
+                "task_future_arch": {"title": "2030 Holographic Canvas Spec", "cognitive_weight": 9.0, "urgency_score": 0.15, "strategic_alignment": 0.95},
+                "task_infra_migration": {"title": "Multi-Region Cloud Redundancy", "cognitive_weight": 8.5, "urgency_score": 0.20, "strategic_alignment": 0.90},
+            }
+            harness.load_dict(demo_tasks)
+
+        manual_pins = args.focal if args.focal else None
+        entities, telemetry = harness.calibrate_aperture(manual_focal_ids=manual_pins)
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + harness.render_ascii_lens(telemetry))
+
+        if args.output_canvas:
+            harness.to_canvas(args.output_canvas, canvas_title="Cognitive Aperture Runway")
+            print(f"[DxSkills] Aperture canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            harness.to_svg(args.svg)
+            print(f"[DxSkills] Cognitive aperture SVG written to: {args.svg}")
     else:
         parser.print_help()
 
