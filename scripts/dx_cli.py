@@ -1774,6 +1774,15 @@ def main():
     p_cz.add_argument("--svg", default="", help="Output Colmez Conjecture SVG filepath")
     p_cz.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     p_cz.add_argument("--demo", action="store_true", help="Run with demonstration CM type, Faltings height, and Artin L-derivatives")
+    # gross-stark / stark-conjecture / padic-regulator / brumer-stark
+    p_gs = subparsers.add_parser("gross-stark", aliases=["stark-conjecture", "padic-regulator", "brumer-stark"], help="Autonomous cognitive spatial Gross-Stark and p-Adic Stark Conjectures Loom")
+    p_gs.add_argument("--degree", "-g", type=int, default=2, choices=[2, 3, 4], help="Degree of totally real base field F (default: 2)")
+    p_gs.add_argument("--discriminant", "-d", type=int, default=5, choices=[2, 5, 8, 12, 13, 17], help="Discriminant of totally real base field (default: 5)")
+    p_gs.add_argument("--prime", "-p", type=int, default=3, choices=[2, 3, 5, 7, 11], help="Splitting prime p with exceptional zero (default: 3)")
+    p_gs.add_argument("--archetype", default="sqrt5", choices=["sqrt5", "sqrt2", "cubic", "quartic"], help="Totally real field archetype (default: sqrt5)")
+    p_gs.add_argument("--svg", default="", help="Output Gross-Stark SVG filepath")
+    p_gs.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_gs.add_argument("--demo", action="store_true", help="Run with demonstration Gross-Stark unit, p-adic regulator, and Shintani cones")
     args = parser.parse_args()
 
 
@@ -10251,6 +10260,59 @@ def main():
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(loom.generate_svg())
             print(f"[DxSkills] Colmez Conjecture SVG written to: {out_path}")
+    elif args.command in ["gross-stark", "stark-conjecture", "padic-regulator", "brumer-stark"]:
+        from scripts.gross_stark_loom import (
+            GrossStarkLoom,
+            GrossStarkArchetype,
+        )
+        arch_map = {
+            "sqrt5": GrossStarkArchetype.REAL_QUADRATIC_Q_SQRT5.value,
+            "sqrt2": GrossStarkArchetype.REAL_QUADRATIC_Q_SQRT2.value,
+            "cubic": GrossStarkArchetype.TOTALLY_REAL_CUBIC_Q_ZETA7_PLUS.value,
+            "quartic": GrossStarkArchetype.TOTALLY_REAL_QUARTIC_FIELD.value,
+        }
+        chosen_arch = arch_map.get(args.archetype, GrossStarkArchetype.REAL_QUADRATIC_Q_SQRT5.value)
+
+        loom = GrossStarkLoom(
+            degree_g=args.degree,
+            discriminant_d=args.discriminant,
+            prime_p=args.prime,
+            default_archetype=chosen_arch,
+        )
+        f_data = loom.totally_real_field
+        u_data = loom.stark_unit
+        l_data = loom.padic_derivative
+        cones = loom.shintani_cones
+        status = loom.evaluate_conjecture_status()
+
+        if args.json:
+            print(loom.to_json())
+        else:
+            print("=================================================================")
+            print("  Gross-Stark & p-Adic Stark Conjectures Loom")
+            print("=================================================================")
+            print(f"Totally Real Field:            {f_data.field_label} (degree g = {f_data.degree_g})")
+            print(f"Discriminant & Class Number:   D_F = {f_data.discriminant_df} | h^+(F) = {f_data.narrow_class_number}")
+            print(f"Splitting Prime:               p = {f_data.splitting_prime_p} (Exceptional Zero Order e = {l_data.order_of_vanishing})")
+            print(f"Gross-Stark S-Unit:            {u_data.unit_label}")
+            print(f"Minimal Polynomial:            {u_data.minimal_polynomial}")
+            print(f"p-Adic Valuation & Logarithm:  ord_p(u) = {u_data.p_adic_valuation} | log_p(u) = {u_data.iwasawa_padic_log:.5f}")
+            print(f"p-Adic Regulator:              R_p(chi) = {u_data.canonical_regulator:.5f}")
+            print(f"p-Adic L Derivative:           L_p'(0, chi) = {l_data.derivative_value:.5f}")
+            print(f"Gross-Stark Formula:           {status['gross_stark_formula']}")
+            print(f"Equality Verified:             {l_data.is_conjecture_verified} (Ratio = {l_data.gross_stark_ratio:.5f})")
+            print(f"Proof Status:                  {status['proof_status']}")
+            print(f"Methodology:                   {status['methodology']}")
+            print(f"Shintani Cones Decomposed:     {len(cones)} simplicial cones")
+            print("=================================================================")
+
+        if args.svg or args.demo:
+            out_path = args.svg if args.svg else "gross_stark_demo.svg"
+            if os.path.dirname(out_path):
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(loom.generate_svg())
+            print(f"[DxSkills] Gross-Stark SVG written to: {out_path}")
     else:
         parser.print_help()
 
