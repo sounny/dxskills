@@ -664,6 +664,15 @@ def main():
     p_lattice.add_argument("--json", "-j", action="store_true", help="Output raw JSON lattice and resonance telemetry")
     p_lattice.add_argument("--demo", action="store_true", help="Run with demonstration cross-domain cognitive architecture context")
 
+    # action-sequencer / sequencer / dag-runner / executive-scaffold
+    p_action = subparsers.add_parser("action-sequencer", aliases=["sequencer", "dag-runner", "executive-scaffold"], help="Autonomous cognitive spatial non-linear executive scaffolding and action sequencer")
+    p_action.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath or tasks JSON file")
+    p_action.add_argument("--default-time", "-t", type=int, default=25, help="Default task estimate in minutes")
+    p_action.add_argument("--output-canvas", "-o", default="", help="Output sequenced Obsidian .canvas filepath")
+    p_action.add_argument("--svg", default="", help="Output critical path DAG SVG diagram filepath")
+    p_action.add_argument("--json", "-j", action="store_true", help="Output raw JSON sequencing telemetry")
+    p_action.add_argument("--demo", action="store_true", help="Run with demonstration non-linear project execution graph")
+
     args = parser.parse_args()
 
 
@@ -2730,6 +2739,43 @@ def main():
         if args.svg:
             compiler.to_svg(args.svg)
             print(f"[DxSkills] Concept lattice SVG written to: {args.svg}")
+    elif args.command in ["action-sequencer", "sequencer", "dag-runner", "executive-scaffold"]:
+        import scripts.action_sequencer as aseq
+
+        sequencer = aseq.ActionSequencer(default_task_minutes=args.default_time)
+
+        if args.canvas and os.path.isfile(args.canvas):
+            with open(args.canvas, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if "nodes" in raw_data:
+                sequencer.load_canvas(raw_data)
+            elif isinstance(raw_data, dict):
+                sequencer.load_dict(raw_data)
+        elif args.demo or not args.canvas:
+            demo_tasks = {
+                "scope_problem": {"title": "Define Architecture Scope", "estimated_minutes": 20, "prerequisites": []},
+                "core_engine": {"title": "Implement Core DAG Parser", "estimated_minutes": 35, "prerequisites": ["scope_problem"]},
+                "stepping_stones": {"title": "Synthesize Micro-Commitment Prompter", "estimated_minutes": 25, "prerequisites": ["core_engine"]},
+                "cli_integration": {"title": "Wire CLI Subparsers & Handlers", "estimated_minutes": 15, "prerequisites": ["stepping_stones"]},
+                "svg_visualizer": {"title": "Draft SVG Critical Path Renderer", "estimated_minutes": 30, "prerequisites": ["core_engine"]},
+                "end_to_end_test": {"title": "Full System Integration Suite", "estimated_minutes": 20, "prerequisites": ["cli_integration", "svg_visualizer"]},
+            }
+            sequencer.load_dict(demo_tasks)
+
+        nodes, telemetry = sequencer.sequence()
+
+        if args.json:
+            print(json.dumps(telemetry.to_dict(), indent=2))
+        else:
+            print("\n" + sequencer.render_ascii_plan(telemetry))
+
+        if args.output_canvas:
+            sequencer.to_canvas(args.output_canvas, canvas_title="Executive Runway Canvas")
+            print(f"[DxSkills] Action runway .canvas written to: {args.output_canvas}")
+
+        if args.svg:
+            sequencer.to_svg(args.svg)
+            print(f"[DxSkills] Critical path SVG written to: {args.svg}")
     else:
         parser.print_help()
 
