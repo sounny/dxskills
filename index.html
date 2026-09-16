@@ -180,6 +180,7 @@
           <a href="#d-mode" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Presets</a>
           <a href="#install" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Install</a>
           <a href="#benchmarks" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Benchmarks</a>
+          <a href="#docs" class="hover:text-mono-950 dark:hover:text-mono-100 transition-colors">Docs</a>
         </div>
 
         <!-- Actions & Controls (Cleared Up & Minimalist) -->
@@ -251,6 +252,9 @@
           </a>
           <a href="#benchmarks" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2">
             <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-mono-500"></i> Benchmarks
+          </a>
+          <a href="#docs" onclick="toggleMobileMenu()" class="p-2.5 rounded-lg bg-mono-100/70 dark:bg-mono-900/70 hover:bg-mono-200 dark:hover:bg-mono-800 text-mono-800 dark:text-mono-200 transition flex items-center gap-2 col-span-2">
+            <i data-lucide="book-open" class="w-3.5 h-3.5 text-mono-500"></i> Documentation Center
           </a>
         </div>
         <div class="pt-2 border-t border-mono-200/80 dark:border-mono-800/80 grid grid-cols-3 gap-2 text-xs font-mono">
@@ -1610,15 +1614,15 @@ graph TD
           <div id="diag-view-finance" class="w-full justify-center hidden">
             <pre class="mermaid">
 graph TD
-    A["Gross Inflows: $120,450"] --> B{"The Operating Funnel"}
-    B -->|"Direct Delivery (COGS): $35,120"| C["Gross Profit: $85,330 (71%)"]
-    C -->|"Overhead & Payroll: $45,300"| D["Operating Cash Flow: $40,030"]
-    D -->|"Taxes & Reserves: $10,000"| E["Net Cash Retained: $30,030"]
+    A["Gross Inflows: $120,450"] --> B["The Operating Funnel"]
+    B -->|Direct Delivery COGS: $35,120| C["Gross Profit: $85,330 - 71%"]
+    C -->|Overhead and Payroll: $45,300| D["Operating Cash Flow: $40,030"]
+    D -->|Taxes and Reserves: $10,000| E["Net Cash Retained: $30,030"]
 
     subgraph Runway ["Cash Runway Status"]
         F["Total Bank Cash: $360,000"]
-        G["Monthly Net Burn: $0 (Cash-Flow Positive)"]
-        H["Runway: Infinite (Self-Sustaining)"]
+        G["Monthly Net Burn: $0 - Cash-Flow Positive"]
+        H["Runway: Infinite - Self-Sustaining"]
     end
             </pre>
           </div>
@@ -1791,6 +1795,938 @@ graph TD
             </tr>
           </tbody>
         </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- COMPREHENSIVE DOCUMENTATION CENTER SECTION -->
+  <section id="docs" class="py-16 md:py-24 border-b border-mono-200 dark:border-mono-800/80 bg-white dark:bg-mono-950 transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-mono-200 dark:border-mono-800/80 pb-8">
+        <div class="max-w-3xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-xs font-mono text-mono-700 dark:text-mono-300">
+            <i data-lucide="book-open" class="w-3.5 h-3.5 text-mono-500"></i>
+            <span>System Manual & Knowledge Base</span>
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-mono-950 dark:text-mono-100">
+            Documentation Center
+          </h2>
+          <p class="text-base text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+            In-depth guide to cognitive mechanics, modular skills, executive archetypes, command-line operations, and AI system prompts. Everything you need to eliminate cognitive crowding.
+          </p>
+        </div>
+
+        <!-- Documentation Search Filter -->
+        <div class="w-full md:w-80 shrink-0">
+          <label for="docs-search-input" class="block text-xs font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 mb-1.5 font-bold">Filter Documentation</label>
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-mono-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input 
+              id="docs-search-input" 
+              type="text" 
+              oninput="filterDocsContent(this.value)" 
+              placeholder="Search skills, CLI flags, Cowan, Branson..." 
+              class="w-full pl-9 pr-8 py-2 text-xs font-mono rounded-lg bg-mono-50 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-900 dark:text-mono-100 placeholder:text-mono-400 focus:outline-none focus:ring-1 focus:ring-mono-950 dark:focus:ring-white transition"
+            />
+            <button 
+              id="docs-search-clear" 
+              onclick="clearDocsSearch()" 
+              class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-mono-400 hover:text-mono-900 dark:hover:text-mono-100"
+              title="Clear search"
+            >
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs & Content Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Sidebar Navigation Pills -->
+        <div class="lg:col-span-3 space-y-1 font-mono text-xs sticky top-28">
+          <span class="text-[11px] uppercase tracking-wider text-mono-400 dark:text-mono-600 font-bold block px-3 py-1">Manual Sections</span>
+          
+          <button 
+            id="docs-nav-foundations" 
+            onclick="switchDocsTab('foundations')" 
+            class="docs-tab-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center justify-between font-bold bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 transition shadow-sm"
+          >
+            <span class="flex items-center gap-2.5">
+              <i data-lucide="brain" class="w-4 h-4"></i>
+              <span>1. Cognitive Foundations</span>
+            </span>
+            <span class="text-[10px] opacity-70">5 Principles</span>
+          </button>
+
+          <button 
+            id="docs-nav-skills" 
+            onclick="switchDocsTab('skills')" 
+            class="docs-tab-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center justify-between text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition"
+          >
+            <span class="flex items-center gap-2.5">
+              <i data-lucide="layers" class="w-4 h-4"></i>
+              <span>2. Modular Skills Suite</span>
+            </span>
+            <span class="text-[10px] opacity-70">5 Skills</span>
+          </button>
+
+          <button 
+            id="docs-nav-archetypes" 
+            onclick="switchDocsTab('archetypes')" 
+            class="docs-tab-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center justify-between text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition"
+          >
+            <span class="flex items-center gap-2.5">
+              <i data-lucide="award" class="w-4 h-4"></i>
+              <span>3. Leader Archetypes</span>
+            </span>
+            <span class="text-[10px] opacity-70">5 Leaders</span>
+          </button>
+
+          <button 
+            id="docs-nav-cli" 
+            onclick="switchDocsTab('cli')" 
+            class="docs-tab-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center justify-between text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition"
+          >
+            <span class="flex items-center gap-2.5">
+              <i data-lucide="terminal" class="w-4 h-4"></i>
+              <span>4. CLI Reference</span>
+            </span>
+            <span class="text-[10px] opacity-70">12 Commands</span>
+          </button>
+
+          <button 
+            id="docs-nav-presets" 
+            onclick="switchDocsTab('presets')" 
+            class="docs-tab-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center justify-between text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition"
+          >
+            <span class="flex items-center gap-2.5">
+              <i data-lucide="sliders" class="w-4 h-4"></i>
+              <span>5. AI Presets & Prompts</span>
+            </span>
+            <span class="text-[10px] opacity-70">7 Platforms</span>
+          </button>
+
+          <button 
+            id="docs-nav-architecture" 
+            onclick="switchDocsTab('architecture')" 
+            class="docs-tab-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center justify-between text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition"
+          >
+            <span class="flex items-center gap-2.5">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <span>6. Architecture & Gates</span>
+            </span>
+            <span class="text-[10px] opacity-70">Parity & Tests</span>
+          </button>
+
+          <!-- Quick Bundle Action -->
+          <div class="pt-4 border-t border-mono-200 dark:border-mono-800">
+            <button 
+              onclick="openBundleModal()" 
+              class="w-full py-2.5 px-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 text-mono-900 dark:text-mono-100 font-mono text-xs font-semibold hover:bg-mono-200 dark:hover:bg-mono-800 transition flex items-center justify-center gap-2"
+            >
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Download Full Spec</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Documentation Content Panes -->
+        <div class="lg:col-span-9 space-y-10 min-h-[500px]" id="docs-content-container">
+
+          <!-- TAB 1: COGNITIVE FOUNDATIONS -->
+          <div id="docs-pane-foundations" class="docs-pane space-y-8">
+            <div class="border-b border-mono-100 dark:border-mono-800 pb-4">
+              <span class="text-xs font-mono uppercase tracking-wider text-mono-400 block font-bold">Section 1</span>
+              <h3 class="text-2xl font-bold tracking-tight text-mono-950 dark:text-mono-100">Cognitive Mechanics and Philosophy</h3>
+              <p class="text-sm text-mono-600 dark:text-mono-400 mt-1 font-sans">
+                Why standard AI text fails non-linear thinkers, and the neurocognitive principles that govern DxSkills.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              <!-- Card 1: BLUF -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-base">
+                  <div class="w-7 h-7 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 flex items-center justify-center text-xs font-mono">01</div>
+                  <h4>Bottom Line Up Front (BLUF)</h4>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Traditional academic and corporate writing uses an inverted pyramid where conclusions follow lengthy preamble. For dyslexic readers, linear exposition causes working memory thrashing. BLUF places the concrete decision, metric, or action on line one. Every subsequent sentence provides optional depth rather than mandatory reading.
+                </p>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] text-mono-700 dark:text-mono-300">
+                  <span class="text-emerald-600 dark:text-emerald-400 font-bold block mb-1">Standard BLUF Block:</span>
+                  <code>&gt; **BLUF:** Deploy release candidate v1.4. Zero migration downtime. Database rollback window is 15 minutes.</code>
+                </div>
+              </div>
+
+              <!-- Card 2: Cowan 4-Chunk Limit -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-base">
+                  <div class="w-7 h-7 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 flex items-center justify-center text-xs font-mono">02</div>
+                  <h4>Cowan 4-Chunk Working Memory Limit</h4>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Nelson Cowan established that active human working memory holds only 3 to 4 distinct items simultaneously, not George Miller's classic 7. In dyslexic profiles, phonological loop buffer limits are even tighter. DxSkills strictly bounds lists, steps, and options to 4 tokens maximum, preventing cognitive spillover.
+                </p>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] text-mono-700 dark:text-mono-300">
+                  <span class="text-mono-950 dark:text-mono-100 font-bold block mb-1">Rule of 4 Implementation:</span>
+                  <code>Max 4 bullet points per section. Max 4 columns per comparison matrix. Max 4 parallel lanes in Mermaid topologies.</code>
+                </div>
+              </div>
+
+              <!-- Card 3: Visuospatial Sketchpad -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-base">
+                  <div class="w-7 h-7 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 flex items-center justify-center text-xs font-mono">03</div>
+                  <h4>Baddeley Visuospatial Sketchpad</h4>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Dyslexia represents a specific variance in phonological loop processing, not visual or spatial reasoning. Alan Baddeley's model of working memory proves that visuospatial processing operates via separate cognitive channels. DxSkills translates serial verbal chains into 2D diagrams, spatial cards, and flowcharts to engage spatial strengths.
+                </p>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] text-mono-700 dark:text-mono-300">
+                  <span class="text-mono-950 dark:text-mono-100 font-bold block mb-1">Dual-Coding Offload:</span>
+                  <code>Text --&gt; Visuospatial Map (Mermaid / SVG / Canvas JSON). Zero phonological decode penalty.</code>
+                </div>
+              </div>
+
+              <!-- Card 4: Saccadic Pacing & Crowding -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-base">
+                  <div class="w-7 h-7 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 flex items-center justify-center text-xs font-mono">04</div>
+                  <h4>Saccadic Pacing and Visual Crowding</h4>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  The Bouma window marks the peripheral zone where letters crowd together and blur during saccadic eye movements. Monolithic paragraphs cause gaze drift and line jumping. DxSkills eliminates walls of text by enforcing short lines (60 to 75 characters), vertical spacing, distinct bullet markers, and generous margins.
+                </p>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] text-mono-700 dark:text-mono-300">
+                  <span class="text-mono-950 dark:text-mono-100 font-bold block mb-1">Layout Standard:</span>
+                  <code>1.6 to 1.8 line-height, letter-spacing -0.01em, high-contrast anchors, zero dense paragraphs over 3 lines.</code>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Authentic Grounded Tone Card -->
+            <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+              <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-base">
+                <div class="w-7 h-7 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 flex items-center justify-center text-xs font-mono">05</div>
+                <h4>Authentic Grounded Voice (Wikipedia Standards)</h4>
+              </div>
+              <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                Large language models produce synthetic filler phrases: "In summary", "It is crucial to consider", "Furthermore", "A tapestry of innovation". For non-linear readers, this semantic fluff increases cognitive fatigue without delivering facts. DxSkills mandates direct copulatives ("is", "are"), concrete facts, active verbs, and zero synthetic buzzwords.
+              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                <div class="p-3 rounded-lg bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 text-rose-800 dark:text-rose-300">
+                  <span class="font-bold block mb-1">Prohibited AI Clichés:</span>
+                  <p class="text-[11px] leading-relaxed">"Delve into", "Tapestry", "Testament to", "Beacon of", "Unpack the nuances", trailing participial clauses ("highlighting its importance...").</p>
+                </div>
+                <div class="p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-300">
+                  <span class="font-bold block mb-1">Required Grounded Style:</span>
+                  <p class="text-[11px] leading-relaxed">Direct statements: "Module A handles X. Module B executes Y." Concrete numbers: "$45,000 budget, 4-day delivery." Zero preamble.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TAB 2: MODULAR SKILLS SUITE -->
+          <div id="docs-pane-skills" class="docs-pane hidden space-y-8">
+            <div class="border-b border-mono-100 dark:border-mono-800 pb-4">
+              <span class="text-xs font-mono uppercase tracking-wider text-mono-400 block font-bold">Section 2</span>
+              <h3 class="text-2xl font-bold tracking-tight text-mono-950 dark:text-mono-100">The 5 Core Modular Cognitive Skills</h3>
+              <p class="text-sm text-mono-600 dark:text-mono-400 mt-1 font-sans">
+                Each skill targets a specific bottleneck in reading, organizing, ideation, or verbal communication.
+              </p>
+            </div>
+
+            <div class="space-y-6">
+              
+              <!-- dx-dump -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-1 rounded-md bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-mono text-xs font-bold">skills/dx-dump</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Rapid Brain-Dump Compiler</h4>
+                  </div>
+                  <span class="text-xs font-mono text-mono-500">Target: Executive Action Scaffolding</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Captures disordered thoughts, rambling voice transcripts, or meeting fragments and formats them into a single-screen executive brief. Strips conversational tangents and synthesizes the core decision, a 4-quadrant Eisenhower matrix, and sequential DAG execution steps.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Standard Outputs</span>
+                    <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
+                      <li>• BLUF Decision Block (1 sentence)</li>
+                      <li>• Cowan 4-Item Focus Quadrant</li>
+                      <li>• Prioritized Action Matrix</li>
+                      <li>• Critical Path Execution Checklist</li>
+                    </ul>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">CLI Command</span>
+                    <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py dump "raw notes"</code>
+                    <span class="text-[10px] text-mono-500">Flags: --out file.md, --json, --verbose</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- dx-map -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-1 rounded-md bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-mono text-xs font-bold">skills/dx-map</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Spatial Topology & Mermaid Templates</h4>
+                  </div>
+                  <span class="text-xs font-mono text-mono-500">Target: Visuospatial Mapping</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Translates technical systems, organizational flows, and curricula into validated Mermaid.js diagrams. Enforces syntax rules to prevent rendering crashes: avoids unescaped ampersands, wraps node text in double quotes, and restricts edge labels to clean alphanumeric descriptors.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Supported Topologies</span>
+                    <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
+                      <li>• System Architecture (graph TD)</li>
+                      <li>• Cognitive Flywheel (graph LR)</li>
+                      <li>• Curriculum Roadmap (graph TD)</li>
+                      <li>• Decision Tree & Mindmap (graph TD / mindmap)</li>
+                    </ul>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">CLI Command</span>
+                    <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py map --type arch</code>
+                    <span class="text-[10px] text-mono-500">Options: arch, flywheel, curriculum, decision, mindmap</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- dx-read -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-1 rounded-md bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-mono text-xs font-bold">skills/dx-read</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Asymmetric Reading Synthesizer</h4>
+                  </div>
+                  <span class="text-xs font-mono text-mono-500">Target: High-Speed Document Triage</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Converts 50-page research publications, legal contracts, and corporate memos into 1-page comparison tables. Renders core trade-offs, methodological risks, and empirical findings side-by-side without requiring serial reading of dense paragraphs.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Structural Sections</span>
+                    <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
+                      <li>• BLUF Finding (1 sentence summary)</li>
+                      <li>• 4-Pillar Contrast Table</li>
+                      <li>• Methodological Vulnerabilities & Trade-offs</li>
+                      <li>• Next Actions and Immediate Decisions</li>
+                    </ul>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">CLI Command</span>
+                    <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py read path/to/doc.pdf</code>
+                    <span class="text-[10px] text-mono-500">Input: text file, pdf, or markdown memo</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- dx-interview -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-1 rounded-md bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-mono text-xs font-bold">skills/dx-interview</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Socratic Diagnostic Interview Trees</h4>
+                  </div>
+                  <span class="text-xs font-mono text-mono-500">Target: Guided Specification Extraction</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Eliminates the blank-page problem. Guides the user through a branching sequence of targeted questions across 3 tracks: Grant Proposals, Technical System Architecture, and Academic Syllabi. Automatically compiles user answers into publication-ready markdown deliverables.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Interview Tracks</span>
+                    <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
+                      <li>• grant: NIH / NSF / Foundation proposals</li>
+                      <li>• system: Distributed system architecture spec</li>
+                      <li>• syllabus: 16-week academic course blueprint</li>
+                    </ul>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">CLI Command</span>
+                    <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py interview --track grant</code>
+                    <span class="text-[10px] text-mono-500">Interactive terminal wizard with auto-export</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- dx-voice -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-1 rounded-md bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-mono text-xs font-bold">skills/dx-voice</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Real-Time Voice Streaming & Transcription</h4>
+                  </div>
+                  <span class="text-xs font-mono text-mono-500">Target: Phonological Friction Elimination</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Speech-to-structure transcription harness. Dyslexic thinkers often articulate concepts orally with high clarity but encounter friction when typing. dx-voice streams audio, strips filler words, isolates the central thesis, and generates structured spatial cards and Mermaid diagrams in real time.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Key Pipelines</span>
+                    <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
+                      <li>• Audio capture buffer with silence detection</li>
+                      <li>• Punctuation restoration and disfluency pruning</li>
+                      <li>• Dual export to Obsidian Canvas and Markdown</li>
+                    </ul>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">CLI Command</span>
+                    <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py voice --simulate</code>
+                    <span class="text-[10px] text-mono-500">Production module: scripts/voice_streamer.py</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- TAB 3: LEADER ARCHETYPES REFERENCE -->
+          <div id="docs-pane-archetypes" class="docs-pane hidden space-y-8">
+            <div class="border-b border-mono-100 dark:border-mono-800 pb-4">
+              <span class="text-xs font-mono uppercase tracking-wider text-mono-400 block font-bold">Section 3</span>
+              <h3 class="text-2xl font-bold tracking-tight text-mono-950 dark:text-mono-100">Leader Archetypes Reference</h3>
+              <p class="text-sm text-mono-600 dark:text-mono-400 mt-1 font-sans">
+                Five high-profile non-linear and dyslexic leaders whose operational habits have been codified into reusable templates.
+              </p>
+            </div>
+
+            <div class="space-y-6">
+
+              <!-- Newsom -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div>
+                    <span class="text-[11px] font-mono uppercase text-mono-400 block font-bold">Public Speaking & Keynotes</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Gavin Newsom: 4-Room Spatial Storyboard</h4>
+                  </div>
+                  <span class="px-2.5 py-1 rounded bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono font-bold">dx storyboard</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Governor Gavin Newsom openly describes his dyslexia and refusal to read teleprompters or scripted remarks. Instead, his keynotes rely on physical and mental room walks. dx storyboard builds a 4-room spatial layout where each room holds a single visual anchor, an empirical data point, and an emotional catalyst.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">Room 1</span>
+                    <span class="text-[11px] text-mono-500">The Problem (Concrete crisis / cost)</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">Room 2</span>
+                    <span class="text-[11px] text-mono-500">The Catalyst (Human face / emotional hinge)</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">Room 3</span>
+                    <span class="text-[11px] text-mono-500">The Mechanism (Policy / technical solution)</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">Room 4</span>
+                    <span class="text-[11px] text-mono-500">The Horizon (Irreversible commitment)</span>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-xs font-mono flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Run via CLI: <code class="text-mono-950 dark:text-mono-100 font-bold">python scripts/dx_cli.py storyboard "Clean Energy Initiative"</code></span>
+                  <span class="text-[10px] text-mono-400">Template: skills/dx-map/templates/visual_spatial_storyboard.md</span>
+                </div>
+              </div>
+
+              <!-- Branson Napkin -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div>
+                    <span class="text-[11px] font-mono uppercase text-mono-400 block font-bold">Venture Viability</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Richard Branson: The Napkin Test (Beer-Mat Test)</h4>
+                  </div>
+                  <span class="px-2.5 py-1 rounded bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono font-bold">dx napkin</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Richard Branson rejects thick business plans, famously stating that if an idea cannot fit on the back of a beer mat, it is not worth doing. The napkin test evaluates the commercial reality of any business in 3 short lines: What is the customer's frustration? What is our unfair angle? Does the arithmetic work (Price, Marginal Cost, Net Margin)?
+                </p>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-xs font-mono">
+                  <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1.5">The 3-Line Beer Mat Rule:</span>
+                  <div class="space-y-1 text-mono-800 dark:text-mono-200 text-[11px]">
+                    <div><strong>Line 1:</strong> The Frustration (What hurts so much that customers will pay today?)</div>
+                    <div><strong>Line 2:</strong> The Angle (Why will established giants fail to copy us?)</div>
+                    <div><strong>Line 3:</strong> The Math (Selling price, delivery cost, and unit gross margin)</div>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-xs font-mono flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Run via CLI: <code class="text-mono-950 dark:text-mono-100 font-bold">python scripts/dx_cli.py napkin "On-demand freight booking"</code></span>
+                  <span class="text-[10px] text-mono-400">Template: skills/dx-dump/templates/napkin_beer_mat_test.md</span>
+                </div>
+              </div>
+
+              <!-- Jobs Spec -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div>
+                    <span class="text-[11px] font-mono uppercase text-mono-400 block font-bold">Product Architecture</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Steve Jobs: The Executive Specification</h4>
+                  </div>
+                  <span class="px-2.5 py-1 rounded bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono font-bold">dx spec</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Steve Jobs operated through holistic spatial product visions and ruthless subtraction. When teams brought 100-page feature catalogs, he forced them to define the single core axiom and three non-negotiable pillars. The executive spec demands explicit non-goals to prevent scope creep and cognitive dilution.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">The Core Axiom</span>
+                    <span class="text-[11px] text-mono-500">The foundational truth that cannot be compromised.</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">3 Hard Pillars</span>
+                    <span class="text-[11px] text-mono-500">Only 3 capabilities built to perfection.</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-rose-600 dark:text-rose-400 block mb-1">Explicit Non-Goals</span>
+                    <span class="text-[11px] text-mono-500">Features we deliberately refuse to build.</span>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-xs font-mono flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Run via CLI: <code class="text-mono-950 dark:text-mono-100 font-bold">python scripts/dx_cli.py spec "Spatial canvas editor"</code></span>
+                  <span class="text-[10px] text-mono-400">Template: skills/dx-dump/templates/executive_markdown_spec.md</span>
+                </div>
+              </div>
+
+              <!-- Kamprad Taxonomy -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div>
+                    <span class="text-[11px] font-mono uppercase text-mono-400 block font-bold">Mnemonic Classification</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Ingvar Kamprad: Mnemonic Taxonomy (IKEA Schema)</h4>
+                  </div>
+                  <span class="px-2.5 py-1 rounded bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono font-bold">dx taxonomy</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  IKEA founder Ingvar Kamprad was severely dyslexic. Numbers and serial SKU codes caused confusion in warehouse operations. He solved this by mapping product categories to Swedish geographic names (beds are Norwegian places, chairs are male names, fabrics are female names). Combined with wordless 4-step assembly schemas, this removed reading barriers for both workers and customers worldwide.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Mnemonic Category Map</span>
+                    <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
+                      <li>• Replace alphanumeric IDs with tactile metaphors</li>
+                      <li>• Map conceptual tiers to physical landscapes</li>
+                      <li>• Maximum 4 mnemonic buckets per domain</li>
+                    </ul>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Wordless Pictorial Steps</span>
+                    <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
+                      <li>• 4 distinct assembly milestones</li>
+                      <li>• Direct component-to-slot visual vectors</li>
+                      <li>• Zero multi-sentence text instructions</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-xs font-mono flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Run via CLI: <code class="text-mono-950 dark:text-mono-100 font-bold">python scripts/dx_cli.py taxonomy "Cloud infrastructure services"</code></span>
+                  <span class="text-[10px] text-mono-400">Template: skills/dx-map/templates/mnemonic_taxonomy_schema.md</span>
+                </div>
+              </div>
+
+              <!-- Branson Finance -->
+              <div class="docs-card p-6 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/40 dark:bg-mono-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
+                  <div>
+                    <span class="text-[11px] font-mono uppercase text-mono-400 block font-bold">Financial Telemetry</span>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Richard Branson: Financial Conversational Digest</h4>
+                  </div>
+                  <span class="px-2.5 py-1 rounded bg-mono-200 dark:bg-mono-800 text-mono-800 dark:text-mono-200 text-xs font-mono font-bold">dx finance</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Branson could not read spreadsheets or understand standard profit-and-loss accounting statements until well into his career. He instructed accountants to draw diagrams and answer four straightforward questions. dx finance converts spreadsheet ledgers into 4 plain-language answers and a visual cash-flow waterfall diagram.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-emerald-600 dark:text-emerald-400 block mb-1">1. Cash In</span>
+                    <span class="text-[11px] text-mono-500">Collected cash receipts this month</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-rose-600 dark:text-rose-400 block mb-1">2. Cash Out</span>
+                    <span class="text-[11px] text-mono-500">Total cash paid to staff and vendors</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">3. Net Retained</span>
+                    <span class="text-[11px] text-mono-500">Cash left in bank after all bills</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-sky-600 dark:text-sky-400 block mb-1">4. True Runway</span>
+                    <span class="text-[11px] text-mono-500">Months before bank account hits zero</span>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-xs font-mono flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Run via CLI: <code class="text-mono-950 dark:text-mono-100 font-bold">python scripts/dx_cli.py finance "Q3 financials summary"</code></span>
+                  <span class="text-[10px] text-mono-400">Template: skills/dx-read/templates/financial_conversational_digest.md</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- TAB 4: CLI COMMAND REFERENCE -->
+          <div id="docs-pane-cli" class="docs-pane hidden space-y-8">
+            <div class="border-b border-mono-100 dark:border-mono-800 pb-4">
+              <span class="text-xs font-mono uppercase tracking-wider text-mono-400 block font-bold">Section 4</span>
+              <h3 class="text-2xl font-bold tracking-tight text-mono-950 dark:text-mono-100">Command-Line Interface (scripts/dx_cli.py)</h3>
+              <p class="text-sm text-mono-600 dark:text-mono-400 mt-1 font-sans">
+                Full reference for local scripting, automated pipelines, and headless cognitive transformations.
+              </p>
+            </div>
+
+            <!-- Global Invocation -->
+            <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3 font-mono text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-mono-950 dark:text-mono-100 text-sm">Global Invocation Pattern</span>
+                <span class="text-mono-500">Python 3.10+</span>
+              </div>
+              <div class="p-3 rounded-lg bg-mono-900 text-mono-100 overflow-x-auto">
+                <code>python scripts/dx_cli.py &lt;command&gt; [arguments] [--out &lt;file&gt;] [--json] [--verbose]</code>
+              </div>
+              <p class="text-mono-600 dark:text-mono-400 font-sans text-xs">
+                All subcommands support the <code>--json</code> flag for headless pipeline ingestion and <code>--out</code> to save formatted deliverables directly to disk.
+              </p>
+            </div>
+
+            <!-- Commands Table -->
+            <div class="overflow-x-auto border border-mono-200 dark:border-mono-800 rounded-xl">
+              <table class="w-full text-left font-mono text-xs">
+                <thead class="bg-mono-100 dark:bg-mono-900 border-b border-mono-200 dark:border-mono-800 text-mono-600 dark:text-mono-400">
+                  <tr>
+                    <th class="py-3 px-4">Subcommand</th>
+                    <th class="py-3 px-4">Arguments & Flags</th>
+                    <th class="py-3 px-4">Description</th>
+                    <th class="py-3 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-mono-200 dark:divide-mono-800 text-mono-800 dark:text-mono-200">
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">dump</td>
+                    <td class="py-3 px-4 text-mono-500">&lt;text&gt; [--out &lt;file&gt;] [--json]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Compiles unstructured brain-dumps into structured BLUF + 4-item matrices.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py dump "Project roadmap ideas"')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">map</td>
+                    <td class="py-3 px-4 text-mono-500">--type &lt;arch|flywheel|curriculum|decision|mindmap&gt;</td>
+                    <td class="py-3 px-4 font-sans text-xs">Generates syntax-safe Mermaid.js diagrams with verified layout grammar.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py map --type arch')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">read</td>
+                    <td class="py-3 px-4 text-mono-500">&lt;file&gt; [--json]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Synthesizes dense documents into 1-page executive comparison matrices.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py read path/to/document.txt')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">interview</td>
+                    <td class="py-3 px-4 text-mono-500">--track &lt;grant|system|syllabus&gt;</td>
+                    <td class="py-3 px-4 font-sans text-xs">Interactive terminal diagnostic wizard compiling user answers into specifications.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py interview --track grant')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">storyboard</td>
+                    <td class="py-3 px-4 text-mono-500">&lt;topic&gt; [--out &lt;file&gt;]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Generates Gavin Newsom 4-room spatial speech storyboard and unscripted cue cards.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py storyboard "Quarterly All-Hands"')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">napkin</td>
+                    <td class="py-3 px-4 text-mono-500">&lt;venture&gt; [--out &lt;file&gt;]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Executes Richard Branson back-of-a-beer-mat test with 3-line viability arithmetic.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py napkin "Subscription Coffee Service"')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">spec</td>
+                    <td class="py-3 px-4 text-mono-500">&lt;product&gt; [--out &lt;file&gt;]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Creates Steve Jobs executive spec with Core Axiom, 3 Pillars, and Non-Goals.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py spec "Minimalist Note App"')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">taxonomy</td>
+                    <td class="py-3 px-4 text-mono-500">&lt;domain&gt; [--out &lt;file&gt;]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Builds Ingvar Kamprad landscape mnemonics and 4-step wordless assembly diagram.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py taxonomy "Microservice Catalog"')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">finance</td>
+                    <td class="py-3 px-4 text-mono-500">&lt;ledger&gt; [--out &lt;file&gt;]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Generates Branson financial digest with 4 boardroom metrics and cash-flow waterfall.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py finance "Monthly Balance Sheet"')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">parity</td>
+                    <td class="py-3 px-4 text-mono-500">[--json] [--verbose]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Audits lossless synchronization across Markdown, Audio Digest, Canvas, and Notion.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py parity')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
+                    <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">benchmark</td>
+                    <td class="py-3 px-4 text-mono-500">[--json]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Evaluates cognitive load telemetry and reading latency across test corpus.</td>
+                    <td class="py-3 px-4 text-right">
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py benchmark')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- TAB 5: AI PRESETS & PROMPTS -->
+          <div id="docs-pane-presets" class="docs-pane hidden space-y-8">
+            <div class="border-b border-mono-100 dark:border-mono-800 pb-4">
+              <span class="text-xs font-mono uppercase tracking-wider text-mono-400 block font-bold">Section 5</span>
+              <h3 class="text-2xl font-bold tracking-tight text-mono-950 dark:text-mono-100">AI Platform Presets & System Instructions</h3>
+              <p class="text-sm text-mono-600 dark:text-mono-400 mt-1 font-sans">
+                Ready-to-use configuration files to bring D-Mode into Cursor IDE, Claude, ChatGPT, Gemini, and Obsidian.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              <!-- Cursor IDE -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-sm">
+                    <i data-lucide="code-2" class="w-4 h-4"></i>
+                    <h4>Cursor IDE (.cursorrules)</h4>
+                  </div>
+                  <span class="text-[11px] font-mono text-mono-400">prompts/cursorrules.md</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Place this file at the root of your project. Instructs Cursor AI to present code modifications through concise diffs, ASCII architectural schemas, and max 4-chunk refactor steps. Eliminates long narrative explanations before code blocks.
+                </p>
+                <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] flex items-center justify-between">
+                  <code class="text-mono-800 dark:text-mono-200">cp prompts/cursorrules.md .cursorrules</code>
+                  <button onclick="copyCliCommand('cp prompts/cursorrules.md .cursorrules')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                </div>
+              </div>
+
+              <!-- Claude Projects -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-sm">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <h4>Claude Projects</h4>
+                  </div>
+                  <span class="text-[11px] font-mono text-mono-400">prompts/claude-project.md</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Paste into Claude Project Custom Instructions. Enforces strict BLUF summaries on every answer, automatic conversion of multi-paragraph answers into comparison tables, and generation of Mermaid diagrams for multi-step processes.
+                </p>
+                <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Copy Claude instructions</span>
+                  <button onclick="copyFilePrompt('claude')" class="text-mono-950 dark:text-mono-100 font-bold hover:underline">Copy Prompt</button>
+                </div>
+              </div>
+
+              <!-- ChatGPT -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-sm">
+                    <i data-lucide="message-square" class="w-4 h-4"></i>
+                    <h4>ChatGPT Custom Instructions</h4>
+                  </div>
+                  <span class="text-[11px] font-mono text-mono-400">prompts/chatgpt-custom-instructions.md</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Two-part prompt split between "What would you like ChatGPT to know about you?" and "How would you like ChatGPT to respond?". Eliminates sycophantic praise ("Great question!") and enforces dense, structured visual answers.
+                </p>
+                <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Copy ChatGPT instructions</span>
+                  <button onclick="copyFilePrompt('chatgpt')" class="text-mono-950 dark:text-mono-100 font-bold hover:underline">Copy Prompt</button>
+                </div>
+              </div>
+
+              <!-- Gemini Gems -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-sm">
+                    <i data-lucide="gem" class="w-4 h-4"></i>
+                    <h4>Google Gemini Gems</h4>
+                  </div>
+                  <span class="text-[11px] font-mono text-mono-400">prompts/gemini-gem.md</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Configures custom Gemini Gems with spatial scaffolding rules. Directs Gemini to leverage its multimodal capacity to output clean ASCII cards, structured comparison matrices, and step-by-step cognitive stepping stones.
+                </p>
+                <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Copy Gemini Gem instructions</span>
+                  <button onclick="copyFilePrompt('gemini')" class="text-mono-950 dark:text-mono-100 font-bold hover:underline">Copy Prompt</button>
+                </div>
+              </div>
+
+              <!-- Obsidian Canvas -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-sm">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                    <h4>Obsidian Canvas & Notes</h4>
+                  </div>
+                  <span class="text-[11px] font-mono text-mono-400">prompts/obsidian-d-mode.md</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Configuration for Obsidian personal knowledge management. Establishes daily canvas layouts, color-coded node hierarchies, bidirectional associative links, and automatic conversion of notes into visual clusters.
+                </p>
+                <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Copy Obsidian guide</span>
+                  <button onclick="copyFilePrompt('obsidian')" class="text-mono-950 dark:text-mono-100 font-bold hover:underline">Copy Guide</button>
+                </div>
+              </div>
+
+              <!-- Bilingual French -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-sm">
+                    <i data-lucide="globe" class="w-4 h-4"></i>
+                    <h4>Bilingual French (D-Mode FR)</h4>
+                  </div>
+                  <span class="text-[11px] font-mono text-mono-400">prompts/d-mode-fr.md</span>
+                </div>
+                <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
+                  Full French localization of the Universal D-Mode prompt. Calibrated for Francophone dyslexic syntax, replacing heavy subordination with short copulative phrasing, visual bullet points, and French terminology.
+                </p>
+                <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-mono text-[11px] flex items-center justify-between">
+                  <span class="text-mono-600 dark:text-mono-400">Copier le prompt en Français</span>
+                  <button onclick="copyFilePrompt('french')" class="text-mono-950 dark:text-mono-100 font-bold hover:underline">Copier</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- TAB 6: ARCHITECTURE & QUALITY GATES -->
+          <div id="docs-pane-architecture" class="docs-pane hidden space-y-8">
+            <div class="border-b border-mono-100 dark:border-mono-800 pb-4">
+              <span class="text-xs font-mono uppercase tracking-wider text-mono-400 block font-bold">Section 6</span>
+              <h3 class="text-2xl font-bold tracking-tight text-mono-950 dark:text-mono-100">Repository Architecture & Quality Gates</h3>
+              <p class="text-sm text-mono-600 dark:text-mono-400 mt-1 font-sans">
+                Rigorous testing harnesses and pre-commit checks ensuring zero regressions and cross-modal fidelity.
+              </p>
+            </div>
+
+            <div class="space-y-6">
+
+              <!-- Pre-Commit Gate -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3 font-mono text-xs">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-sm">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>
+                    <h4>Pre-Commit Quality Gate (scripts/pre_commit_hook.py)</h4>
+                  </div>
+                  <span class="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">Strict Invariant</span>
+                </div>
+                <p class="text-mono-600 dark:text-mono-400 font-sans text-xs leading-relaxed">
+                  Every commit in DxSkills passes through an automated pre-commit hook that verifies 3 non-negotiable standards before code can be committed:
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">1. Zero Em Dashes</span>
+                    <span class="text-[11px] text-mono-500">Unicode U+2014 em dashes are strictly forbidden across all files. Hyphens, commas, or parentheses must be used.</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">2. Schema Validity</span>
+                    <span class="text-[11px] text-mono-500">Validates YAML frontmatter across all skills/ directory modules.</span>
+                  </div>
+                  <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
+                    <span class="font-bold text-mono-950 dark:text-mono-100 block mb-1">3. Benchmark Score</span>
+                    <span class="text-[11px] text-mono-500">The empirical cognitive evaluation suite must score 100.0% with zero regressions.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Multi-Modal Parity -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3 font-mono text-xs">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-sm">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 text-sky-500"></i>
+                    <h4>Lossless Multi-Modal Parity Engine</h4>
+                  </div>
+                  <span class="text-mono-500">16 Quality Gates</span>
+                </div>
+                <p class="text-mono-600 dark:text-mono-400 font-sans text-xs leading-relaxed">
+                  When a concept is expressed in DxSkills, it must exist simultaneously and without loss across four distinct cognitive modalities:
+                </p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                  <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-center">
+                    <span class="font-bold block">1. Markdown</span>
+                    <span class="text-mono-400 text-[10px]">Executive Spec</span>
+                  </div>
+                  <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-center">
+                    <span class="font-bold block">2. Audio Script</span>
+                    <span class="text-mono-400 text-[10px]">Spoken Digest</span>
+                  </div>
+                  <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-center">
+                    <span class="font-bold block">3. Canvas JSON</span>
+                    <span class="text-mono-400 text-[10px]">Spatial Graph</span>
+                  </div>
+                  <div class="p-2.5 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800 text-center">
+                    <span class="font-bold block">4. Notion Blocks</span>
+                    <span class="text-mono-400 text-[10px]">API Payload</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Packaging Bundle Utility -->
+              <div class="docs-card p-5 rounded-xl border border-mono-200 dark:border-mono-800 bg-mono-50/50 dark:bg-mono-900/30 space-y-3 font-mono text-xs">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-mono-950 dark:text-mono-100 font-bold text-sm">
+                    <i data-lucide="package" class="w-4 h-4 text-mono-950 dark:text-mono-100"></i>
+                    <h4>Air-Gapped Packaging Pipeline (scripts/bundle_skills.py)</h4>
+                  </div>
+                  <span class="text-mono-500">dist/dxskills-v0.1.0.zip</span>
+                </div>
+                <p class="text-mono-600 dark:text-mono-400 font-sans text-xs leading-relaxed">
+                  For secure enterprise, air-gapped workstations, or offline personal devices, the bundle script compiles all prompt presets, CLI utilities, and skill definitions into an immutable offline archive.
+                </p>
+                <div class="p-3 rounded-lg bg-mono-900 text-mono-100 flex items-center justify-between">
+                  <code>python scripts/bundle_skills.py</code>
+                  <button onclick="copyCliCommand('python scripts/bundle_skills.py')" class="text-mono-400 hover:text-white transition">Copy</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
     </div>
@@ -4111,15 +5047,15 @@ This curriculum eliminates passive lecture memorization. Students learn through 
     D --> E
     E --> F`,
       finance: `graph TD
-    A["Gross Inflows: $120,450"] --> B{"The Operating Funnel"}
-    B -->|"Direct Delivery (COGS): $35,120"| C["Gross Profit: $85,330 (71%)"]
-    C -->|"Overhead & Payroll: $45,300"| D["Operating Cash Flow: $40,030"]
-    D -->|"Taxes & Reserves: $10,000"| E["Net Cash Retained: $30,030"]
+    A["Gross Inflows: $120,450"] --> B["The Operating Funnel"]
+    B -->|Direct Delivery COGS: $35,120| C["Gross Profit: $85,330 - 71%"]
+    C -->|Overhead and Payroll: $45,300| D["Operating Cash Flow: $40,030"]
+    D -->|Taxes and Reserves: $10,000| E["Net Cash Retained: $30,030"]
 
     subgraph Runway ["Cash Runway Status"]
         F["Total Bank Cash: $360,000"]
-        G["Monthly Net Burn: $0 (Cash-Flow Positive)"]
-        H["Runway: Infinite (Self-Sustaining)"]
+        G["Monthly Net Burn: $0 - Cash-Flow Positive"]
+        H["Runway: Infinite - Self-Sustaining"]
     end`
     };
 
@@ -4758,6 +5694,156 @@ This curriculum eliminates passive lecture memorization. Students learn through 
           setTimeout(() => { copyBtn.innerText = 'Copy View'; }, 1500);
         }
       }
+    }
+
+  
+    // Documentation Center Navigation and Interaction
+    let currentDocsTab = 'foundations';
+    const docsPrompts = {
+      claude: `You are acting as a dedicated cognitive scaffold for a non-linear, spatial thinker and researcher. Calibrate every interaction according to these principles:
+1. Zero Input Friction: Accept rapid brain dumps, voice dictation artifacts, and fragments without comment.
+2. Visual Scaffolding: Lead every substantive response with a 1-2 sentence Bottom Line Up Front (BLUF). For conversational prose, use short 1-3 sentence paragraphs without forced bullets. For technical comparisons, use clean bullet hierarchies and decision tables.
+3. Artifact First: Place complex deliverables, code, and long-form analysis into artifacts.
+4. Systems & Spatial Thinking: Generate Mermaid.js diagrams to illustrate relationships visually.
+5. Authentic Voice: Match conversational warmth. Eliminate robotic AI filler. Strictly NO em dashes.
+6. Leader Workflows: On demand, support /dx storyboard (Newsom), /dx napkin (Branson), /dx spec (Jobs), /dx taxonomy (Kamprad), and /dx finance (Branson).`,
+      chatgpt: `Operate in D-Mode (Cognitive Scaffolding):
+1. Zero-Friction Input: Accept rough notes, fragments, and typos without comment. Infer intent immediately.
+2. Anti-Wall-of-Text: Never output dense paragraphs. Always lead with a 1-2 sentence Bottom Line Up Front (BLUF). For conversational writing, use short 1-3 sentence paragraphs; NEVER convert natural prose into bullet lists.
+3. Silent Mechanical Polish: Quietly fix spelling and grammar. Never lecture about typos.
+4. Voice & Tone: Keep tone authentic, direct, warm, and grounded. Eliminate AI filler and hollow platitudes.
+5. Systems Presentation: Use Markdown tables and Mermaid.js diagrams instead of long text explanations.
+6. Strict Rule: Never use em dashes anywhere. Use commas, hyphens, or parentheses instead.
+7. Specialized Commands: Support /dx storyboard, /dx napkin, /dx spec, /dx taxonomy, /dx finance.`,
+      gemini: `You are D-Mode, an advanced cognitive compiler designed for non-linear, spatial thinkers, researchers, and creators.
+1. Zero-Friction Input: Ingest rapid bullet fragments and raw voice dictations without comment.
+2. Visual Anti-Wall-of-Text: Start with a 1-2 sentence Bottom Line Up Front (BLUF). For conversational writing, use short paragraphs with clean breathing room. For technical documentation, use visual hierarchies and Markdown tables.
+3. Silent Mechanical Polish: Quietly correct mechanics without annotating changes.
+4. Authentic Voice: Grounded, collegial, and warm. Zero em dashes anywhere.
+5. Spatial Systems: Prioritize structured tables, process maps, and Mermaid diagrams.
+6. Specialized Leader Commands: Support /dx storyboard, /dx napkin, /dx spec, /dx taxonomy, /dx finance.`,
+      obsidian: `You are acting as an internal cognitive scaffold for an Obsidian knowledge vault paired with a non-linear, spatial researcher.
+1. Zero Input Tax: Accept rough daily note fragments, half-written bullets, and voice dictation without comment.
+2. Anti-Wall-of-Text: Lead with 1-sentence Bottom Line Up Front (BLUF). Use short paragraphs for prose; reserve tables and bullets for structured data.
+3. Native Obsidian: Use [[Wikilinks]] for note references and Mermaid (```mermaid) for visual maps.
+4. Silent Polish: Quietly correct spelling and grammar without annotations.
+5. Tone: Direct, warm, grounded. Zero em dashes anywhere.`,
+      cursor: `You are pair programming with a non-linear, spatial engineer.
+1. Zero-Friction Input: Accept rapid terminal dumps and phonetic spelling without comment. Infer technical intent immediately.
+2. Anti-Wall-of-Text: Lead with 1-sentence Bottom Line Up Front (BLUF). Prioritize code blocks, diffs, and terminal commands over prose explanations.
+3. Spatial Presentation: Provide Mermaid.js diagrams or ASCII flowcharts before writing prose explanations.
+4. Silent Polish: Silently correct typos and syntax errors in generated code.
+5. Tone: Direct and collegial. Zero em dashes anywhere.
+6. Leader Archetypes: Support /dx spec, /dx taxonomy, /dx napkin, and /dx storyboard.`,
+      french: `Vous opérez en Mode D (Échafaudage Cognitif), un compilateur conçu spécifiquement pour les esprits spatiaux, non-linéaires et dyslexiques.
+1. Ingestion à Frottement Zéro: Acceptez immédiatement notes rapides, fragments et transcriptions brutes sans commentaire.
+2. Présentation Anti-Mur-de-Texte: Commencez toujours par 1 ou 2 phrases sous la bannière L'Essentiel d'Abord (BLUF). Paragraphes courts (1-3 phrases) pour les courriels; tableaux et puces pour les livrables techniques.
+3. Polissage Mécanique Silencieux: Corrigez discrètement orthographe et homophones sans leçon.
+4. Voix Authentique: Tonalité humaine, directe et collégiale. Zéro tiret cadratin.
+5. Systèmes Spatiaux: Traduisez les processus en tableaux Markdown et diagrammes Mermaid.js.`
+    };
+
+    function switchDocsTab(tabId) {
+      currentDocsTab = tabId;
+      const tabs = ['foundations', 'skills', 'archetypes', 'cli', 'presets', 'architecture'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('docs-nav-' + t);
+        const pane = document.getElementById('docs-pane-' + t);
+        if (t === tabId) {
+          if (btn) {
+            btn.className = 'docs-tab-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center justify-between font-bold bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 transition shadow-sm';
+          }
+          if (pane) {
+            pane.classList.remove('hidden');
+          }
+        } else {
+          if (btn) {
+            btn.className = 'docs-tab-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center justify-between text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white hover:bg-mono-100 dark:hover:bg-mono-900 transition';
+          }
+          if (pane) {
+            pane.classList.add('hidden');
+          }
+        }
+      });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function filterDocsContent(query) {
+      const q = (query || '').trim().toLowerCase();
+      const clearBtn = document.getElementById('docs-search-clear');
+      if (clearBtn) {
+        if (q) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
+      const allPanes = ['foundations', 'skills', 'archetypes', 'cli', 'presets', 'architecture'];
+      
+      if (!q) {
+        document.querySelectorAll('.docs-card').forEach(c => c.classList.remove('hidden'));
+        document.querySelectorAll('#docs tbody tr').forEach(r => r.classList.remove('hidden'));
+        switchDocsTab(currentDocsTab);
+        return;
+      }
+
+      let firstMatchingTab = null;
+      allPanes.forEach(tabId => {
+        const pane = document.getElementById('docs-pane-' + tabId);
+        if (!pane) return;
+        const cards = pane.querySelectorAll('.docs-card');
+        const rows = pane.querySelectorAll('tbody tr');
+        let tabHasMatch = false;
+
+        cards.forEach(card => {
+          const match = card.innerText.toLowerCase().includes(q);
+          if (match) {
+            card.classList.remove('hidden');
+            tabHasMatch = true;
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+
+        rows.forEach(row => {
+          const match = row.innerText.toLowerCase().includes(q);
+          if (match) {
+            row.classList.remove('hidden');
+            tabHasMatch = true;
+          } else {
+            row.classList.add('hidden');
+          }
+        });
+
+        if (tabHasMatch && !firstMatchingTab) {
+          firstMatchingTab = tabId;
+        }
+      });
+
+      if (firstMatchingTab && firstMatchingTab !== currentDocsTab) {
+        switchDocsTab(firstMatchingTab);
+      }
+    }
+
+    function clearDocsSearch() {
+      const input = document.getElementById('docs-search-input');
+      if (input) {
+        input.value = '';
+        filterDocsContent('');
+      }
+    }
+
+    function copyCliCommand(cmd) {
+      if (!cmd) return;
+      navigator.clipboard.writeText(cmd).then(() => {
+        alert('Copied command: ' + cmd);
+      });
+    }
+
+    function copyFilePrompt(key) {
+      const txt = docsPrompts[key];
+      if (!txt) return;
+      navigator.clipboard.writeText(txt).then(() => {
+        alert('Copied ' + key.toUpperCase() + ' prompt to clipboard!');
+      });
     }
 
   </script>

@@ -438,15 +438,15 @@ def cmd_finance(args):
     
     mermaid_diag = """```mermaid
 graph TD
-    A["Gross Inflows: $120,000"] --> B{"The Operating Funnel"}
-    B -->|"Direct Delivery: $35,000"| C["Gross Profit: $85,000 (71%)"]
-    C -->|"Overhead & Payroll: $45,000"| D["Operating Cash Flow: $40,000"]
-    D -->|"Taxes & Reserves: $10,000"| E["Net Cash Retained: $30,000"]
+    A["Gross Inflows: $120,000"] --> B["The Operating Funnel"]
+    B -->|Direct Delivery: $35,000| C["Gross Profit: $85,000 - 71%"]
+    C -->|Overhead and Payroll: $45,000| D["Operating Cash Flow: $40,000"]
+    D -->|Taxes and Reserves: $10,000| E["Net Cash Retained: $30,000"]
 
     subgraph Runway ["Cash Runway Status"]
         F["Total Bank Cash: $360,000"]
-        G["Net Monthly Burn: $0 (Cash-Flow Positive)"]
-        H["Runway: Infinite (Self-Sustaining)"]
+        G["Net Monthly Burn: $0 - Cash-Flow Positive"]
+        H["Runway: Infinite - Self-Sustaining"]
     end
 ```"""
 
