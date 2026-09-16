@@ -39,6 +39,8 @@ output_contract:
 
 # `dx-read`: Anti-Wall-of-Text Filter
 
+> **Interactive Web Playground:** [https://dxskills.sounny.com](https://dxskills.sounny.com)
+
 The `dx-read` skill eliminates reader fatigue and cognitive overload caused by uniform, dense blocks of text. It acts as an intake lens, compiling complex or lengthy prose into visually scannable structures.
 
 ---

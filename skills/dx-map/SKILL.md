@@ -40,6 +40,8 @@ output_contract:
 
 # `dx-map`: Spatial Concept Mapper
 
+> **Interactive Web Playground:** [https://dxskills.sounny.com](https://dxskills.sounny.com)
+
 Non-linear and dyslexic thinkers often reason spatially, understanding systems as topologies and interconnected networks rather than serial text. The `dx-map` skill transforms prose, outlines, and workflows into clear visual diagrams using Mermaid.js and structured matrices.
 
 ---

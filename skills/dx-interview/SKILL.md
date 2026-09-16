@@ -35,6 +35,8 @@ output_contract:
 
 # `dx-interview`: Socratic Drafting
 
+> **Interactive Web Playground:** [https://dxskills.sounny.com](https://dxskills.sounny.com)
+
 Starting a blank document is often the most exhausting phase for non-linear thinkers. Rather than demanding a structured linear outline upfront, `dx-interview` acts as an active conversational partner. It conducts a disciplined, multi-turn interview asking one high-leverage question at a time, then compiles the answers into a complete draft.
 
 ---

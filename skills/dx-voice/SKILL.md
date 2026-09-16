@@ -40,6 +40,8 @@ output_contract:
 
 # `dx-voice`: Speech-to-Architecture
 
+> **Interactive Web Playground:** [https://dxskills.sounny.com](https://dxskills.sounny.com)
+
 Voice dictation is the natural high-bandwidth input channel for non-linear thinkers. Speech completely bypasses the fine motor and orthographic bottlenecks of keyboards. The `dx-voice` skill takes raw audio files or speech transcripts and directly compiles them into structured, publication-ready Markdown deliverables.
 
 ---

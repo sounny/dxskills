@@ -39,6 +39,8 @@ output_contract:
 
 # `dx-dump`: Brain Dump to Architecture
 
+> **Interactive Web Playground:** [https://dxskills.sounny.com](https://dxskills.sounny.com)
+
 The `dx-dump` skill acts as an intelligent cognitive compiler for non-linear, spatial thinkers who ideate faster than linear keyboards allow. It ingests messy, disordered thought dumps and extracts the underlying architecture without demanding clean input.
 
 ---

@@ -40,6 +40,8 @@ output_contract:
 
 # `dx-write`: Voice & Silent Polish
 
+> **Interactive Web Playground:** [https://dxskills.sounny.com](https://dxskills.sounny.com)
+
 The `dx-write` skill solves a persistent tension for dyslexic professionals: the fear of mechanical errors leading to over-edited, sterile, AI-sounding text. It provides reliable clerical perfection in the background while keeping the author's real human voice intact.
 
 ---
