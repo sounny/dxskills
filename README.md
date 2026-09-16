@@ -26,9 +26,24 @@ The bottleneck is never the thinking; it is the **linear, sequential transcripti
 
 ---
 
+## 🎨 Before & After Transformation Gallery
+
+To see concrete, real-world examples of how DxSkills transforms raw dictation, cluttered notes, and dense text into high-signal deliverables:
+
+👉 **[Explore the Visual Transformation Gallery (EXAMPLES.md)](./EXAMPLES.md)**
+
+The gallery showcases side-by-side comparisons for:
+- `dx-dump`: Chaotic mobile voice dumps converted into Steve Jobs executive specs.
+- `dx-write`: Phonetic speech-to-text dictation polished into warm, collegial prose.
+- `dx-read`: 5-paragraph bureaucratic policies distilled into 3-column decision matrices.
+- `dx-interview`: Step-by-step 4-phase interview dialogue compiled into a complete grant proposal.
+- `dx-map`: Verbal architectural descriptions transformed into syntax-safe Mermaid topologies.
+
+---
+
 ## 🧩 The Core Skills Suite
 
-DxSkills is organized as a modular toolkit. You can use the entire suite together or activate individual skills as needed.
+DxSkills is organized as a modular toolkit with formal YAML schemas, machine-readable contracts, and drop-in prompt cards. You can use the entire suite together or activate individual skills as needed.
 
 ```
                     ┌─────────────────────────┐
@@ -47,8 +62,8 @@ DxSkills is organized as a modular toolkit. You can use the entire suite togethe
 │  Architecture   │      Text       │        Silent Polish        │
 ├─────────────────┼─────────────────┴─────────────────────────────┤
 │  dx-interview   │                   dx-map                      │
-│ Socratic Q&A to │             Spatial & Systems                 │
-│  Draft Document │               Concept Mapper                  │
+│ 4-Phase Gated   │             Spatial & Systems                 │
+│ Socratic Drafter│               Concept Mapper                  │
 └─────────────────┴───────────────────────────────────────────────┘
                                  │
                                  ▼
@@ -58,52 +73,66 @@ DxSkills is organized as a modular toolkit. You can use the entire suite togethe
                     └─────────────────────────┘
 ```
 
-### 1. [`dx-dump`](./skills/dx-dump/SKILL.md) (Brain Dump to Architecture)
+### 1. [`dx-dump`](./skills/dx-dump/SKILL.md) ([Standalone Prompt](./prompts/dx-dump.md))
 * **The Problem:** Thoughts arrive as a rapid flood of fragments, voice dictations, and half-formed bullet points.
 * **The Fix:** Ingests raw, unstructured notes and automatically decomposes them into:
   1. A clear hierarchical outline.
   2. A visual system diagram or flowchart.
   3. Actionable next steps and deliverables.
 * **Result:** You never need to write in linear order; drop your ideas as they fire.
-* **Command:** `/dx dump`
+* **Command:** `/dx dump` (also `/dx napkin`, `/dx spec`)
 
-### 2. [`dx-read`](./skills/dx-read/SKILL.md) (Anti-Wall-of-Text)
+### 2. [`dx-read`](./skills/dx-read/SKILL.md) ([Standalone Prompt](./prompts/dx-read.md))
 * **The Problem:** Dense, unbroken paragraphs in academic memos, long emails, and bureaucratic reports trigger cognitive fatigue and visual tracking loss.
 * **The Fix:** Re-renders incoming text with high-signal visual anchors:
   * 2-sentence **Bottom Line Up Front (BLUF)**.
   * Side-by-side comparison tables and decision matrices.
   * Generous white space with bold thematic signposts.
-* **Result:** You grasp the entire situation in five seconds without getting trapped in filler text.
-* **Command:** `/dx read`
+* **Result:** Grasp the entire situation in five seconds without getting trapped in filler text.
+* **Command:** `/dx read` (also `/dx finance`)
 
-### 3. [`dx-write`](./skills/dx-write/SKILL.md) (Voice Preservation & Silent Polish)
-* **The Problem:** Typical AI grammar checkers sterilize your text into bland, robotic corporate filler, while standard spellcheckers constantly interrupt your flow.
-* **The Fix:** Silently repairs phonetics, homophones, typos, and syntax in the background, while strictly preserving your authentic conversational warmth, directness, and cadence.
-* **Result:** No generic corporate cheerleading, no robotic platitudes, and zero em dashes.
+### 3. [`dx-write`](./skills/dx-write/SKILL.md) ([Standalone Prompt](./prompts/dx-write.md))
+* **The Problem:** Typical AI grammar checkers sterilize your text into robotic corporate filler, while standard spellcheckers constantly interrupt your flow.
+* **The Fix:** Silently repairs phonetics, homophones, typos, and syntax in the background, while strictly preserving your authentic conversational warmth, directness, and cadence. Includes embedded phoneme normalization for spatial jargon (e.g. choropleth, LiDAR, isochrone).
+* **Result:** No generic corporate cheerleading, no robotic platitudes, natural paragraphs, and zero em dashes.
 * **Command:** `/dx write`
 
-### 4. [`dx-interview`](./skills/dx-interview/SKILL.md) (Socratic Drafter)
-* **The Problem:** Starting a complex document, grant proposal, or article from a blank page is a massive friction point.
-* **The Fix:** The AI takes the role of an interviewer. It asks 3 to 4 targeted, multiple-choice or forcing questions. You answer rapidly using speech-to-text or short phrases, and the AI drafts the linear prose from your spoken logic.
-* **Result:** Blank-page anxiety is completely eliminated.
+### 4. [`dx-interview`](./skills/dx-interview/SKILL.md) ([Standalone Prompt](./prompts/dx-interview.md))
+* **The Problem:** Starting a complex document, grant proposal, or article from a blank page is a massive friction point. Models often rush ahead by asking four questions at once.
+* **The Fix:** A disciplined 4-phase sequential state machine (`[Phase 1/3 - Target Audience & Stakes]`, `[Phase 2/3 - Core Thesis & Bottleneck]`, `[Phase 3/3 - Tangible Proof & Metrics]`, `[Phase 4 - Synthesis]`). Enforces asking exactly one question at a time and waiting for your response before advancing.
+* **Result:** Blank-page anxiety and conversational overwhelm are completely eliminated.
 * **Command:** `/dx ask`
 
-### 5. [`dx-map`](./skills/dx-map/SKILL.md) (Spatial Concept Mapper)
-* **The Problem:** Dyslexic thinkers think in spatial relationships, but conventional writing tools are strictly linear.
-* **The Fix:** Automatically generates Mermaid.js flowcharts, state charts, quadrant diagrams, and concept maps for any idea, process, or curriculum.
-* **Result:** Instant visual alignment between how you imagine a system and how it is documented.
-* **Command:** `/dx map`
+### 5. [`dx-map`](./skills/dx-map/SKILL.md) ([Standalone Prompt](./prompts/dx-map.md))
+* **The Problem:** Dyslexic thinkers think in spatial relationships, but conventional writing tools are strictly linear, while LLMs frequently generate broken Mermaid syntax.
+* **The Fix:** Generates syntax-safe Mermaid.js diagrams with strict syntactical guardrails (mandatory label quoting `id["Label"]`, max 8-12 nodes per diagram, maximum depth 3) paired with an accompanying Markdown component matrix.
+* **Result:** Clean, guaranteed-to-render visual alignment between mental models and documentation.
+* **Command:** `/dx map` (also `/dx storyboard`, `/dx taxonomy`)
+
+---
+
+## 💻 Drop-in IDE Configurations
+
+Calibrate your coding assistants into D-Mode with ready-to-use configuration files:
+
+👉 **[View the IDE Configuration Suite (ide-configs/)](./ide-configs/)**
+
+Supported editors:
+* **Cursor IDE:** Drop `.cursorrules` into your project root.
+* **Claude Code CLI:** Drop `CLAUDE.md` and `.clauderc` into your project root.
+* **Windsurf IDE:** Drop `.windsurfrules` into your workspace root.
+
+Run the automated installer:
+```bash
+python ide-configs/install_ide_configs.py
+```
 
 ---
 
 ## 🚀 Quickstart: Using DxSkills Today
 
-DxSkills is designed to work across all major AI platforms:
-
 ### Option A: ChatGPT / Claude Custom Instructions (Zero Install)
 Grab the standalone **[D-Mode Prompt Card](./prompts/d-mode.md)** and paste it directly into your ChatGPT Custom Instructions, Claude Project, or Gemini Gem:
-
-👉 **[View the Full D-Mode Prompt Card](./prompts/d-mode.md)**
 
 ```markdown
 # Role & Cognitive Mode: D-Mode Active
@@ -127,7 +156,7 @@ git clone https://github.com/sounny/dxskills.git skills/dxskills
 #### Automatic Version Syncing
 DxSkills includes a built-in auto-update protocol tracked via `VERSION`. To pull newly published skills and improvements:
 - In chat: run `/dx update`
-- In terminal: run `python skills/dxskills/scripts/check_updates.py`
+- In terminal: run `python scripts/check_updates.py`
 
 Or prompt your AI assistant directly:
 > *"Install the DxSkills cognitive scaffolding suite from https://github.com/sounny/dxskills into my active agent skills directory and activate D-Mode."*
@@ -140,7 +169,8 @@ Or prompt your AI assistant directly:
 - [x] **v0.2:** Standalone `SKILL.md` definitions for `dx-dump`, `dx-read`, and `dx-write`.
 - [x] **v0.3:** Interactive Socratic interview templates for academic and professional writing (`dx-interview`).
 - [x] **v0.4:** Mermaid.js visual template library for spatial concept mapping (`dx-map`).
-- [ ] **v0.5:** Ready-to-use Cursor rules (`.cursorrules`) and Claude Project presets.
+- [x] **v0.5:** Ready-to-use Cursor rules, Claude Code guides, Windsurf configs, and `ide-configs/` installer.
+- [x] **v0.6:** Formal machine-readable YAML skill schemas and comprehensive `EXAMPLES.md` transformation gallery.
 
 ---
 

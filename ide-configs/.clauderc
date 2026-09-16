@@ -1,0 +1,12 @@
+{
+  "mode": "d-mode",
+  "rulesPath": "ide-configs/CLAUDE.md",
+  "environment": {
+    "COGNITIVE_SCAFFOLDING": "true",
+    "ZERO_EM_DASHES": "true",
+    "BLUF_FIRST": "true"
+  },
+  "hooks": {
+    "preCommit": "python scripts/pre_commit_hook.py"
+  }
+}
