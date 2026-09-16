@@ -71,4 +71,10 @@ To ensure the user always has the latest prompt improvements, templates, and mod
 | `/dx write` | `dx-write` | Drafts or polishes communications with silent mechanical correction and authentic voice. |
 | `/dx ask` | `dx-interview` | Socratic mode: interviews the user with 3-4 questions to draft complex documents. |
 | `/dx map` | `dx-map` | Converts processes and curricula into Mermaid.js flowcharts and conceptual matrices. |
+| `/dx storyboard` | `dx-map` | Gavin Newsom unscripted speech scaffolding: 4-room spatial memory and color-coded blocks. |
+| `/dx napkin` | `dx-dump` | Richard Branson radical simplification: single-card core value exchange and unit economics. |
+| `/dx spec` | `dx-dump` | Steve Jobs executive markdown spec: whole-system spatial architecture and tradeoff matrix. |
+| `/dx taxonomy` | `dx-map` | Ingvar Kamprad mnemonic taxonomy and wordless pictorial assembly schemas. |
+| `/dx finance` | `dx-read` | Conversational financial digest: translating spreadsheets into cash-flow diagrams. |
+| `/dx voice` | `dx-voice` | Speech-to-architecture pipeline for 2-minute voice streams and audio dictations. |
 | `/dx update` | `dx-sync` | Checks GitHub for new releases and pulls the latest skill definitions. |

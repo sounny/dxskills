@@ -25,13 +25,24 @@ Non-linear and dyslexic thinkers often reason spatially, understanding systems a
 3. **Complementary Spatial Matrix:**
    - Accompany diagrams with a clean Markdown matrix summarizing states, inputs, outputs, and responsible components.
 
+4. **Visual Spatial Storyboarding (Gavin Newsom Archetype):**
+   - Use `/dx storyboard` to convert complex policies, presentations, or unscripted speeches into architectural memory rooms and sequential visual anchors.
+   - Eliminates verbatim teleprompters and speech anxiety by organizing ideas into color-coded thematic blocks (Blue Context, Amber Friction, Emerald Strategy, Violet Action).
+
+5. **Visual Mnemonic Taxonomy & Pictorial Schemas (Ingvar Kamprad Archetype):**
+   - Use `/dx taxonomy` to convert abstract serial numbers, acronyms, and procedural instructions into tangible physical categories and wordless step-by-step assembly node flows.
+
+6. **Whole-System Spatial Metaphors (Steve Jobs Principle):**
+   - Map software and organizational systems not as isolated code blocks, but as physical architecture (front gate, workshop, vault, terrace).
+
 ---
 
 ## 📋 Trigger & Usage
 
-### Manual Trigger
-- `/dx map <process, concept, or document>`
-- `"Map this system spatially: <description>"`
+### Manual Triggers
+- `/dx map <process, concept, or document>`: General spatial flowchart and component matrix.
+- `/dx storyboard <speech, policy, or presentation notes>`: Four-room spatial memory storyboard and executive speaking cards.
+- `/dx taxonomy <technical terms, code list, or manual>`: Mnemonic physical categorization and step-by-step pictorial schema.
 
 ### Example Flow
 **User:** `"/dx map How does an image upload pipeline process, resize, and store assets to S3 and CDN?"`

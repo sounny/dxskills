@@ -30,13 +30,22 @@ The `dx-dump` skill acts as an intelligent cognitive compiler for non-linear, sp
    - **Operational System Diagram / Table:** A concise Markdown table or Mermaid diagram mapping the moving parts.
    - **Actionable Next Steps:** Specific, concrete next moves tagged with owners or timelines.
 
+4. **The Back-of-a-Beer-Mat / Napkin Test (Richard Branson Archetype):**
+   - Use `/dx napkin` for radical simplification of business ideas, pitch notes, or product proposals.
+   - Compresses sprawling concepts into a single-card view: Core Value Exchange, The 3 Key Levers, Back-of-the-Envelope Math, and Mermaid Flow.
+
+5. **Executive Markdown Specs (Steve Jobs Archetype):**
+   - Use `/dx spec` to transform disordered technical fragments, whiteboard notes, and engineering debates into an Executable Mermaid Architecture, Technical Tradeoff Matrix, and Distilled Action Plan.
+   - Eliminates 40-page linear specification documents and endless email threads.
+
 ---
 
 ## 📋 Trigger & Usage
 
-### Manual Trigger
-- `/dx dump <raw text or audio transcript>`
-- `"Compile this brain dump: <text>"`
+### Manual Triggers
+- `/dx dump <raw text or audio transcript>`: Standard operational architecture compilation.
+- `/dx napkin <business pitch, idea, or proposal>`: Branson single-card radical simplification.
+- `/dx spec <engineering notes, whiteboard dump, or feature list>`: Jobs whole-system executive spec and tradeoff matrix.
 
 ### Example Input
 ```text

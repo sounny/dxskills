@@ -36,7 +36,7 @@
   <meta name="twitter:description" content="Open-standard AI skills and universal cognitive scaffolding for non-linear, spatial, and dyslexic thinkers.">
   <meta name="twitter:image" content="https://dxskills.sounny.com/icons/og-image.jpg">
   
-  <!-- Tailwind CSS via CDN -->
+<!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- Lucide Icons -->
@@ -523,17 +523,27 @@
               </div>
 
               <!-- Quick Presets & Voice Dictation -->
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div class="flex flex-wrap items-center gap-1.5">
-                  <span class="text-[10px] font-mono text-mono-500 uppercase tracking-wider">Presets:</span>
-                  <button onclick="loadPlaygroundSample('outage')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">Outage</button>
-                  <button onclick="loadPlaygroundSample('pitch')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">Pitch</button>
-                  <button onclick="loadPlaygroundSample('grant')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">Grant</button>
+              <div class="space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-[10px] font-mono text-mono-500 uppercase tracking-wider">Presets:</span>
+                    <button onclick="loadPlaygroundSample('outage')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">Outage</button>
+                    <button onclick="loadPlaygroundSample('pitch')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">Pitch</button>
+                    <button onclick="loadPlaygroundSample('grant')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition">Grant</button>
+                  </div>
+                  <button id="voice-dictate-btn" onclick="toggleVoiceDictation()" class="px-2.5 py-1 rounded bg-mono-200 dark:bg-mono-800 text-mono-900 dark:text-mono-100 text-xs font-mono hover:bg-mono-300 dark:hover:bg-mono-700 transition flex items-center gap-1.5 font-bold shadow-sm">
+                    <i data-lucide="mic" id="voice-mic-icon" class="w-3.5 h-3.5"></i>
+                    <span id="voice-btn-text">Dictate</span>
+                  </button>
                 </div>
-                <button id="voice-dictate-btn" onclick="toggleVoiceDictation()" class="px-2.5 py-1 rounded bg-mono-200 dark:bg-mono-800 text-mono-900 dark:text-mono-100 text-xs font-mono hover:bg-mono-300 dark:hover:bg-mono-700 transition flex items-center gap-1.5 font-bold shadow-sm">
-                  <i data-lucide="mic" id="voice-mic-icon" class="w-3.5 h-3.5"></i>
-                  <span id="voice-btn-text">Dictate</span>
-                </button>
+                <div class="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-mono-100 dark:border-mono-800/60">
+                  <span class="text-[10px] font-mono text-mono-500 uppercase tracking-wider">Leaders:</span>
+                  <button onclick="loadPlaygroundSample('newsom')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition" title="Gavin Newsom: 4-Room Speech Storyboard">Newsom</button>
+                  <button onclick="loadPlaygroundSample('branson')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition" title="Richard Branson: Back-of-a-Beer-Mat Test">Branson (Napkin)</button>
+                  <button onclick="loadPlaygroundSample('jobs')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition" title="Steve Jobs: Executive Markdown Spec">Jobs (Spec)</button>
+                  <button onclick="loadPlaygroundSample('kamprad')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition" title="Ingvar Kamprad: Mnemonic Taxonomy & Schema">Kamprad</button>
+                  <button onclick="loadPlaygroundSample('finance')" class="px-2 py-1 rounded bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 text-xs font-mono hover:bg-mono-200 dark:hover:bg-mono-700 transition" title="Richard Branson: Conversational Financial Digest">Branson (Finance)</button>
+                </div>
               </div>
 
               <!-- Textarea -->
@@ -588,16 +598,25 @@
 
             <div id="playground-output-container" class="p-4 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 font-sans text-xs sm:text-sm text-mono-800 dark:text-mono-200 space-y-3">
               
+              <!-- Dynamic Leader Archetype Indicator -->
+              <div id="play-archetype-badge" class="hidden px-3 py-1.5 rounded-lg bg-mono-200 dark:bg-mono-800 text-mono-900 dark:text-mono-100 text-xs font-mono font-bold flex items-center justify-between">
+                <span id="play-archetype-title">Leader Archetype</span>
+                <span id="play-archetype-role" class="text-[11px] text-mono-600 dark:text-mono-400 font-normal">D-Mode Cognitive Scaffolding</span>
+              </div>
+
               <!-- Dynamic BLUF Card -->
               <div class="p-3 rounded-lg bg-white dark:bg-mono-900/80 border border-mono-200 dark:border-mono-700/60 shadow-sm">
                 <span class="text-[10px] font-mono uppercase tracking-wider text-mono-500 dark:text-mono-400 font-bold block mb-1">Bottom Line Up Front:</span>
                 <p id="play-bluf-text" class="font-medium text-mono-950 dark:text-white">Milestone 2 is extended to Friday at 5:00 PM due to cloud provider outage. Team sync remains Wednesday 2:00 PM.</p>
               </div>
 
+              <!-- Dynamic Visual / ASCII / Diagram Block -->
+              <div id="play-visual-card" class="hidden p-3 rounded-lg bg-mono-100 dark:bg-mono-900 border border-mono-200 dark:border-mono-800 overflow-x-auto font-mono text-[11px] leading-snug text-mono-900 dark:text-mono-100 whitespace-pre"></div>
+
               <!-- Dynamic Schedule / Execution Table -->
               <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs font-mono border-collapse">
-                  <thead>
+                  <thead id="play-table-head">
                     <tr class="border-b border-mono-200 dark:border-mono-800 text-mono-500 dark:text-mono-400">
                       <th class="py-1.5">Deliverable</th>
                       <th class="py-1.5">Timeline / Status</th>
@@ -1384,7 +1403,7 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
         </div>
         
         <div class="flex items-center gap-2 text-xs font-mono text-mono-600 dark:text-mono-400">
-          <span class="px-2.5 py-1 rounded-md bg-mono-100 dark:bg-mono-800 border border-mono-200 dark:border-mono-700">5 Template Blueprints</span>
+          <span class="px-2.5 py-1 rounded-md bg-mono-100 dark:bg-mono-800 border border-mono-200 dark:border-mono-700">10 Spatial Blueprints (Core + Leaders)</span>
         </div>
       </div>
 
@@ -1399,6 +1418,11 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
             <button id="tab-diag-curriculum" onclick="switchDiagram('curriculum')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Curriculum Map</button>
             <button id="tab-diag-decision" onclick="switchDiagram('decision')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Decision Tree</button>
             <button id="tab-diag-mindmap" onclick="switchDiagram('mindmap')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Concept Mindmap</button>
+            <button id="tab-diag-storyboard" onclick="switchDiagram('storyboard')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Newsom (Storyboard)</button>
+            <button id="tab-diag-napkin" onclick="switchDiagram('napkin')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Branson (Napkin)</button>
+            <button id="tab-diag-spec" onclick="switchDiagram('spec')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Jobs (Spec)</button>
+            <button id="tab-diag-taxonomy" onclick="switchDiagram('taxonomy')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Kamprad (Assembly)</button>
+            <button id="tab-diag-finance" onclick="switchDiagram('finance')" class="px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition">Branson (Cash-Flow)</button>
           </div>
           <button id="copy-diag-btn" onclick="copyActiveDiagram()" class="px-3 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 hover:bg-mono-200 dark:hover:bg-mono-700 text-mono-900 dark:text-mono-100 transition flex items-center gap-1.5 font-bold shadow-sm">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i>
@@ -1481,6 +1505,103 @@ mindmap
       Direct and Warm
       Zero Corporate Fluff
       High Signal
+            </pre>
+          </div>
+
+          <div id="diag-view-storyboard" class="w-full justify-center hidden">
+            <pre class="mermaid">
+graph LR
+    subgraph Room1 ["Room 1: Context Porch"]
+        R1["Status Quo & Grounding Context"]
+    end
+    subgraph Room2 ["Room 2: Catalyst Atrium"]
+        R2["The Inciting Friction & Cost of Inaction"]
+    end
+    subgraph Room3 ["Room 3: Engine Hall"]
+        R3["Three Operational Levers"]
+    end
+    subgraph Room4 ["Room 4: Horizon Terrace"]
+        R4["Immediate First Milestone"]
+    end
+
+    R1 --> R2
+    R2 --> R3
+    R3 --> R4
+            </pre>
+          </div>
+
+          <div id="diag-view-napkin" class="w-full justify-center hidden">
+            <pre class="mermaid">
+graph LR
+    A["Customer Friction: Overpriced Bloat"] -->|"Pays $4/mo"| B["Featherweight Local Engine"]
+    B -->|"Delivers Instant 15ms Speed"| C["Delighted Developer"]
+    B -->|"Retains 85% Cash Profit"| D["Reinvested in Product Flywheel"]
+            </pre>
+          </div>
+
+          <div id="diag-view-spec" class="w-full justify-center hidden">
+            <pre class="mermaid">
+graph TD
+    subgraph IngressGate ["The Front Gate: Ingress & Validation"]
+        A["Raw User Shorthand / Audio Dump"] --> B["Payload Sanity Check"]
+    end
+
+    subgraph CoreEngine ["The Workshop: Processing Engine"]
+        B --> C["Intent Extraction (Pass 1)"]
+        C --> D["Spatial Topology Engine (Pass 2)"]
+    end
+
+    subgraph VaultStorage ["The Archive Vault: Persistent Memory"]
+        D --> E["Local Markdown Artifact"]
+        D --> F["Vector Graph / Canvas Node"]
+    end
+
+    subgraph OutputTerrace ["The Display Terrace: Executive Surface"]
+        E --> G["Clean BLUF Dashboard"]
+        F --> H["Live Mermaid Visualization"]
+    end
+            </pre>
+          </div>
+
+          <div id="diag-view-taxonomy" class="w-full justify-center hidden">
+            <pre class="mermaid">
+graph TD
+    subgraph Step1 ["Step 1: Unpack & Inspect"]
+        A["Verify Components: Rails, Cam Locks, Wall Bracket"]
+    end
+    subgraph Step2 ["Step 2: Base Alignment"]
+        B["Lay Side Rail Flat on Floor"]
+        C["Slot Base Board into Bottom Groove"]
+    end
+    subgraph Step3 ["Step 3: Mechanical Fastening"]
+        D["Turn Cam Locks 90 Degrees Clockwise"]
+    end
+    subgraph Step4 ["Step 4: Upright Position"]
+        E["Rotate Unit 90 Degrees Upright"]
+        F["Anchor Safety Bracket to Wall"]
+    end
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+            </pre>
+          </div>
+
+          <div id="diag-view-finance" class="w-full justify-center hidden">
+            <pre class="mermaid">
+graph TD
+    A["Gross Inflows: $120,450"] --> B{"The Operating Funnel"}
+    B -->|"Direct Delivery (COGS): $35,120"| C["Gross Profit: $85,330 (71%)"]
+    C -->|"Overhead & Payroll: $45,300"| D["Operating Cash Flow: $40,030"]
+    D -->|"Taxes & Reserves: $10,000"| E["Net Cash Retained: $30,030"]
+
+    subgraph Runway ["Cash Runway Status"]
+        F["Total Bank Cash: $360,000"]
+        G["Monthly Net Burn: $0 (Cash-Flow Positive)"]
+        H["Runway: Infinite (Self-Sustaining)"]
+    end
             </pre>
           </div>
 
@@ -1941,9 +2062,12 @@ Directives Operationnelles Majeures:
       }
     };
 
+    let currentPlatform = 'universal';
+
     function switchPlatform(platform) {
       const preset = platformPresets[platform];
       if (!preset) return;
+      currentPlatform = platform;
 
       document.getElementById('prompt-code').innerText = preset.code;
       document.getElementById('prompt-file-label').innerText = preset.file;
@@ -1957,6 +2081,10 @@ Directives Operationnelles Majeures:
         } else {
           btn.className = 'px-3.5 py-1.5 rounded-lg bg-mono-100 dark:bg-mono-800 text-mono-700 dark:text-mono-300 hover:text-mono-950 dark:hover:text-white transition';
         }
+      });
+      trackDxEvent('select_prompt_platform', {
+        platform: platform,
+        prompt_file: preset.file
       });
     }
 
@@ -1985,6 +2113,10 @@ Directives Operationnelles Majeures:
         setTimeout(() => {
           copyText.innerText = 'Copy Prompt Card';
         }, 2000);
+        trackDxEvent('copy_prompt_card', {
+          platform: currentPlatform,
+          prompt_file: platformPresets[currentPlatform] ? platformPresets[currentPlatform].file : 'prompts/d-mode.md'
+        });
       });
     }
 
@@ -3247,10 +3379,18 @@ This curriculum eliminates passive lecture memorization. Students learn through 
     const playgroundSamples = {
       outage: "hey team cloud db went down yesterday for 4 hours so sprint milestone 2 is delayed to friday 5pm. we still have our weekly sync on wednesday from 2 to 330pm. make sure everyone checks their crs coordinates and api keys before running the new pipeline.",
       pitch: "our startup builds developer cognitive tools for spatial thinkers. problem is linear keyboards bottleneck parallel spatial ideation. solution is d-mode cognitive compiler. raising 1.5m preseed for 18mo runway. target is 100k arr by month 12.",
-      grant: "drafting horizon europe terra wp6 summary. satellite eo data is fragmented for local co-ops. novel arch uses agentic transformers to blend sar and optical imagery. 3 work packages data ingest model training field pilots. deadline next month 15th."
+      grant: "drafting horizon europe terra wp6 summary. satellite eo data is fragmented for local co-ops. novel arch uses agentic transformers to blend sar and optical imagery. 3 work packages data ingest model training field pilots. deadline next month 15th.",
+      newsom: "giving statewide clean energy and water address tomorrow. status quo: central valley aqueducts leaking, 40-year drought cycle, grid instability during summer heatwaves. friction: legacy litigation, fragmented municipal authorities, and bureaucratic delay. action engine: deploy decentralized community microgrids, streamline local battery storage permits, and finance solar-covered canals. horizon vista: ground-breaking begins next quarter with five pilot agricultural counties.",
+      branson: "we are building a featherweight form backend for developers. problem: everyone pays 30 dollars a month to third-party form SaaS and gets bloated tracking scripts. solution: single 2kb script with zero api keys and sub-15ms edge processing for 4 dollars a month. economics: delivery cost is 60 cents per user, retaining an 85% gross cash margin or 3 dollars 40 cash profit per customer.",
+      jobs: "building the executive cognitive scaffolding compiler. mandate: engineers spend hours flattening rich whiteboard architectures into fragmented linear tickets. spatial specification: 1. Front Gate handles zero-friction ingress and sanity check. 2. Workshop runs two-pass intent and topology extraction. 3. Archive Vault commits local markdown and canvas nodes. 4. Display Terrace renders instant interactive visual preview. architectural dilemma: pure client-side local state over heavy cloud db to deliver zero login friction and complete user privacy.",
+      kamprad: "organizing our distributed cloud topology and system setup. instead of cryptic sku-8492 and sku-8493, map components to physical swedish landscapes: API Gateway is River Delta, Redis cache is The Workbench, SQL database is The Archive Vault, Background workers are The Forest Mills. Assembly procedure: unpack components and inspect brackets, lay side rail flat on floor, turn cam locks 90 degrees clockwise, rotate unit upright and anchor safety bracket to wall.",
+      finance: "q3 financial balance sheet review: gross revenue 120450 dollars, direct hosting and delivery cogs 35120 dollars, overhead and developer payroll 45300 dollars, net retained cash profit 30030 dollars. total bank cash reserves stand at 360000 dollars. net monthly burn is 0 dollars because the company is cash-flow positive with infinite self-sustaining runway."
     };
 
+    let activePlaygroundPreset = "outage";
+
     function loadPlaygroundSample(preset) {
+      activePlaygroundPreset = preset;
       const sample = playgroundSamples[preset];
       if (!sample) return;
       const input = document.getElementById('playground-input');
@@ -3279,7 +3419,7 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       if (!raw) return;
 
       let typoCount = 0;
-      let words = raw.split(/\\s+/);
+      let words = raw.split(/\s+/);
       let correctedWords = words.map(w => {
         let clean = w.toLowerCase().replace(/[.,!?:;()]/g, '');
         if (TYPO_DICT[clean]) {
@@ -3290,41 +3430,396 @@ This curriculum eliminates passive lecture memorization. Students learn through 
         return w;
       });
 
-      let cleanText = correctedWords.join(' ').replace(/\\u2014/g, ' - ');
-      
-      let sentences = cleanText.split(/(?<=[.?!])\\s+/).filter(s => s.trim().length > 0);
+      let cleanText = correctedWords.join(' ').replace(/\u2014/g, ' - ');
+      let sentences = cleanText.split(/(?<=[.?!])\s+/).filter(s => s.trim().length > 0);
       if (sentences.length === 0) sentences = [cleanText];
 
-      let blufSentence = sentences[0];
-      if (!blufSentence.endsWith('.')) blufSentence += '.';
-      blufSentence = blufSentence.charAt(0).toUpperCase() + blufSentence.slice(1);
-
-      document.getElementById('play-bluf-text').innerHTML = blufSentence;
-
-      let rows = [];
-      let remaining = sentences.slice(1);
-      if (remaining.length === 0) {
-        rows.push({
-          item: "Core Objective",
-          status: "Immediate Focus",
-          action: blufSentence
-        });
-      } else {
-        remaining.forEach((s, idx) => {
-          let item = "Milestone " + (idx + 1);
-          let status = "Active";
-          let action = s;
-          let sLow = s.toLowerCase();
-          if (sLow.includes("deadline") || sLow.includes("friday") || sLow.includes("month") || sLow.includes("sync")) {
-            item = "Timeline / Alignment";
-            status = "Scheduled";
-          } else if (sLow.includes("package") || sLow.includes("runway") || sLow.includes("work")) {
-            item = "Deliverable Scope";
-            status = "In Progress";
-          }
-          rows.push({ item, status, action });
-        });
+      const rawLower = raw.toLowerCase();
+      let archetype = null;
+      if (activePlaygroundPreset === 'newsom' || rawLower.includes('aqueduct') || rawLower.includes('clean energy transition') || rawLower.includes('porch') || rawLower.includes('storyboard')) {
+        archetype = 'newsom';
+      } else if (activePlaygroundPreset === 'branson' || rawLower.includes('beer-mat') || rawLower.includes('featherweight form')) {
+        archetype = 'branson';
+      } else if (activePlaygroundPreset === 'jobs' || rawLower.includes('executive markdown spec') || rawLower.includes('front gate') || rawLower.includes('whiteboard')) {
+        archetype = 'jobs';
+      } else if (activePlaygroundPreset === 'kamprad' || rawLower.includes('kamprad') || rawLower.includes('river delta') || rawLower.includes('cam lock') || rawLower.includes('swedish')) {
+        archetype = 'kamprad';
+      } else if (activePlaygroundPreset === 'finance' || rawLower.includes('balance sheet') || rawLower.includes('cogs') || (rawLower.includes('revenue') && rawLower.includes('profit'))) {
+        archetype = 'finance';
       }
+
+      const archBadge = document.getElementById('play-archetype-badge');
+      const archTitle = document.getElementById('play-archetype-title');
+      const archRole = document.getElementById('play-archetype-role');
+      const visualCard = document.getElementById('play-visual-card');
+      const tableHead = document.getElementById('play-table-head');
+      const tableBody = document.getElementById('play-table-body');
+      const blufEl = document.getElementById('play-bluf-text');
+      const draftEl = document.getElementById('play-draft-text');
+
+      let blufSentence = "";
+      let rows = [];
+      let md = "";
+
+      if (archetype === 'newsom') {
+        if (archBadge) {
+          archBadge.classList.remove('hidden');
+          archTitle.innerText = "Gavin Newsom Archetype";
+          archRole.innerText = "4-Room Spatial Memory & Unscripted Speech Scaffolding";
+        }
+        blufSentence = "We are addressing the state clean energy transition. Ground-breaking begins next quarter with five pilot agricultural counties to prove grid resilience.";
+        if (visualCard) {
+          visualCard.classList.remove('hidden');
+          visualCard.innerText = 
+`+-------------------------------------------------------------+
+|         GAVIN NEWSOM 4-ROOM SPATIAL MEMORY PALACE           |
+|                                                             |
+| [ROOM 1: CONTEXT PORCH]      -->  [ROOM 2: CATALYST ATRIUM] |
+| Color: Amber / Grounding           Color: Crimson / Friction|
+| - Aqueducts leaking                - Legacy lawsuits        |
+| - 40-year drought cycle            - Bureaucratic delays    |
+| - Summer grid instability          - High cost of inaction  |
+|                                                             |
+| [ROOM 3: ENGINE HALL]        -->  [ROOM 4: HORIZON TERRACE] |
+| Color: Cobalt / Mechanism          Color: Emerald / Vista   |
+| - Community microgrids             - Next quarter ground    |
+| - Streamlined battery permits      - 5 pilot rural counties |
+| - Solar-covered canal financing    - 12,000 clean jobs      |
++-------------------------------------------------------------+`;
+        }
+        if (tableHead) {
+          tableHead.innerHTML = `
+            <tr class="border-b border-mono-200 dark:border-mono-800 text-mono-500 dark:text-mono-400">
+              <th class="py-1.5">Spatial Room</th>
+              <th class="py-1.5">Color Anchor</th>
+              <th class="py-1.5">Key Speech Scaffolding</th>
+            </tr>`;
+        }
+        rows = [
+          { item: "Room 1: Context Porch", status: "Amber (Grounding)", action: "Central valley aqueducts leaking; 40-year historical drought cycle." },
+          { item: "Room 2: Catalyst Atrium", status: "Crimson (Friction)", action: "Legacy litigation, fragmented water districts, and bureaucratic delay." },
+          { item: "Room 3: Engine Hall", status: "Cobalt (Mechanism)", action: "Deploy community microgrids, streamline battery storage, finance solar canal covers." },
+          { item: "Room 4: Horizon Terrace", status: "Emerald (Resolution)", action: "Ground-breaking begins next quarter with five pilot agricultural counties." }
+        ];
+        if (draftEl) {
+          draftEl.innerHTML = `
+            <p><strong>Unscripted Speech Cues (No Teleprompter Required):</strong></p>
+            <p><span class="text-amber-500 font-bold">[PORCH]</span> Open with the visceral reality: our aqueducts and reservoirs are strained by the 40-year drought.</p>
+            <p><span class="text-rose-500 font-bold">[ATRIUM]</span> Pivot directly to the friction: 14 fragmented regulatory boards cannot fix a 21st-century climate crisis.</p>
+            <p><span class="text-sky-500 font-bold">[ENGINE]</span> Lay out the 3 concrete levers: local storage permits cut to 30 days, microgrids online, canal solar panels funded.</p>
+            <p><span class="text-emerald-500 font-bold">[HORIZON]</span> Conclude with immediate commitment: first shovels in the ground across five pilot counties before summer.</p>`;
+        }
+        md = `# State Clean Energy & Water Address (Visual Spatial Storyboard)\\n\\n` +
+             `> **Archetype:** Gavin Newsom (4-Room Spatial Memory Scaffolding)\\n` +
+             `> **BLUF:** ${blufSentence}\\n\\n` +
+             `## 🏛️ 4-Room Architectural Matrix\\n\\n` +
+             `| Spatial Room | Color Anchor | Key Speech Scaffolding |\\n` +
+             `| :--- | :--- | :--- |\\n` +
+             rows.map(r => `| ${r.item} | ${r.status} | ${r.action} |`).join('\\n') +
+             `\\n\\n## 🎙️ Unscripted Delivery Guidance\\n\\n` +
+             `- **Porch (Amber):** Ground the audience in tangible local context.\\n` +
+             `- **Atrium (Crimson):** Highlight the urgency and cost of delay.\\n` +
+             `- **Engine (Cobalt):** State the 3 operational levers clearly.\\n` +
+             `- **Horizon (Emerald):** End with an undeniable first milestone.\\n`;
+
+      } else if (archetype === 'branson') {
+        if (archBadge) {
+          archBadge.classList.remove('hidden');
+          archTitle.innerText = "Richard Branson Archetype";
+          archRole.innerText = "Back-of-a-Beer-Mat / Napkin Test (Radical Simplification)";
+        }
+        blufSentence = "Radical simplification: Deliver instant edge form processing for $4/mo with 85% gross margin ($3.40 cash profit per customer).";
+        if (visualCard) {
+          visualCard.classList.remove('hidden');
+          visualCard.innerText = 
+`+-------------------------------------------------------------+
+|                     THE BEER MAT TEST                       |
+|                                                             |
+| 1. CORE VALUE EXCHANGE:                                     |
+|    Single 2KB script for $4/mo replacing bloated $30 SaaS   |
+|                                                             |
+| 2. THE THREE ESSENTIAL LEVERS:                              |
+|    - Lever 1 (Acquisition): Developers hate bloated scripts |
+|    - Lever 2 (Advantage):   Zero API keys, 15ms edge speed  |
+|    - Lever 3 (Economics):   85% gross cash margin on unit   |
+|                                                             |
+| 3. BACK-OF-THE-ENVELOPE MATH:                               |
+|    Unit price:         $ 4.00                               |
+|    Cost to deliver:    $ 0.60                               |
+|    Gross cash profit:  $ 3.40 (85%)                         |
+|                                                             |
+| 4. THE ACID TEST:                                           |
+|    Can a 10-year-old explain this business to their friend? |
++-------------------------------------------------------------+`;
+        }
+        if (tableHead) {
+          tableHead.innerHTML = `
+            <tr class="border-b border-mono-200 dark:border-mono-800 text-mono-500 dark:text-mono-400">
+              <th class="py-1.5">Dimension</th>
+              <th class="py-1.5">Conventional Corporate Trap</th>
+              <th class="py-1.5">The Beer-Mat Truth</th>
+            </tr>`;
+        }
+        rows = [
+          { item: "The Value", status: "Multi-stakeholder data capture platform", action: "Single 2KB script for $4/mo" },
+          { item: "The Problem", status: "Legacy workflow friction across verticals", action: "Developers paying $30/mo for bloated trackers" },
+          { item: "The Engine", status: "Proprietary distributed edge network", action: "Sub-15ms edge processing with zero API keys" },
+          { item: "The Math", status: "Multi-year recurring cashflow model", action: "Keeps $3.40 cash profit out of every $4.00 billed" }
+        ];
+        if (draftEl) {
+          draftEl.innerHTML = `
+            <p><strong>The Beer-Mat Pitch:</strong></p>
+            <p>Developers are paying thirty dollars every month to third-party form services that inject heavy bloated tracking code into their websites.</p>
+            <p>We replace that entire bloated stack with a single 2KB script for four dollars a month. It has zero API keys, processes form submissions at the network edge in under fifteen milliseconds, and costs sixty cents to deliver.</p>
+            <p>We pocket three dollars and forty cents profit on every four dollars billed. Simple, fast, and profitable on day one.</p>`;
+        }
+        md = `# The Back-of-a-Beer-Mat / Napkin Test\\n\\n` +
+             `> **Archetype:** Richard Branson (Radical Simplification & Core Value Exchange)\\n` +
+             `> **BLUF:** ${blufSentence}\\n\\n` +
+             `## ⚡ Radical Simplification Matrix\\n\\n` +
+             `| Dimension | Conventional Corporate Trap | The Beer-Mat Truth |\\n` +
+             `| :--- | :--- | :--- |\\n` +
+             rows.map(r => `| ${r.item} | ${r.status} | ${r.action} |`).join('\\n') +
+             `\\n\\n## 🍺 Back-of-the-Envelope Math\\n\\n` +
+             `- **Unit Price:** $4.00\\n` +
+             `- **Cost to Deliver:** $0.60\\n` +
+             `- **Gross Cash Profit:** $3.40 (85%)\\n` +
+             `- **Acid Test:** Passed. A 10-year-old can explain it in one breath.\\n`;
+
+      } else if (archetype === 'jobs') {
+        if (archBadge) {
+          archBadge.classList.remove('hidden');
+          archTitle.innerText = "Steve Jobs Archetype";
+          archRole.innerText = "Executive Markdown Spec & Whole-System Architecture";
+        }
+        blufSentence = "Executive Markdown Spec: Whole-system spatial architecture with pure client-side local state and sub-50ms latency.";
+        if (visualCard) {
+          visualCard.classList.remove('hidden');
+          visualCard.innerText = 
+`+-------------------------------------------------------------+
+|             WHOLE-SYSTEM SPATIAL METAPHOR                   |
+|                                                             |
+| [THE FRONT GATE]    --> Raw user shorthand & audio stream   |
+|         |                                                   |
+| [THE WORKSHOP]      --> 2-pass intent & topology compilation|
+|         |                                                   |
+| [THE ARCHIVE VAULT] --> Local markdown artifact & canvas    |
+|         |                                                   |
+| [THE DISPLAY]       --> Clean BLUF surface & live preview   |
++-------------------------------------------------------------+`;
+        }
+        if (tableHead) {
+          tableHead.innerHTML = `
+            <tr class="border-b border-mono-200 dark:border-mono-800 text-mono-500 dark:text-mono-400">
+              <th class="py-1.5">Architectural Dilemma</th>
+              <th class="py-1.5">Chosen Direction</th>
+              <th class="py-1.5">Decisive Rationale</th>
+            </tr>`;
+        }
+        rows = [
+          { item: "State Persistence", status: "Pure Client-Side Local State", action: "Zero login friction, instant launch, complete user privacy." },
+          { item: "Diagram Engine", status: "Browser-Native Mermaid.js", action: "Lightweight plain-text exportable footprint with zero WebGL drag." },
+          { item: "API Protocol", status: "Model Context Protocol (MCP)", action: "Universal native compatibility across Claude, Cursor, and Antigravity." },
+          { item: "Prose Scaffolding", status: "Direct Grounded Markdown", action: "Eliminates reading drag, corporate buzzwords, and phonological fatigue." }
+        ];
+        if (draftEl) {
+          draftEl.innerHTML = `
+            <p><strong>Executive Product Specification:</strong></p>
+            <p><strong>User Experience Guarantee:</strong> The user grasps the entire system topology in under five seconds. The input tolerance is absolute: zero formatting tax on shorthand notes.</p>
+            <p><strong>Core Constraints:</strong> Strictly zero external database dependencies. Zero corporate filler. Strictly zero em dashes.</p>
+            <p><strong>Immediate Milestone:</strong> Complete local compiler pass and package standalone offline bundle.</p>`;
+        }
+        md = `# Executive Specification: Whole-System Architecture\\n\\n` +
+             `> **Archetype:** Steve Jobs (Whole-System Spatial Metaphor & Tradeoffs)\\n` +
+             `> **BLUF:** ${blufSentence}\\n\\n` +
+             `## ⚖️ Technical Tradeoff & Decision Matrix\\n\\n` +
+             `| Architectural Dilemma | Chosen Direction | Decisive Rationale |\\n` +
+             `| :--- | :--- | :--- |\\n` +
+             rows.map(r => `| ${r.item} | ${r.status} | ${r.action} |`).join('\\n') +
+             `\\n\\n## ⚡ Core Guarantees\\n\\n` +
+             `- **Comprehension Window:** Sub-5 second whole-system clarity.\\n` +
+             `- **Input Friction:** Zero shorthand tax.\\n` +
+             `- **Polish:** Zero corporate fluff, strictly zero em dashes.\\n`;
+
+      } else if (archetype === 'kamprad') {
+        if (archBadge) {
+          archBadge.classList.remove('hidden');
+          archTitle.innerText = "Ingvar Kamprad Archetype";
+          archRole.innerText = "Visual Mnemonic Taxonomy & Pictorial Assembly Schema";
+        }
+        blufSentence = "Visual Mnemonic Taxonomy: Replacing abstract alphanumeric codes with physical landscape categories and pictorial assembly schemas.";
+        if (visualCard) {
+          visualCard.classList.remove('hidden');
+          visualCard.innerText = 
+`+-------------------------------------------------------------+
+|          WORDLESS PICTORIAL ASSEMBLY SEQUENCE               |
+|                                                             |
+|  [STEP 1] Unpack & verify rails, cam locks, wall bracket    |
+|     |                                                       |
+|  [STEP 2] Lay side rail flat; slot base board into groove   |
+|     |                                                       |
+|  [STEP 3] Turn cam locks 90 degrees clockwise               |
+|     |                                                       |
+|  [STEP 4] Rotate unit 90 degrees upright & anchor to wall   |
++-------------------------------------------------------------+`;
+        }
+        if (tableHead) {
+          tableHead.innerHTML = `
+            <tr class="border-b border-mono-200 dark:border-mono-800 text-mono-500 dark:text-mono-400">
+              <th class="py-1.5">Technical Entity</th>
+              <th class="py-1.5">Mnemonic / Swedish Name</th>
+              <th class="py-1.5">Spatial Physical Analogy</th>
+            </tr>`;
+        }
+        rows = [
+          { item: "API Gateway (SKU-8492)", status: "River Delta (Floddelta)", action: "Water distributing smoothly to agricultural branches." },
+          { item: "Redis Cache (SKU-8493)", status: "The Workbench (Banc)", action: "Tools laid out right in front of the artisan for instant reach." },
+          { item: "SQL Database (SKU-8494)", status: "The Archive Vault (Valv)", action: "Heavy stone walls with dual mechanical locks." },
+          { item: "Worker Pool (SKU-8495)", status: "The Forest Mills (Skogsmolla)", action: "Continuous parallel processing of queued background tasks." }
+        ];
+        if (draftEl) {
+          draftEl.innerHTML = `
+            <p><strong>Pictorial Assembly Instructions:</strong></p>
+            <p><strong>Step 1:</strong> Inspect all physical brackets, bolts, and wooden dowels before assembly.</p>
+            <p><strong>Step 2:</strong> Lay the left side panel flat on floor; slide the backboard into the precision milled channel.</p>
+            <p><strong>Step 3:</strong> Tighten cam locks exactly 90 degrees clockwise until the tactile click aligns.</p>
+            <p><strong>Step 4:</strong> Rotate the assembled carcass upright and secure safety bracket directly into wall stud.</p>`;
+        }
+        md = `# Visual Mnemonic Taxonomy & Assembly Schema\\n\\n` +
+             `> **Archetype:** Ingvar Kamprad (Physical Mnemonic Categories & Pictorial Schemas)\\n` +
+             `> **BLUF:** ${blufSentence}\\n\\n` +
+             `## 🗺️ Physical Mnemonic Mapping\\n\\n` +
+             `| Technical Entity | Mnemonic / Swedish Name | Spatial Physical Analogy |\\n` +
+             `| :--- | :--- | :--- |\\n` +
+             rows.map(r => `| ${r.item} | ${r.status} | ${r.action} |`).join('\\n') +
+             `\\n\\n## 🛠️ Step-by-Step Procedural Schema\\n\\n` +
+             `1. Unpack and verify components against physical silhouette card.\\n` +
+             `2. Slot horizontal rails into side rail grooves.\\n` +
+             `3. Fasten cam locks with single quarter turn.\\n` +
+             `4. Anchor structural safety strap to wall surface.\\n`;
+
+      } else if (archetype === 'finance') {
+        if (archBadge) {
+          archBadge.classList.remove('hidden');
+          archTitle.innerText = "Richard Branson Archetype";
+          archRole.innerText = "Conversational Financial Digest (Cash-Flow Funnel)";
+        }
+        blufSentence = "Generated $120,450 revenue with 71% gross margin and $30,030 net cash profit; $360,000 cash in bank with infinite runway.";
+        if (visualCard) {
+          visualCard.classList.remove('hidden');
+          visualCard.innerText = 
+`+-------------------------------------------------------------+
+|             THE OPERATING CASH-FLOW FUNNEL                  |
+|                                                             |
+|  Gross Revenue:         $ 120,450                           |
+|    - Direct COGS:       $  35,120   (Hosting & Compute)     |
+|  ---------------------------------                          |
+|  = Gross Cash Profit:   $  85,330   (71% Margin)            |
+|    - Overhead/Payroll:  $  45,300                           |
+|    - Taxes & Reserves:  $  10,000                           |
+|  ---------------------------------                          |
+|  = Net Retained Profit: $  30,030   (25% Net Margin)        |
+|                                                             |
+|  BANK CASH: $360,000 | MONTHLY BURN: $0 | RUNWAY: INFINITE  |
++-------------------------------------------------------------+`;
+        }
+        if (tableHead) {
+          tableHead.innerHTML = `
+            <tr class="border-b border-mono-200 dark:border-mono-800 text-mono-500 dark:text-mono-400">
+              <th class="py-1.5">Cash Metric</th>
+              <th class="py-1.5">Dollar Amount</th>
+              <th class="py-1.5">Plain-English Operating Signal</th>
+            </tr>`;
+        }
+        rows = [
+          { item: "Gross Inflows", status: "$120,450", action: "Total cash billed and collected across all customer accounts." },
+          { item: "Direct Delivery (COGS)", status: "$35,120", action: "Hosting, compute infrastructure, and payment processing fees." },
+          { item: "Gross Profit", status: "$85,330 (71%)", action: "True unit margin available to support operational overhead." },
+          { item: "Overhead & Payroll", status: "$45,300", action: "Fixed monthly developer salaries, office, and legal compliance." },
+          { item: "Net Retained Cash Profit", status: "$30,030 (25%)", action: "Surplus cash deposited directly into the bank treasury balance." }
+        ];
+        if (draftEl) {
+          draftEl.innerHTML = `
+            <p><strong>Executive Cash-Flow Summary:</strong></p>
+            <p><strong>Are we making money?</strong> Yes. Gross margin is sustained at 71%, and net profit margin is 25% after covering all hosting, salaries, and operational costs.</p>
+            <p><strong>How much cash is in the bank?</strong> We have $360,000 in liquid reserves.</p>
+            <p><strong>When do we run out of money?</strong> Never under current operations. Net monthly burn is $0 because operations are fully cash-flow positive.</p>`;
+        }
+        md = `# Conversational Financial Executive Digest\\n\\n` +
+             `> **Archetype:** Richard Branson (Plain-English Cash-Flow Clarity)\\n` +
+             `> **BLUF:** ${blufSentence}\\n\\n` +
+             `## 💵 Financial Health Matrix\\n\\n` +
+             `| Cash Metric | Dollar Amount | Plain-English Operating Signal |\\n` +
+             `| :--- | :--- | :--- |\\n` +
+             rows.map(r => `| ${r.item} | ${r.status} | ${r.action} |`).join('\\n') +
+             `\\n\\n## 🏦 Plain-English Answers\\n\\n` +
+             `- **Are we making money?** Yes. Retained cash profit is $30,030 (25% net margin).\\n` +
+             `- **How much cash is in the bank?** $360,000 in liquid reserves.\\n` +
+             `- **What is our cash runway?** Infinite. Monthly burn is $0 (cash-flow positive).\\n`;
+
+      } else {
+        // Standard D-Mode Synthesis
+        if (archBadge) archBadge.classList.add('hidden');
+        if (visualCard) visualCard.classList.add('hidden');
+        if (tableHead) {
+          tableHead.innerHTML = `
+            <tr class="border-b border-mono-200 dark:border-mono-800 text-mono-500 dark:text-mono-400">
+              <th class="py-1.5">Deliverable</th>
+              <th class="py-1.5">Timeline / Status</th>
+              <th class="py-1.5">Action Item</th>
+            </tr>`;
+        }
+        blufSentence = sentences[0];
+        if (!blufSentence.endsWith('.')) blufSentence += '.';
+        blufSentence = blufSentence.charAt(0).toUpperCase() + blufSentence.slice(1);
+
+        let remaining = sentences.slice(1);
+        if (remaining.length === 0) {
+          rows.push({
+            item: "Core Objective",
+            status: "Immediate Focus",
+            action: blufSentence
+          });
+        } else {
+          remaining.forEach((s, idx) => {
+            let item = "Milestone " + (idx + 1);
+            let status = "Active";
+            let action = s;
+            let sLow = s.toLowerCase();
+            if (sLow.includes("deadline") || sLow.includes("friday") || sLow.includes("month") || sLow.includes("sync")) {
+              item = "Timeline / Alignment";
+              status = "Scheduled";
+            } else if (sLow.includes("package") || sLow.includes("runway") || sLow.includes("work")) {
+              item = "Deliverable Scope";
+              status = "In Progress";
+            }
+            rows.push({ item, status, action });
+          });
+        }
+
+        if (draftEl) {
+          let draftHtml = `<p>Team,</p><p>${blufSentence}</p>`;
+          if (rows.length > 0) {
+            draftHtml += `<p>Key action items:</p><ul class="list-disc pl-4 space-y-1">`;
+            rows.forEach(r => {
+              draftHtml += `<li><strong>${r.item}:</strong> ${r.action}</li>`;
+            });
+            draftHtml += `</ul>`;
+          }
+          draftHtml += `<p>Please follow up if anything is blocked.</p>`;
+          draftEl.innerHTML = draftHtml;
+        }
+
+        md = `> **BLUF:** ${blufSentence}\\n\\n` +
+             `| Deliverable | Timeline / Status | Action Item |\\n` +
+             `| :--- | :--- | :--- |\\n` +
+             rows.map(r => `| ${r.item} | ${r.status} | ${r.action} |`).join('\\n') +
+             `\\n### Refined Draft\\n\\nTeam,\\n\\n${blufSentence}\\n\\n` +
+             rows.map(r => `- **${r.item}:** ${r.action}\\n`).join('') +
+             `\\nPlease follow up if anything is blocked.\\n`;
+      }
+
+      if (blufEl) blufEl.innerHTML = blufSentence;
 
       let tableHtml = "";
       rows.forEach(r => {
@@ -3334,20 +3829,10 @@ This curriculum eliminates passive lecture memorization. Students learn through 
           <td class="py-2 text-mono-500 dark:text-mono-400">${r.action}</td>
         </tr>`;
       });
-      document.getElementById('play-table-body').innerHTML = tableHtml;
+      if (tableBody) tableBody.innerHTML = tableHtml;
 
-      let draftHtml = `<p>Team,</p><p>${blufSentence}</p>`;
-      if (rows.length > 0) {
-        draftHtml += `<p>Key action items:</p><ul class="list-disc pl-4 space-y-1">`;
-        rows.forEach(r => {
-          draftHtml += `<li><strong>${r.item}:</strong> ${r.action}</li>`;
-        });
-        draftHtml += `</ul>`;
-      }
-      draftHtml += `<p>Please follow up if anything is blocked.</p>`;
-      document.getElementById('play-draft-text').innerHTML = draftHtml;
-
-      document.getElementById('play-typos-stat').innerText = `Silently corrected: ${typoCount} typos`;
+      const typosEl = document.getElementById('play-typos-stat');
+      if (typosEl) typosEl.innerText = `Silently corrected: ${typoCount} typos`;
 
       // Real-time Cognitive Telemetry Computation
       const wordCount = words.length;
@@ -3366,19 +3851,7 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       if (loadDropEl) loadDropEl.innerText = `-${dropPct}%`;
       if (chunksOptEl) chunksOptEl.innerText = `${activeChunks} / 4 (Cowan)`;
 
-      let md = `> **BLUF:** ${blufSentence}\\n\\n`;
-      md += `| Deliverable | Timeline / Status | Action Item |\\n`;
-      md += `| :--- | :--- | :--- |\\n`;
-      rows.forEach(r => {
-        md += `| ${r.item} | ${r.status} | ${r.action} |\\n`;
-      });
-      md += `\\n### Refined Draft\\n\\nTeam,\\n\\n${blufSentence}\\n\\n`;
-      rows.forEach(r => {
-        md += `- **${r.item}:** ${r.action}\\n`;
-      });
-      md += `\\nPlease follow up if anything is blocked.\\n`;
-
-      lastCompiledMarkdown = md.replace(/\\u2014/g, ' - ');
+      lastCompiledMarkdown = md.replace(/\u2014/g, ' - ');
     }
 
     function copyPlaygroundMarkdown() {
@@ -3474,6 +3947,9 @@ This curriculum eliminates passive lecture memorization. Students learn through 
         setTimeout(() => {
           btn.innerText = 'Copy Agent Instruction';
         }, 2000);
+        trackDxEvent('copy_agent_install_prompt', {
+          target: 'agentic_ai'
+        });
       });
     }
 
@@ -3554,12 +4030,84 @@ This curriculum eliminates passive lecture memorization. Students learn through 
     Voice Integrity
       Direct and Warm
       Zero Corporate Fluff
-      High Signal`
+      High Signal`,
+      storyboard: `graph LR
+    subgraph Room1 ["Room 1: Context Porch"]
+        R1["Status Quo & Grounding Context"]
+    end
+    subgraph Room2 ["Room 2: Catalyst Atrium"]
+        R2["The Inciting Friction & Cost of Inaction"]
+    end
+    subgraph Room3 ["Room 3: Engine Hall"]
+        R3["Three Operational Levers"]
+    end
+    subgraph Room4 ["Room 4: Horizon Terrace"]
+        R4["Immediate First Milestone"]
+    end
+
+    R1 --> R2
+    R2 --> R3
+    R3 --> R4`,
+      napkin: `graph LR
+    A["Customer Friction: Overpriced Bloat"] -->|"Pays $4/mo"| B["Featherweight Local Engine"]
+    B -->|"Delivers Instant 15ms Speed"| C["Delighted Developer"]
+    B -->|"Retains 85% Cash Profit"| D["Reinvested in Product Flywheel"]`,
+      spec: `graph TD
+    subgraph IngressGate ["The Front Gate: Ingress & Validation"]
+        A["Raw User Shorthand / Audio Dump"] --> B["Payload Sanity Check"]
+    end
+
+    subgraph CoreEngine ["The Workshop: Processing Engine"]
+        B --> C["Intent Extraction (Pass 1)"]
+        C --> D["Spatial Topology Engine (Pass 2)"]
+    end
+
+    subgraph VaultStorage ["The Archive Vault: Persistent Memory"]
+        D --> E["Local Markdown Artifact"]
+        D --> F["Vector Graph / Canvas Node"]
+    end
+
+    subgraph OutputTerrace ["The Display Terrace: Executive Surface"]
+        E --> G["Clean BLUF Dashboard"]
+        F --> H["Live Mermaid Visualization"]
+    end`,
+      taxonomy: `graph TD
+    subgraph Step1 ["Step 1: Unpack & Inspect"]
+        A["Verify Components: Rails, Cam Locks, Wall Bracket"]
+    end
+    subgraph Step2 ["Step 2: Base Alignment"]
+        B["Lay Side Rail Flat on Floor"]
+        C["Slot Base Board into Bottom Groove"]
+    end
+    subgraph Step3 ["Step 3: Mechanical Fastening"]
+        D["Turn Cam Locks 90 Degrees Clockwise"]
+    end
+    subgraph Step4 ["Step 4: Upright Position"]
+        E["Rotate Unit 90 Degrees Upright"]
+        F["Anchor Safety Bracket to Wall"]
+    end
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F`,
+      finance: `graph TD
+    A["Gross Inflows: $120,450"] --> B{"The Operating Funnel"}
+    B -->|"Direct Delivery (COGS): $35,120"| C["Gross Profit: $85,330 (71%)"]
+    C -->|"Overhead & Payroll: $45,300"| D["Operating Cash Flow: $40,030"]
+    D -->|"Taxes & Reserves: $10,000"| E["Net Cash Retained: $30,030"]
+
+    subgraph Runway ["Cash Runway Status"]
+        F["Total Bank Cash: $360,000"]
+        G["Monthly Net Burn: $0 (Cash-Flow Positive)"]
+        H["Runway: Infinite (Self-Sustaining)"]
+    end`
     };
 
     function switchDiagram(diag) {
       currentDiagram = diag;
-      const diagrams = ['arch', 'flywheel', 'curriculum', 'decision', 'mindmap'];
+      const diagrams = ['arch', 'flywheel', 'curriculum', 'decision', 'mindmap', 'storyboard', 'napkin', 'spec', 'taxonomy', 'finance'];
       diagrams.forEach(d => {
         const view = document.getElementById('diag-view-' + d);
         const tab = document.getElementById('tab-diag-' + d);
@@ -3584,6 +4132,9 @@ This curriculum eliminates passive lecture memorization. Students learn through 
         setTimeout(() => {
           btnText.innerText = 'Copy Mermaid Code';
         }, 2000);
+        trackDxEvent('copy_mermaid_diagram', {
+          diagram: currentDiagram
+        });
       });
     }
 
@@ -3605,6 +4156,9 @@ This curriculum eliminates passive lecture memorization. Students learn through 
         setTimeout(() => {
           btn.innerText = 'Copy Terminal Command';
         }, 2000);
+        trackDxEvent('copy_git_clone', {
+          source: 'install_section'
+        });
       });
     }
 
@@ -3613,6 +4167,7 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       const modal = document.getElementById('bundle-modal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+      trackDxEvent('open_bundle_modal');
     }
 
     function closeBundleModal() {
@@ -3628,6 +4183,9 @@ This curriculum eliminates passive lecture memorization. Students learn through 
         setTimeout(() => {
           if (btn) btn.innerText = 'Copy';
         }, 2000);
+        trackDxEvent('copy_git_clone', {
+          source: 'bundle_modal'
+        });
       });
     }
 
@@ -4205,7 +4763,7 @@ This curriculum eliminates passive lecture memorization. Students learn through 
         </p>
 
         <div class="space-y-3">
-          <a href="https://github.com/sounny/dxskills/raw/main/dist/dxskills-v0.1.0.zip" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
+          <a href="https://github.com/sounny/dxskills/raw/main/dist/dxskills-v0.1.0.zip" onclick="trackDxEvent('download_bundle', { file_name: 'dxskills-v0.1.0.zip', version: '0.1.0' })" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
             <div class="flex items-center gap-3">
               <i data-lucide="archive" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
               <div class="text-left">
@@ -4216,7 +4774,7 @@ This curriculum eliminates passive lecture memorization. Students learn through 
             <i data-lucide="download" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
           </a>
 
-          <a href="https://github.com/sounny/dxskills/raw/main/dist/manifest.json" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
+          <a href="https://github.com/sounny/dxskills/raw/main/dist/manifest.json" onclick="trackDxEvent('download_manifest', { file_name: 'manifest.json' })" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
             <div class="flex items-center gap-3">
               <i data-lucide="file-json" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
               <div class="text-left">
@@ -4227,7 +4785,7 @@ This curriculum eliminates passive lecture memorization. Students learn through 
             <i data-lucide="download" class="w-4 h-4 text-mono-400 group-hover:text-mono-950 dark:group-hover:text-white transition"></i>
           </a>
 
-          <a href="https://github.com/sounny/dxskills/tree/main/extensions/vscode-dxskills" target="_blank" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
+          <a href="https://github.com/sounny/dxskills/tree/main/extensions/vscode-dxskills" target="_blank" onclick="trackDxEvent('click_extension_link', { target: 'vscode' })" class="w-full p-3.5 rounded-xl bg-mono-50 dark:bg-mono-950 border border-mono-200 dark:border-mono-800 hover:border-mono-400 dark:hover:border-mono-600 transition flex items-center justify-between group">
             <div class="flex items-center gap-3">
               <i data-lucide="code" class="w-4 h-4 text-mono-700 dark:text-mono-300"></i>
               <div class="text-left">

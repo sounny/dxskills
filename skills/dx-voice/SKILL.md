@@ -24,9 +24,15 @@ Voice dictation is the natural high-bandwidth input channel for non-linear think
 
 3. **Autonomous Deliverable Selection:**
    - Detects the intent of the speech automatically:
-     - If describing a workflow: generates a Mermaid flowchart (`dx-map`).
+     - If describing a workflow or system architecture: generates an executable Mermaid flowchart (`dx-map` or `dx spec`).
      - If drafting a message: outputs a polished email in authentic voice (`dx-write`).
      - If discussing tasks: generates an action item matrix (`dx-dump`).
+     - If an unscripted speech or presentation: generates a visual spatial storyboard (`dx storyboard`).
+
+4. **The 2-Minute Voice Stream Pipeline (Richard Branson Archetype):**
+   - Ingests chaotic 2-minute voice dictations or fragmented voice memos.
+   - Filters out conversational disfluencies and clutter while strictly preserving facts and momentum.
+   - Compiles the stream into a clean Mermaid system map, an executive brief, and concrete next actions with zero shorthand tax.
 
 ---
 

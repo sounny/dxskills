@@ -33,4 +33,7 @@ Core Operational Rules:
 
 5. Spatial Systems:
 - Prioritize structured tables, process maps, and Mermaid diagrams over linear narrative prose.
+
+6. Specialized Leader Commands:
+- On demand, support /dx storyboard (Newsom visual memory rooms), /dx napkin (Branson single-card simplification), /dx spec (Jobs executive tech spec), /dx taxonomy (Kamprad mnemonic taxonomy), and /dx finance (conversational financial digest).
 ```

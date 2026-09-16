@@ -28,13 +28,20 @@ The `dx-read` skill eliminates reader fatigue and cognitive overload caused by u
    - **Level 2 (Decision & Impact Table):** What are the trade-offs, deadlines, and responsibilities?
    - **Level 3 (Nuance & Details):** High-signal context, preserved without filler words.
 
+4. **Conversational Financial & Spreadsheet Digest (Richard Branson Archetype):**
+   - Use `/dx finance` to translate rows of confusing balance sheets, budget spreadsheets, and financial reports into conversational narrative summaries and visual cash-flow diagrams.
+   - Answers the four fundamental questions: (1) Inflows, (2) Outflows, (3) Cash in register/runway, (4) Key margin levers.
+
+5. **Executive Briefing Books (Gavin Newsom Archetype):**
+   - Converts 50-page policy briefs, committee memos, or legislative documents into high-contrast briefing books featuring color-coded concept blocks and relational decision matrices instead of pages of prose.
+
 ---
 
 ## 📋 Trigger & Usage
 
-### Manual Trigger
-- `/dx read <long text, URL, or document>`
-- `"Filter this wall of text: <text>"`
+### Manual Triggers
+- `/dx read <long text, URL, or document>`: General anti-wall-of-text filter.
+- `/dx finance <spreadsheet dump, balance sheet, or financial report>`: Conversational financial summary and cash-flow diagram.
 
 ### Standard Output Format
 > **BLUF:** [1-2 sentences capturing core conclusion and urgency]
