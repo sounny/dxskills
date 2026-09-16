@@ -77,6 +77,32 @@ def cmd_read(args):
         print(f"| Part {i} | Core insight extracted from narrative | Review and adopt |")
 
 def cmd_storyboard(args):
+    if getattr(args, "canvas", "") or getattr(args, "svg", ""):
+        import scripts.spatial_storyboard as ss
+        input_text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
+            "Establish the friction: Linear text walls overload phonological working memory.\n"
+            "Inciting shift: Non-linear thinkers struggle to communicate complex holistic architectures through sequential slides.\n"
+            "Core exploration: The DxSkills cognitive engine decouples spatial mental models from linear output streams.\n"
+            "Technical deep dive: High-dimensional vector similarity clusters ideas into constellation topologies.\n"
+            "Multi-vault bridge: Cross-repository synchronizers identify dangling wikilinks and orphan nodes in real time.\n"
+            "Resolution vista: The user presents a hardened spatial canvas that disarms reductionist critics instantly."
+        )
+        storyboard, canvas_data, svg_code = ss.run_storyboard(
+            input_text,
+            title=getattr(args, "title", None) or None,
+            output_canvas=getattr(args, "canvas", None) or None,
+            output_svg=getattr(args, "svg", None) or None
+        )
+        if getattr(args, "json", False):
+            print(json.dumps(storyboard, indent=2))
+        else:
+            print(f"\n[DxSkills] Sequenced {storyboard['total_shots']} shots across 3 acts ({storyboard['total_duration_seconds']}s total).")
+            if getattr(args, "canvas", None):
+                print(f"  - Canvas: {args.canvas}")
+            if getattr(args, "svg", None):
+                print(f"  - SVG: {args.svg}")
+        return
+
     text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
         "We are addressing the state clean energy transition. Outdated grid transmission lines fail under peak summer demand. "
         "We must deploy decentralized microgrids, streamline local storage permits, and incentivize commercial battery retrofits. "
@@ -630,6 +656,8 @@ def main():
     p_story.add_argument("input", nargs="?", default="", help="Raw speech notes, policy brief, or text file")
     p_story.add_argument("--title", "-t", default="", help="Storyboard presentation title")
     p_story.add_argument("--output", "-o", default="", help="Output markdown filepath")
+    p_story.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
+    p_story.add_argument("--svg", "-s", default="", help="Output vector .svg animatic strip filepath")
     p_story.add_argument("--json", "-j", action="store_true", help="Output raw JSON storyboard payload")
 
     # napkin (Richard Branson)
