@@ -1453,180 +1453,13 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
         </div>
 
         <!-- Render View -->
-        <div class="p-6 sm:p-10 flex items-center justify-center min-h-[340px] overflow-x-auto">
-          
-          <div id="diag-view-arch" class="w-full flex justify-center">
-            <pre class="mermaid">
-graph TD
-    Client["Client / IDE / CLI"] --> Edge["Cloudflare Edge Cache"]
-    Edge --> Gateway["Ingress API Gateway"]
-    Gateway --> Service["Task Engine & Auth"]
-    Service --> Workers["Background Worker Pool"]
-    Service --> DB[("PostgreSQL Master")]
-    Workers --> S3[("Object Storage")]
-    Workers --> DB
-            </pre>
+        <div class="p-6 sm:p-10 flex items-center justify-center min-h-[360px] overflow-x-auto w-full">
+          <div id="mermaid-render-container" class="w-full flex justify-center items-center">
+            <div class="text-xs font-mono text-mono-400 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-mono-400 animate-pulse"></span>
+              <span>Loading diagram blueprint...</span>
+            </div>
           </div>
-
-          <div id="diag-view-flywheel" class="w-full justify-center hidden">
-            <pre class="mermaid">
-graph TD
-    A["Rapid Input: Zero Typing Friction"] --> B["High-Signal Synthesis: Visual Scaffolding"]
-    B --> C["Accelerated Delivery: Polished Output"]
-    C --> D["User Feedback & Real-World Validation"]
-    D --> E["Expanded Knowledge & Trust"]
-    E --> A
-            </pre>
-          </div>
-
-          <div id="diag-view-curriculum" class="w-full justify-center hidden">
-            <pre class="mermaid">
-graph LR
-    subgraph P1 ["Phase 1: Foundations"]
-        A1["Mental Models"] --> A2["Tooling & Setup"]
-    end
-    subgraph P2 ["Phase 2: Applied Workflows"]
-        B1["Hands-On Labs"] --> B2["Integration Pipelines"]
-    end
-    subgraph P3 ["Phase 3: Synthesis"]
-        C1["Autonomous Architecture"] --> C2["Peer Defense"]
-    end
-    A2 --> B1
-    B2 --> C1
-            </pre>
-          </div>
-
-          <div id="diag-view-decision" class="w-full justify-center hidden">
-            <pre class="mermaid">
-graph TD
-    Q1["Problem: Architecture Design"] --> Q2{"High Concurrency?"}
-    Q2 -- "Yes" --> Q3{"Complex Joins?"}
-    Q2 -- "No" --> R1["Monolith (Fastest Delivery)"]
-    Q3 -- "Yes" --> R2["Event-Driven Microservices"]
-    Q3 -- "No" --> R3["Serverless Edge Functions"]
-            </pre>
-          </div>
-
-          <div id="diag-view-mindmap" class="w-full justify-center hidden">
-            <pre class="mermaid">
-mindmap
-  root((Spatial AI))
-    Input Layer
-      Zero Typing Tax
-      Speed of Thought
-      Voice Ingestion
-    Visual Structure
-      BLUF Front Loading
-      Execution Tables
-      Spatial Blueprints
-    Silent Polish
-      Quiet Typo Repair
-      Zero Em Dashes
-      No Lectures
-    Voice Integrity
-      Direct and Warm
-      Zero Corporate Fluff
-      High Signal
-            </pre>
-          </div>
-
-          <div id="diag-view-storyboard" class="w-full justify-center hidden">
-            <pre class="mermaid">
-graph LR
-    subgraph Room1 ["Room 1: Context Porch"]
-        R1["Status Quo & Grounding Context"]
-    end
-    subgraph Room2 ["Room 2: Catalyst Atrium"]
-        R2["The Inciting Friction & Cost of Inaction"]
-    end
-    subgraph Room3 ["Room 3: Engine Hall"]
-        R3["Three Operational Levers"]
-    end
-    subgraph Room4 ["Room 4: Horizon Terrace"]
-        R4["Immediate First Milestone"]
-    end
-
-    R1 --> R2
-    R2 --> R3
-    R3 --> R4
-            </pre>
-          </div>
-
-          <div id="diag-view-napkin" class="w-full justify-center hidden">
-            <pre class="mermaid">
-graph LR
-    A["Customer Friction: Overpriced Bloat"] -->|"Pays $4/mo"| B["Featherweight Local Engine"]
-    B -->|"Delivers Instant 15ms Speed"| C["Delighted Developer"]
-    B -->|"Retains 85% Cash Profit"| D["Reinvested in Product Flywheel"]
-            </pre>
-          </div>
-
-          <div id="diag-view-spec" class="w-full justify-center hidden">
-            <pre class="mermaid">
-graph TD
-    subgraph IngressGate ["The Front Gate: Ingress & Validation"]
-        A["Raw User Shorthand / Audio Dump"] --> B["Payload Sanity Check"]
-    end
-
-    subgraph CoreEngine ["The Workshop: Processing Engine"]
-        B --> C["Intent Extraction (Pass 1)"]
-        C --> D["Spatial Topology Engine (Pass 2)"]
-    end
-
-    subgraph VaultStorage ["The Archive Vault: Persistent Memory"]
-        D --> E["Local Markdown Artifact"]
-        D --> F["Vector Graph / Canvas Node"]
-    end
-
-    subgraph OutputTerrace ["The Display Terrace: Executive Surface"]
-        E --> G["Clean BLUF Dashboard"]
-        F --> H["Live Mermaid Visualization"]
-    end
-            </pre>
-          </div>
-
-          <div id="diag-view-taxonomy" class="w-full justify-center hidden">
-            <pre class="mermaid">
-graph TD
-    subgraph Step1 ["Step 1: Unpack & Inspect"]
-        A["Verify Components: Rails, Cam Locks, Wall Bracket"]
-    end
-    subgraph Step2 ["Step 2: Base Alignment"]
-        B["Lay Side Rail Flat on Floor"]
-        C["Slot Base Board into Bottom Groove"]
-    end
-    subgraph Step3 ["Step 3: Mechanical Fastening"]
-        D["Turn Cam Locks 90 Degrees Clockwise"]
-    end
-    subgraph Step4 ["Step 4: Upright Position"]
-        E["Rotate Unit 90 Degrees Upright"]
-        F["Anchor Safety Bracket to Wall"]
-    end
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-            </pre>
-          </div>
-
-          <div id="diag-view-finance" class="w-full justify-center hidden">
-            <pre class="mermaid">
-graph TD
-    A["Gross Inflows: $120,450"] --> B["The Operating Funnel"]
-    B -->|Direct Delivery COGS: $35,120| C["Gross Profit: $85,330 - 71%"]
-    C -->|Overhead and Payroll: $45,300| D["Operating Cash Flow: $40,030"]
-    D -->|Taxes and Reserves: $10,000| E["Net Cash Retained: $30,030"]
-
-    subgraph Runway ["Cash Runway Status"]
-        F["Total Bank Cash: $360,000"]
-        G["Monthly Net Burn: $0 - Cash-Flow Positive"]
-        H["Runway: Infinite - Self-Sustaining"]
-    end
-            </pre>
-          </div>
-
         </div>
 
       </div>
@@ -2788,6 +2621,10 @@ graph TD
         lightIcon.classList.remove('hidden');
         darkIcon.classList.add('hidden');
         darkIcon.classList.remove('flex');
+      }
+
+      if (typeof renderActiveDiagram === 'function' && typeof currentDiagram !== 'undefined') {
+        renderActiveDiagram(currentDiagram);
       }
     }
 
@@ -5059,46 +4896,99 @@ This curriculum eliminates passive lecture memorization. Students learn through 
     end`
     };
 
+    let renderSequence = 0;
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    async function renderActiveDiagram(diag) {
+      const container = document.getElementById('mermaid-render-container');
+      if (!container) return;
+      const src = diagramSources[diag];
+      if (!src) return;
+
+      const seq = ++renderSequence;
+
+      if (!window.mermaid) {
+        container.innerHTML = '<pre class="font-mono text-xs text-mono-700 dark:text-mono-300 p-4 bg-mono-100 dark:bg-mono-900 rounded-lg whitespace-pre-wrap overflow-x-auto text-left w-full max-w-2xl">' + escapeHtml(src) + '</pre>';
+        return;
+      }
+
+      const isDark = document.documentElement.classList.contains('dark');
+      try {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: isDark ? 'dark' : 'neutral',
+          securityLevel: 'loose'
+        });
+        const id = 'mermaid-render-' + seq;
+        const { svg } = await mermaid.render(id, src);
+        if (seq === renderSequence) {
+          container.innerHTML = svg;
+        }
+      } catch (err) {
+        console.error('Mermaid render error:', err);
+        if (seq === renderSequence) {
+          container.innerHTML = '<pre class="font-mono text-xs text-mono-700 dark:text-mono-300 p-4 bg-mono-100 dark:bg-mono-900 rounded-lg whitespace-pre-wrap overflow-x-auto text-left w-full max-w-2xl">' + escapeHtml(src) + '</pre>';
+        }
+      }
+    }
+
     function switchDiagram(diag) {
       currentDiagram = diag;
       const diagrams = ['arch', 'flywheel', 'curriculum', 'decision', 'mindmap', 'storyboard', 'napkin', 'spec', 'taxonomy', 'finance'];
       diagrams.forEach(d => {
-        const view = document.getElementById('diag-view-' + d);
         const tab = document.getElementById('tab-diag-' + d);
+        if (!tab) return;
         if (d === diag) {
-          view.classList.remove('hidden');
-          view.classList.add('flex');
           tab.className = 'px-3 py-1.5 rounded-lg bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-bold transition';
         } else {
-          view.classList.add('hidden');
-          view.classList.remove('flex');
           tab.className = 'px-3 py-1.5 rounded-lg text-mono-600 dark:text-mono-400 hover:text-mono-950 dark:hover:text-white transition';
         }
       });
+      renderActiveDiagram(diag);
+    }
+
+    function fallbackClipboardCopy(text, onSuccess) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-999999px';
+        ta.style.top = '-999999px';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok && onSuccess) onSuccess();
+      } catch (e) {
+        console.error('Clipboard fallback failed:', e);
+      }
     }
 
     function copyActiveDiagram() {
       const src = diagramSources[currentDiagram];
       if (!src) return;
-      navigator.clipboard.writeText(src).then(() => {
-        const btnText = document.getElementById('copy-diag-text');
-        btnText.innerText = 'Copied!';
+
+      const btnText = document.getElementById('copy-diag-text');
+      const showSuccess = () => {
+        if (btnText) btnText.innerText = 'Copied!';
         setTimeout(() => {
-          btnText.innerText = 'Copy Mermaid Code';
+          if (btnText) btnText.innerText = 'Copy Mermaid Code';
         }, 2000);
         trackDxEvent('copy_mermaid_diagram', {
           diagram: currentDiagram
         });
-      });
-    }
+      };
 
-    // Initialize Mermaid Diagrams
-    if (window.mermaid) {
-      mermaid.initialize({
-        startOnLoad: true,
-        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'neutral',
-        securityLevel: 'loose'
-      });
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(src).then(showSuccess).catch(() => {
+          fallbackClipboardCopy(src, showSuccess);
+        });
+      } else {
+        fallbackClipboardCopy(src, showSuccess);
+      }
     }
 
     // Copy Git Clone
@@ -5733,7 +5623,7 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       obsidian: `You are acting as an internal cognitive scaffold for an Obsidian knowledge vault paired with a non-linear, spatial researcher.
 1. Zero Input Tax: Accept rough daily note fragments, half-written bullets, and voice dictation without comment.
 2. Anti-Wall-of-Text: Lead with 1-sentence Bottom Line Up Front (BLUF). Use short paragraphs for prose; reserve tables and bullets for structured data.
-3. Native Obsidian: Use [[Wikilinks]] for note references and Mermaid (```mermaid) for visual maps.
+3. Native Obsidian: Use [[Wikilinks]] for note references and Mermaid (\`\`\`mermaid) for visual maps.
 4. Silent Polish: Quietly correct spelling and grammar without annotations.
 5. Tone: Direct, warm, grounded. Zero em dashes anywhere.`,
       cursor: `You are pair programming with a non-linear, spatial engineer.
@@ -5852,6 +5742,19 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       navigator.clipboard.writeText(txt).then(() => {
         alert('Copied ' + key.toUpperCase() + ' prompt to clipboard!');
       });
+    }
+
+    // Initial Diagram Render
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (typeof renderActiveDiagram === 'function') {
+          renderActiveDiagram(currentDiagram || 'arch');
+        }
+      });
+    } else {
+      if (typeof renderActiveDiagram === 'function') {
+        renderActiveDiagram(currentDiagram || 'arch');
+      }
     }
 
   </script>
