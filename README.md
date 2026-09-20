@@ -4,6 +4,7 @@
 >
 > 🌐 **Interactive Web Platform & Playground:** [https://dxskills.sounny.com](https://dxskills.sounny.com)
 
+[![Version](https://img.shields.io/badge/version-0.1.0-0ea5e9.svg)](./CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Website](https://img.shields.io/badge/Web-dxskills.sounny.com-10b981.svg)](https://dxskills.sounny.com)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-DxSkills-0077B5.svg?logo=linkedin&logoColor=white)](https://www.linkedin.com/company/146509128/)
@@ -41,6 +42,7 @@ The gallery showcases side-by-side comparisons for:
 - `dx-read`: 5-paragraph bureaucratic policies distilled into 3-column decision matrices.
 - `dx-interview`: Step-by-step 4-phase interview dialogue compiled into a complete grant proposal.
 - `dx-map`: Verbal architectural descriptions transformed into syntax-safe Mermaid topologies.
+- `dx-voice`: Speech memos and audio transcripts compiled into structured Markdown (see [`skills/dx-voice/SKILL.md`](./skills/dx-voice/SKILL.md)).
 
 ---
 
@@ -58,16 +60,16 @@ DxSkills is organized as a modular toolkit with formal YAML schemas, machine-rea
                                  │
                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                            DxSkills                             │
+│                   DxSkills (six skills on disk)                 │
 ├─────────────────┬─────────────────┬─────────────────────────────┤
 │    dx-dump      │    dx-read      │          dx-write           │
 │  Brain Dump to  │  Anti-Wall of   │     Authentic Voice &       │
 │  Architecture   │      Text       │        Silent Polish        │
-├─────────────────┼─────────────────┴─────────────────────────────┤
-│  dx-interview   │                   dx-map                      │
-│ 4-Phase Gated   │             Spatial & Systems                 │
-│ Socratic Drafter│               Concept Mapper                  │
-└─────────────────┴───────────────────────────────────────────────┘
+├─────────────────┼─────────────────┼─────────────────────────────┤
+│  dx-interview   │     dx-map      │         dx-voice            │
+│ 4-Phase Gated   │ Spatial Systems │    Speech-to-Architecture   │
+│ Socratic Drafter│ Concept Mapper  │     Audio Dictation         │
+└─────────────────┴─────────────────┴─────────────────────────────┘
                                  │
                                  ▼
                     ┌─────────────────────────┐
@@ -112,6 +114,12 @@ DxSkills is organized as a modular toolkit with formal YAML schemas, machine-rea
 * **Result:** Clean, guaranteed-to-render visual alignment between mental models and documentation.
 * **Command:** `/dx map` (also `/dx storyboard`, `/dx taxonomy`)
 
+### 6. [`dx-voice`](./skills/dx-voice/SKILL.md) ([Standalone Prompt](./prompts/dx-voice.md))
+* **The Problem:** Keyboard transcription is the slowest path for many spatial thinkers. Voice is faster, but raw transcripts are full of filler, phonetic errors, and linear clutter.
+* **The Fix:** Takes audio files or speech transcripts, strips disfluencies, silently normalizes domain jargon, and compiles the result into structured Markdown.
+* **Result:** A voice memo becomes a plan, spec, or email without a typing bottleneck.
+* **Command:** `/dx voice`
+
 ---
 
 ## 💻 Drop-in IDE Configurations
@@ -132,10 +140,13 @@ python ide-configs/install_ide_configs.py
 
 ---
 
-## 🚀 Quickstart: Using DxSkills Today
+## 🚀 Quickstart (one screen)
 
-### Option A: ChatGPT / Claude Custom Instructions (Zero Install)
-Grab the standalone **[D-Mode Prompt Card](./prompts/d-mode.md)** and paste it directly into your ChatGPT Custom Instructions, Claude Project, or Gemini Gem:
+All three paths are MIT-licensed and free. No account and no paywall.
+
+### A. Paste the D-Mode prompt card (zero install)
+
+Copy **[prompts/d-mode.md](./prompts/d-mode.md)** into ChatGPT Custom Instructions, a Claude Project, or a Gemini Gem.
 
 ```markdown
 # Role & Cognitive Mode: D-Mode Active
@@ -147,33 +158,41 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
 5. Systems-First: Explain workflows and processes with structured tables or Mermaid.js diagrams.
 ```
 
-### Option B: Agentic AI Installation & Continuous Auto-Sync
-
-Equip Antigravity, Claude Code, Cursor, or any coding agent with the master skill suite:
+### B. Clone into your agent skills directory
 
 ```bash
-# Clone directly into your active skills directory
 git clone https://github.com/sounny/dxskills.git skills/dxskills
 ```
 
-#### Automatic Version Syncing
-DxSkills includes a built-in auto-update protocol tracked via `VERSION`. To pull newly published skills and improvements:
-- In chat: run `/dx update`
-- In terminal: run `python scripts/check_updates.py`
+Then tell your agent:
+> Install the DxSkills cognitive scaffolding suite from https://github.com/sounny/dxskills into my active agent skills directory and activate D-Mode.
 
-Or prompt your AI assistant directly:
-> *"Install the DxSkills cognitive scaffolding suite from https://github.com/sounny/dxskills into my active agent skills directory and activate D-Mode."*
+Later updates: `/dx update` in chat, or `python scripts/check_updates.py`.
+
+### C. Offline zip
+
+Use [`dist/dxskills-v0.1.0.zip`](./dist/dxskills-v0.1.0.zip) from this repo now. After tag `v0.1.0` is published, the same zip is also a GitHub Release asset.
+
+Unzip, then point your agent at the extracted `skills/` folder.
 
 ---
 
-## 📂 Repository Roadmap
+## What's in public release 0.1.0
 
-- [x] **v0.1:** Core architecture, README manifesto, and universal system prompt.
-- [x] **v0.2:** Standalone `SKILL.md` definitions for `dx-dump`, `dx-read`, and `dx-write`.
-- [x] **v0.3:** Interactive Socratic interview templates for academic and professional writing (`dx-interview`).
-- [x] **v0.4:** Mermaid.js visual template library for spatial concept mapping (`dx-map`).
-- [x] **v0.5:** Ready-to-use Cursor rules, Claude Code guides, Windsurf configs, and `ide-configs/` installer.
-- [x] **v0.6:** Formal machine-readable YAML skill schemas and comprehensive `EXAMPLES.md` transformation gallery.
+`VERSION` is **0.1.0**. That is the first public GitHub Release, not a future milestone.
+
+Included now:
+- Six skills on disk: `dx-dump`, `dx-read`, `dx-write`, `dx-interview`, `dx-map`, `dx-voice`
+- D-Mode prompt cards in `prompts/`
+- Interactive playground: [https://dxskills.sounny.com](https://dxskills.sounny.com)
+- Before/after gallery: [EXAMPLES.md](./EXAMPLES.md)
+- Offline bundle: `dist/dxskills-v0.1.0.zip` (see `dist/manifest.json`)
+- IDE drop-in configs in `ide-configs/`
+- MIT License, free for personal, academic, and commercial use. No paywall.
+
+Earlier internal draft checkpoints (core prompts, skill cards, interview, maps, IDE configs, examples) are already folded into this 0.1.0 package. They are not separate public version numbers.
+
+Release notes (copy-paste ready for the GitHub Release body): [CHANGELOG.md](./CHANGELOG.md).
 
 ---
 
