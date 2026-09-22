@@ -76,6 +76,96 @@ def cmd_read(args):
     for i, p in enumerate(paragraphs[:3], 1):
         print(f"| Part {i} | Core insight extracted from narrative | Review and adopt |")
 
+PLAN_TYPO_DICT = {
+    "havent": "haven't",
+    "wont": "won't",
+    "cant": "can't",
+    "teh": "the",
+    "seperate": "separate",
+    "milstone": "milestone",
+    "ppl": "people",
+    "thru": "through",
+    "recieve": "receive",
+    "asap": "as soon as possible",
+    "def": "definitely",
+    "tmrw": "tomorrow",
+}
+
+
+def _plan_polish_task(text):
+    words = text.split()
+    out = []
+    for w in words:
+        core = w.lower().strip(".,!?:;()")
+        if core in PLAN_TYPO_DICT:
+            w = w.lower().replace(core, PLAN_TYPO_DICT[core])
+        out.append(w)
+    clean = " ".join(out).replace("\u2014", "-").strip()
+    clean = clean.lstrip("*-#0123456789. ").rstrip(".")
+    if clean:
+        clean = clean[0].upper() + clean[1:]
+    return clean
+
+
+def _plan_estimate_block(task):
+    n = len(task.split())
+    low_kw = ("email", "send", "call", "text", "ping", "reply", "book", "schedule", "ask")
+    deep_kw = ("write", "finish", "build", "draft", "design", "budget", "analyze", "research", "code")
+    t = task.lower()
+    if any(k in t for k in deep_kw) or n > 12:
+        return "45 min", "High"
+    if any(k in t for k in low_kw) or n <= 5:
+        return "15 min", "Low"
+    return "25 min", "Medium"
+
+
+def cmd_plan(args):
+    text = read_input(args.input)
+    horizon = getattr(args, "horizon", "day") or "day"
+
+    raw = re.split(r"[\n.!?]+", text)
+    tasks = [_plan_polish_task(t) for t in raw if t.strip()]
+    tasks = [t for t in tasks if t]
+    if not tasks:
+        tasks = ["Define the goal in one clear sentence"]
+
+    deadline = ""
+    day_words = [
+        "monday", "tuesday", "wednesday", "thursday", "friday",
+        "saturday", "sunday", "today", "tomorrow", "tonight",
+    ]
+    low_all = text.lower()
+    for d in day_words:
+        if d in low_all:
+            deadline = d.capitalize()
+            break
+
+    print("\n=== [DxSkills: dx-plan / Goal to Ordered Execution Checklist] ===")
+
+    print("\n> **Bottom Line Up Front (BLUF):**")
+    goal = tasks[0]
+    if deadline:
+        print(f"> {goal}. Target: {deadline}. {len(tasks)} step(s) to sequence.")
+    else:
+        print(f"> {goal}. {len(tasks)} step(s) to sequence.")
+
+    print("\n### Start Here (2-minute version)")
+    print(f"{tasks[0]}. Do just the smallest first slice to begin.")
+
+    print("\n### Ordered Checklist")
+    for i, t in enumerate(tasks, 1):
+        print(f"{i}. [ ] {t}.")
+
+    print("\n### Time-Block Schedule")
+    print(f"_Planning horizon: {horizon}_\n")
+    print("| Step | Focus Block | Energy | Done |")
+    print("| :--- | :--- | :--- | :--- |")
+    for t in tasks:
+        block, energy = _plan_estimate_block(t)
+        snippet = t if len(t) <= 48 else t[:45] + "..."
+        print(f"| {snippet} | {block} | {energy} | [ ] |")
+
+
 def cmd_storyboard(args):
     if getattr(args, "canvas", "") or getattr(args, "svg", ""):
         import scripts.spatial_storyboard as ss
@@ -650,6 +740,11 @@ def main():
     # read
     p_read = subparsers.add_parser("read", help="Decompose dense walls of text into visual signposts")
     p_read.add_argument("input", nargs="?", default="", help="Dense text or path to text file")
+
+    # plan
+    p_plan = subparsers.add_parser("plan", aliases=["checklist", "timeblock", "time-block"], help="Turn a fuzzy goal or task dump into an ordered, time-blocked execution checklist")
+    p_plan.add_argument("input", nargs="?", default="", help="Goal, deadline, or unordered task dump (text or file)")
+    p_plan.add_argument("--horizon", "-H", default="day", choices=["day", "week", "project"], help="Planning horizon (default: day)")
 
     # storyboard (Gavin Newsom)
     p_story = subparsers.add_parser("storyboard", aliases=["visual-storyboard", "speech-scaffold"], help="Compile unscripted speeches and policy briefs into 4-room spatial memory storyboards")
@@ -1741,6 +1836,8 @@ def main():
         cmd_dump(args)
     elif args.command == "read":
         cmd_read(args)
+    elif args.command in ["plan", "checklist", "timeblock", "time-block"]:
+        cmd_plan(args)
     elif args.command in ["storyboard", "visual-storyboard", "speech-scaffold"]:
         cmd_storyboard(args)
     elif args.command in ["napkin", "beer-mat", "radical-simplify"]:

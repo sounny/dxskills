@@ -60,7 +60,7 @@ DxSkills is organized as a modular toolkit with formal YAML schemas, machine-rea
                                  │
                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   DxSkills (six skills on disk)                 │
+│                   DxSkills (modular skill suite)                │
 ├─────────────────┬─────────────────┬─────────────────────────────┤
 │    dx-dump      │    dx-read      │          dx-write           │
 │  Brain Dump to  │  Anti-Wall of   │     Authentic Voice &       │
@@ -119,6 +119,12 @@ DxSkills is organized as a modular toolkit with formal YAML schemas, machine-rea
 * **The Fix:** Takes audio files or speech transcripts, strips disfluencies, silently normalizes domain jargon, and compiles the result into structured Markdown.
 * **Result:** A voice memo becomes a plan, spec, or email without a typing bottleneck.
 * **Command:** `/dx voice`
+
+### 7. [`dx-plan`](./skills/dx-plan/SKILL.md) ([Standalone Prompt](./prompts/dx-plan.md))
+* **The Problem:** Non-linear thinkers can hold a whole plan in their head but stall at sequencing it and starting the first step. A flat to-do list overloads working memory and hides what to do first.
+* **The Fix:** Converts a fuzzy goal or scattered task dump into an ordered, dependency-sequenced checklist. It surfaces one 2-minute first action, then time-blocks each step with honest energy tags.
+* **Result:** The next physical action is always obvious, so task initiation and executive function stop being the bottleneck.
+* **Command:** `/dx plan` (also `/dx checklist`, `/dx timeblock`)
 
 ---
 
@@ -182,7 +188,7 @@ Unzip, then point your agent at the extracted `skills/` folder.
 `VERSION` is **0.1.0**. That is the first public GitHub Release, not a future milestone.
 
 Included now:
-- Six skills on disk: `dx-dump`, `dx-read`, `dx-write`, `dx-interview`, `dx-map`, `dx-voice`
+- Seven skills on disk: `dx-dump`, `dx-read`, `dx-write`, `dx-interview`, `dx-map`, `dx-voice`, `dx-plan`
 - D-Mode prompt cards in `prompts/`
 - Interactive playground: [https://dxskills.sounny.com](https://dxskills.sounny.com)
 - Before/after gallery: [EXAMPLES.md](./EXAMPLES.md)

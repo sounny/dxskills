@@ -67,6 +67,7 @@ To ensure the user always has the latest prompt improvements, templates, and mod
 | Command | Skill | Action |
 | :--- | :--- | :--- |
 | `/dx dump` | `dx-dump` | Takes raw notes and creates a structured outline, system diagram, and action items. |
+| `/dx plan` | `dx-plan` | Turns a fuzzy goal or task dump into an ordered, time-blocked execution checklist with a clear first move. |
 | `/dx read` | `dx-read` | Distills long documents, memos, or emails into visual signposts and decision matrices. |
 | `/dx write` | `dx-write` | Drafts or polishes communications with silent mechanical correction and authentic voice. |
 | `/dx ask` | `dx-interview` | Socratic mode: interviews the user with 3-4 questions to draft complex documents. |
