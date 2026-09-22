@@ -34,7 +34,7 @@ class TestDxPlan(unittest.TestCase):
 
     SAMPLE = (
         "need to submit the grant by thursday. still havent finished the budget section. "
-        "sarah has to review the methods. also need to email the letters of support ppl."
+        "a co-author still has to review the methods. also need to email the letters of support ppl."
     )
 
     def test_outputs_bluf(self):

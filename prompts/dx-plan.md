@@ -43,11 +43,11 @@ Accept unordered fragments, voice-to-text artifacts, phonetic spelling, and shor
 
 **Input:**
 ```text
-need to submit the grant by thursday. still havent finished the budget section. sarah has to review the methods. also need to email the letters of support ppl. and the abstract is too long
+need to submit the grant by thursday. still havent finished the budget section. a co-author still has to review the methods. also need to email the letters of support ppl. and the abstract is too long
 ```
 
 **Output:**
-**BLUF:** Submit the grant by Thursday. Four steps remain, with the budget and Sarah's methods review on the critical path.
+**BLUF:** Submit the grant by Thursday. Four steps remain, with the budget and the co-author methods review on the critical path.
 
 ### Start Here (2-minute version)
 Open the grant document and delete the first filler sentence of the abstract.
@@ -55,7 +55,7 @@ Open the grant document and delete the first filler sentence of the abstract.
 ### Ordered Checklist
 1. [ ] Trim the abstract to the word limit.
 2. [ ] Finish the budget section.
-3. [ ] Send the methods section to Sarah for review.
+3. [ ] Send the methods section to a co-author for review.
 4. [ ] Email the letters-of-support contacts.
 
 ### Time-Block Schedule
@@ -63,5 +63,5 @@ Open the grant document and delete the first filler sentence of the abstract.
 | :--- | :--- | :--- | :--- |
 | Trim the abstract | 15 min | Low | [ ] |
 | Finish the budget section | 45 min | High | [ ] |
-| Send methods to Sarah | 15 min | Low | [ ] |
+| Send methods to co-author | 15 min | Low | [ ] |
 | Email support contacts | 25 min | Medium | [ ] |
