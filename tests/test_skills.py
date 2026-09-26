@@ -25,7 +25,7 @@ class TestDxSkillsIntegrity(unittest.TestCase):
         self.assertIn(f"version: {version}", content, "Master SKILL.md version must match VERSION file")
 
     def test_modular_skills_exist(self):
-        expected_skills = ["dx-dump", "dx-read", "dx-write", "dx-interview", "dx-map", "dx-voice"]
+        expected_skills = ["dx-dump", "dx-read", "dx-write", "dx-interview", "dx-map", "dx-voice", "dx-plan"]
         for skill in expected_skills:
             skill_path = os.path.join(ROOT_DIR, "skills", skill, "SKILL.md")
             self.assertTrue(os.path.isfile(skill_path), f"SKILL.md must exist for {skill}")
@@ -48,6 +48,8 @@ class TestDxSkillsIntegrity(unittest.TestCase):
             os.path.join(ROOT_DIR, "skills", "dx-read", "templates", "academic_paper_distill.md"),
             os.path.join(ROOT_DIR, "skills", "dx-read", "templates", "meeting_transcript_digest.md"),
             os.path.join(ROOT_DIR, "skills", "dx-read", "templates", "policy_memo_reframe.md"),
+            os.path.join(ROOT_DIR, "skills", "dx-plan", "templates", "daily_execution_plan.md"),
+            os.path.join(ROOT_DIR, "skills", "dx-plan", "templates", "project_breakdown_plan.md"),
         ]
         for t in expected_templates:
             self.assertTrue(os.path.isfile(t), f"Template must exist: {t}")
