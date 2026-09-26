@@ -1,0 +1,26 @@
+{
+  "name": "DxSkills",
+  "install": "python3 -m pip install --upgrade pip && python3 -m pip install -r requirements-dev.txt",
+  "terminals": [
+    {
+      "name": "gateway",
+      "command": "python3 server/gateway.py",
+      "description": "DxSkills cognitive gateway HTTP API on port 8080. Endpoints: GET /health, GET /metrics, POST /compile."
+    },
+    {
+      "name": "web",
+      "command": "python3 -m http.server 8000",
+      "description": "Static web playground server. Open http://localhost:8000/index.html for the in-browser D-Mode compiler."
+    }
+  ],
+  "ports": [
+    {
+      "name": "web playground",
+      "port": 8000
+    },
+    {
+      "name": "gateway api",
+      "port": 8080
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+# DxSkills development dependencies
+# Runtime code (server/, scripts/, CLI, web playground) uses only the Python standard library.
+# The test suite (tests/) uses pytest as the test runner.
+pytest>=8,<10
