@@ -1490,11 +1490,11 @@ def main():
     p_shed.add_argument("--json", "-j", action="store_true", help="Output raw JSON load shedding telemetry")
     
     # resilience / break
-    p_resilience = subparsers.add_parser("resilience", aliases=["break", "fatigue"], help="Autonomous cognitive spatial dynamic micro-break and fatigue resiliency harness")
-    p_resilience.add_argument("--minutes", "-m", type=float, default=25.0, help="Session duration in minutes (default: 25.0)")
-    p_resilience.add_argument("--fixations", "-k", type=int, default=60, help="Simulated or tracked fixation sample count (default: 60)")
-    p_resilience.add_argument("--regression-rate", "-r", type=float, default=0.20, help="Saccadic regression rate 0.0 to 1.0 (default: 0.20)")
-    p_resilience.add_argument("--mean-dwell", "-d", type=float, default=260.0, help="Mean fixation dwell time in ms (default: 260.0)")
+    p_resilience = subparsers.add_parser("resilience", aliases=["break", "fatigue"], help="Run a fatigue formula on numbers you pass. Does not track eyes.")
+    p_resilience.add_argument("--minutes", "-m", type=float, default=None, help="Minutes you want the formula to use. No default session.")
+    p_resilience.add_argument("--fixations", "-k", type=int, default=None, help="Fixation count you want the formula to use. Not an eye-tracking sample.")
+    p_resilience.add_argument("--regression-rate", "-r", type=float, default=None, help="Regression rate from 0.0 to 1.0 that you pass. Not a measured rate.")
+    p_resilience.add_argument("--mean-dwell", "-d", type=float, default=None, help="Mean dwell in ms that you pass. Not a measured dwell.")
     p_resilience.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_resilience.add_argument("--svg", "-s", default="", help="Output breathing cadence SVG visualizer filepath")
     p_resilience.add_argument("--json", "-j", action="store_true", help="Output raw JSON fatigue telemetry")
@@ -3523,39 +3523,49 @@ def main():
                 f.write(svg_code)
             print(f"[DxSkills] Cognitive Stress Gauge SVG exported to: {args.svg}")
     elif args.command in ["resilience", "break", "fatigue"]:
-        import scripts.fatigue_resilience as fr
-        harness = fr.FatigueResilienceHarness()
-        step_denom = max(1, int(1.0 / max(0.01, args.regression_rate)))
-        samples = [
-            fr.SaccadeSample(
-                timestamp=i * 0.35,
-                fixation_duration_ms=args.mean_dwell,
-                jump_amplitude_deg=2.5,
-                is_regression=(i % step_denom == 0),
-            )
-            for i in range(args.fixations)
-        ]
-        telemetry = harness.analyze_saccade_stream(samples, session_duration_min=args.minutes)
-        protocol = harness.generate_break_protocol(telemetry)
-
-        if args.json:
-            out = {
-                "telemetry": telemetry.to_dict(),
-                "protocol": protocol.to_dict(),
-            }
-            print(json.dumps(out, indent=2))
+        given = {
+            "minutes": args.minutes,
+            "fixations": args.fixations,
+            "regression_rate": args.regression_rate,
+            "mean_dwell": args.mean_dwell,
+        }
+        missing = [name for name, value in given.items() if value is None]
+        if len(missing) == 4:
+            print("No session numbers were given. No eyes were tracked.")
+            print("Example: python3 scripts/dx_cli.py fatigue --minutes 10 --fixations 12 --regression-rate 0.1 --mean-dwell 200")
+        elif missing:
+            print("Some formula inputs were not given: " + ", ".join(missing) + ".")
+            print("No score was printed. No eyes were tracked.")
         else:
-            print("\n" + harness.generate_markdown_report(telemetry, protocol))
-
-        if args.canvas:
-            harness.export_spatial_canvas(protocol, output_path=args.canvas)
-            print(f"\n[DxSkills] Micro-Break .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = harness.export_svg_breathing_visualizer(protocol)
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(svg_code)
-            print(f"[DxSkills] Breathing Visualizer SVG exported to: {args.svg}")
+            reg_comp = min(100.0, args.regression_rate * 250.0)
+            fix_comp = min(100.0, max(0.0, (args.mean_dwell - 200.0) / 1.8))
+            dur_comp = min(100.0, args.minutes * 2.2)
+            score = round(0.35 * reg_comp + 0.35 * fix_comp + 0.30 * dur_comp, 1)
+            score = max(0.0, min(100.0, score))
+            payload = {
+                "formula": True,
+                "eyes_tracked": False,
+                "minutes": args.minutes,
+                "fixations": args.fixations,
+                "regression_rate": args.regression_rate,
+                "mean_dwell_ms": args.mean_dwell,
+                "formula_result": score,
+                "bands": "under 35, under 55, under 75, else 75 or more",
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("")
+                print("=== [DxSkills: fatigue formula] ===")
+                print(f"Formula result: {score} on {args.minutes} minutes, {args.fixations} fixations, regression rate {args.regression_rate}, and mean dwell {args.mean_dwell} ms.")
+                print("This figure is a formula on those numbers, not eye-tracking telemetry and not a measured fatigue index.")
+                print("No session was observed. Bands in the formula are under 35, under 55, under 75, and 75 or more.")
+                print("")
+                print("### General note")
+                print("Background only, not a prescription for this run.")
+                print("- A short break from the screen is a general suggestion. It is not evidence that you are fatigued.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. Those files used to draw a simulated session.")
     elif args.command in ["reflector", "bias", "blindspot"]:
         import scripts.metacognitive_reflector as mr
         reflector = mr.MetacognitiveReflector()
