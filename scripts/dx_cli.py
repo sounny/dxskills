@@ -292,19 +292,60 @@ def cmd_voice(args):
     print(clean_speech_chunk(text))
     print("No canvas, svg, or markdown file was written.")
 
+def mermaid_label(text):
+    clean = str(text).replace("\\", " ").replace('"', "'").replace("[", "(").replace("]", ")")
+    clean = clean.replace("\n", " ").replace("\r", " ").strip()
+    if len(clean) > 72:
+        clean = clean[:69] + "..."
+    return clean or "not given"
+
+def phrase_at(phrases, index):
+    if 0 <= index < len(phrases) and phrases[index].strip():
+        return phrases[index].strip()
+    return "not given"
+
+def show_gap(value):
+    if value == "not given":
+        return "not given. This was not in the note."
+    return value
+
+def numbers_written(text):
+    found = []
+    pattern = r"(?<![\w.])\$?\d{1,3}(?:,\d{3})+(?:\.\d+)?%?|(?<![\w.])\$?\d+(?:\.\d+)?%?"
+    for match in re.finditer(pattern, text or ""):
+        raw = match.group(0)
+        numeric = raw.replace("$", "").replace("%", "").replace(",", "")
+        found.append((raw, float(numeric)))
+    return found
+
+def format_amount(value):
+    if abs(value - round(value)) < 1e-9:
+        return str(int(round(value)))
+    return f"{value:.4f}".rstrip("0").rstrip(".")
+
+def arithmetic_lines(text):
+    found = numbers_written(text)
+    if not found:
+        return ["No numbers were in the note. No price, margin, or revenue was added."], found, None
+    listed = ", ".join(raw for raw, _value in found)
+    total = sum(value for _raw, value in found)
+    parts = " + ".join(format_amount(value) for _raw, value in found)
+    line = (
+        f"Numbers in the note: {listed}. "
+        f"Sum ({parts}) = {format_amount(total)}. "
+        "This is arithmetic on the numbers you wrote, not a new finding."
+    )
+    return [line], found, total
+
 def cmd_storyboard(args):
+    text = optional_text(getattr(args, "input", ""))
     if getattr(args, "canvas", "") or getattr(args, "svg", ""):
+        if not text.strip():
+            print("No notes were given. No canvas or svg was written. No shots were invented.")
+            return
         import scripts.spatial_storyboard as ss
-        input_text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-            "Establish the friction: Linear text walls overload phonological working memory.\n"
-            "Inciting shift: Non-linear thinkers struggle to communicate complex holistic architectures through sequential slides.\n"
-            "Core exploration: The DxSkills cognitive engine decouples spatial mental models from linear output streams.\n"
-            "Technical deep dive: High-dimensional vector similarity clusters ideas into constellation topologies.\n"
-            "Multi-vault bridge: Cross-repository synchronizers identify dangling wikilinks and orphan nodes in real time.\n"
-            "Resolution vista: The user presents a hardened spatial canvas that disarms reductionist critics instantly."
-        )
-        storyboard, canvas_data, svg_code = ss.run_storyboard(
-            input_text,
+        storyboard, _canvas_data, _svg_code = ss.run_storyboard(
+            text,
             title=getattr(args, "title", None) or None,
             output_canvas=getattr(args, "canvas", None) or None,
             output_svg=getattr(args, "svg", None) or None
@@ -313,434 +354,462 @@ def cmd_storyboard(args):
             print(json.dumps(storyboard, indent=2))
         else:
             print(f"\n[DxSkills] Sequenced {storyboard['total_shots']} shots across 3 acts ({storyboard['total_duration_seconds']}s total).")
+            print("Shots come from your notes. No shot was added.")
             if getattr(args, "canvas", None):
                 print(f"  - Canvas: {args.canvas}")
             if getattr(args, "svg", None):
                 print(f"  - SVG: {args.svg}")
         return
 
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "We are addressing the state clean energy transition. Outdated grid transmission lines fail under peak summer demand. "
-        "We must deploy decentralized microgrids, streamline local storage permits, and incentivize commercial battery retrofits. "
-        "Phase 1 begins next month with five pilot counties to prove grid resilience before the statewide rollout."
-    )
-    title = getattr(args, "title", "") or "Executive Visual Spatial Storyboard"
-    
-    raw_sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
-    room1_text = raw_sentences[0] if len(raw_sentences) > 0 else "Baseline facts and core operating context."
-    room2_text = raw_sentences[1] if len(raw_sentences) > 1 else "Critical friction point and stakeholder cost."
-    room3_text = raw_sentences[2] if len(raw_sentences) > 2 else "Strategic solution pillars and active interventions."
-    room4_text = raw_sentences[3] if len(raw_sentences) > 3 else "Immediate next milestone and accountability."
-    
-    mermaid_diag = f"""```mermaid
-graph LR
-    subgraph Room1 ["Room 1: Context Porch"]
-        R1["{room1_text[:36]}..."]
-    end
-    subgraph Room2 ["Room 2: Catalyst Atrium"]
-        R2["{room2_text[:36]}..."]
-    end
-    subgraph Room3 ["Room 3: Engine Hall"]
-        R3["{room3_text[:36]}..."]
-    end
-    subgraph Room4 ["Room 4: Horizon Terrace"]
-        R4["{room4_text[:36]}..."]
-    end
-
-    R1 --> R2
-    R2 --> R3
-    R3 --> R4
-```"""
-
+    phrases = phrases_from_notes(text)
+    title = getattr(args, "title", "") or "4-room storyboard"
+    room_specs = [
+        ("room1", "Context Porch", "Room 1: Context Porch", "R1", "Core tension"),
+        ("room2", "Catalyst Atrium", "Room 2: Catalyst Atrium", "R2", "Friction point"),
+        ("room3", "Engine Hall", "Room 3: Engine Hall", "R3", "Action pillars"),
+        ("room4", "Horizon Terrace", "Room 4: Horizon Terrace", "R4", "Immediate next move"),
+    ]
+    rooms = []
+    for index, spec in enumerate(room_specs):
+        key, name, label, node_id, slot_label = spec
+        rooms.append({
+            "key": key,
+            "name": name,
+            "label": label,
+            "node": node_id,
+            "slot": slot_label,
+            "content": phrase_at(phrases, index),
+        })
+    extra = phrases[4:]
+    mermaid_diag = "\n".join([
+        "```mermaid",
+        "graph LR",
+        *[
+            f'    subgraph Room{i} ["{room["label"]}"]\n        {room["node"]}["{mermaid_label(room["content"])}"]\n    end'
+            for i, room in enumerate(rooms, 1)
+        ],
+        "",
+        "    R1 --> R2",
+        "    R2 --> R3",
+        "    R3 --> R4",
+        "```",
+    ])
+    bluf = phrases[0] if phrases else "not given. This was not in the note."
+    block_heads = [
+        "### Blue Block: Problem and Baseline",
+        "### Amber Block: The Critical Pivot",
+        "### Emerald Block: The Strategic Solution",
+        "### Violet Block: The Horizon Call to Action",
+    ]
     report_lines = [
         f"# {title}",
         "",
-        "> **Cognitive Archetype:** Gavin Newsom (Unscripted Speech & Spatial Memory Briefing)",
-        f"> **Bottom Line Up Front (BLUF):** {room1_text}. Next immediate milestone: {room4_text}.",
+        "> **Cognitive Archetype:** Gavin Newsom (Unscripted Speech and Spatial Memory Briefing)",
+        "> **What this is:** Your words in a 4-room frame. No finding was added.",
+        f"> **Bottom Line Up Front (BLUF):** {bluf}",
         "",
-        "## 🏛️ Spatial Memory Architecture (The Four Rooms)",
+        "## Spatial Memory Architecture (The Four Rooms)",
         mermaid_diag,
         "",
-        "## 🎨 Color-Coded Thematic Concept Blocks",
+        "## Color-Coded Thematic Concept Blocks",
         "",
-        "### 🔵 Blue Block: Problem & Baseline",
-        f"- **Core Tension:** {room1_text}",
-        "- **Anchor:** Visualize the existing system baseline and indisputable ground truths.",
-        "",
-        "### 🟡 Amber Block: The Critical Pivot",
-        f"- **Friction Point:** {room2_text}",
-        "- **Anchor:** Visualize the structural fracture or capacity bottleneck.",
-        "",
-        "### 🟢 Emerald Block: The Strategic Solution",
-        f"- **Action Pillars:** {room3_text}",
-        "- **Anchor:** Visualize the three supporting columns holding up the bridge.",
-        "",
-        "### 🟣 Violet Block: The Horizon Call to Action",
-        f"- **Immediate Next Move:** {room4_text}",
-        "- **Anchor:** Visualize the finish line and immediate 48-hour delivery.",
-        "",
-        "## 🎙️ Executive Speaking Cards (Zero Teleprompter)",
+    ]
+    for head, room in zip(block_heads, rooms):
+        report_lines.append(head)
+        report_lines.append(f"- **{room['slot']}:** {show_gap(room['content'])}")
+        report_lines.append("")
+    if extra:
+        report_lines.append("### Also in the note")
+        for phrase in extra:
+            report_lines.append(f"- {phrase}")
+        report_lines.append("")
+    report_lines.extend([
+        "## Executive Speaking Cards (Zero Teleprompter)",
         "| Sequence | Visual Room | Key Speaking Anchor | Suggested Timing |",
         "| :--- | :--- | :--- | :--- |",
-        f"| **01. Opening** | The Context Porch | State the outcome first: {room1_text[:40]} | 2 min |",
-        f"| **02. Tension** | The Catalyst Atrium | Contrast limitation with opportunity: {room2_text[:40]} | 3 min |",
-        f"| **03. Deep Dive** | The Engine Hall | Walk through action pillars with spatial gestures | 8 min |",
-        f"| **04. Close** | The Horizon Terrace | Close with direct accountability: {room4_text[:40]} | 2 min |",
-    ]
-    
+    ])
+    sequences = ["01. Opening", "02. Tension", "03. Deep Dive", "04. Close"]
+    for seq, room in zip(sequences, rooms):
+        report_lines.append(
+            f"| **{seq}** | {room['name']} | {show_gap(room['content'])} | not given. This was not in the note. |"
+        )
+    report_lines.append("")
+    if phrases:
+        report_lines.append("Rooms marked not given were not in the note.")
+    else:
+        report_lines.append("No note was given. Empty rooms stay not given.")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": bluf,
+        "added_findings": False,
+        "rooms": {
+            room["key"]: {"name": room["name"], "content": room["content"]}
+            for room in rooms
+        },
+        "also_in_the_note": extra,
+        "mermaid": mermaid_diag,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": f"{room1_text}. Next immediate milestone: {room4_text}.",
-            "rooms": {
-                "room1": {"name": "Context Porch", "content": room1_text},
-                "room2": {"name": "Catalyst Atrium", "content": room2_text},
-                "room3": {"name": "Engine Hall", "content": room3_text},
-                "room4": {"name": "Horizon Terrace", "content": room4_text}
-            },
-            "mermaid": mermaid_diag
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
         print(f"\n[DxSkills] Visual storyboard written to: {args.output}")
 
 def cmd_napkin(args):
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "We are building a lightweight form backend for frontend developers. Most developers pay $30 per month "
-        "to third-party form services that inject heavy scripts. We provide a 2.5KB script with zero API keys and "
-        "sub-15ms edge processing for $4 per month, retaining an 85% gross margin."
-    )
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
     title = getattr(args, "title", "") or "The Back-of-a-Beer-Mat / Napkin Test"
-    price = getattr(args, "price", 4.0) or 4.0
-    cost = getattr(args, "cost", 0.60) or 0.60
-    margin = price - cost
-    margin_pct = int((margin / price) * 100) if price > 0 else 0
-    
-    sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
-    value_exchange = sentences[0] if sentences else "Customer pays for direct operational relief."
-    friction = sentences[1] if len(sentences) > 1 else "Existing market solutions are overpriced and bloated."
-    solution = sentences[2] if len(sentences) > 2 else "Featherweight local architecture delivering instant speed."
-    
-    mermaid_diag = """```mermaid
-graph LR
-    A["Customer Friction"] -->|"Pays $"| B["Our Simple Engine"]
-    B -->|"Delivers Instant Relief"| C["Delighted Customer"]
-    B -->|"Retains 80%+ Margin"| D["Reinvested in Flywheel"]
-```"""
-
+    price = getattr(args, "price", None)
+    cost = getattr(args, "cost", None)
+    slots = [phrase_at(phrases, i) for i in range(4)]
+    extra = phrases[4:]
+    value_exchange, lever1, lever2, lever3 = slots
+    math_lines = []
+    margin = None
+    margin_pct = None
+    if price is not None and cost is not None:
+        margin = price - cost
+        math_lines.append(f"Unit price you passed: {format_amount(price)}")
+        math_lines.append(f"Unit cost you passed: {format_amount(cost)}")
+        math_lines.append(
+            f"Price minus cost: {format_amount(margin)}. "
+            "This is arithmetic on the price and cost you passed, not a finding from the note."
+        )
+        if price != 0:
+            pct = (margin / price) * 100
+            margin_pct = int(round(pct)) if abs(pct - round(pct)) < 1e-9 else pct
+            math_lines.append(f"Margin percent from that arithmetic: {format_amount(pct)}%.")
+        else:
+            math_lines.append("Margin percent was not calculated because the price you passed is 0.")
+    elif price is not None or cost is not None:
+        math_lines.append("Only one of price or cost was passed. No margin was calculated.")
+        if price is not None:
+            math_lines.append(f"Unit price you passed: {format_amount(price)}")
+        if cost is not None:
+            math_lines.append(f"Unit cost you passed: {format_amount(cost)}")
+    else:
+        note_lines, _found, _total = arithmetic_lines(text)
+        if numbers_written(text):
+            math_lines.extend(note_lines)
+            math_lines.append("Those numbers were not labeled as a price or a margin, so none was added.")
+        else:
+            math_lines.append("not given. No price, cost, or margin was in the note.")
+    mermaid_diag = "\n".join([
+        "```mermaid",
+        "graph LR",
+        f'    A["{mermaid_label(value_exchange)}"] --> B["{mermaid_label(lever1)}"]',
+        f'    B --> C["{mermaid_label(lever2)}"]',
+        f'    C --> D["{mermaid_label(lever3)}"]',
+        "```",
+    ])
     report_lines = [
         f"# {title}",
         "",
-        "> **Cognitive Archetype:** Richard Branson (Radical Simplification & Core Value Exchange)",
-        f"> **Bottom Line Up Front (BLUF):** {value_exchange}",
+        "> **Cognitive Archetype:** Richard Branson (Radical Simplification and Core Value Exchange)",
+        "> **What this is:** Your words in a beer-mat frame. No finding or number was added.",
+        f"> **Bottom Line Up Front (BLUF):** {show_gap(value_exchange)}",
         "",
-        "## 🍺 The Beer-Mat Canvas",
+        "## The Beer-Mat Canvas",
         "```text",
         "+-------------------------------------------------------------+",
         "|                     THE BEER MAT TEST                       |",
         "|                                                             |",
-        f"| 1. CORE VALUE EXCHANGE:                                     |",
-        f"|    {value_exchange[:56]:<56} |",
+        "| 1. CORE VALUE EXCHANGE:                                     |",
+        f"|    {value_exchange}",
         "|                                                             |",
         "| 2. THE THREE ESSENTIAL LEVERS:                              |",
-        f"|    - Lever 1 (Acquisition): {friction[:40]:<40} |",
-        f"|    - Lever 2 (Advantage):   {solution[:40]:<40} |",
-        f"|    - Lever 3 (Economics):   Retain {margin_pct}% gross margin on every unit  |",
+        f"|    - Lever 1: {show_gap(lever1)}",
+        f"|    - Lever 2: {show_gap(lever2)}",
+        f"|    - Lever 3: {show_gap(lever3)}",
         "|                                                             |",
         "| 3. BACK-OF-THE-ENVELOPE MATH:                               |",
-        f"|    Unit price:         $ {price:<6.2f}                             |",
-        f"|    Cost to deliver:    $ {cost:<6.2f}                             |",
-        f"|    Gross cash profit:  $ {margin:<6.2f} ({margin_pct}%)                     |",
+    ]
+    for line in math_lines:
+        report_lines.append(f"|    {line}")
+    report_lines.extend([
         "|                                                             |",
         "| 4. THE ACID TEST:                                           |",
         "|    Can a 10-year-old explain this business to their friend? |",
         "+-------------------------------------------------------------+",
         "```",
         "",
-        "## 🔄 Core Value Exchange Flow",
+        "## Core Value Exchange Flow",
         mermaid_diag,
         "",
-        "## ⚡ Radical Simplification Matrix",
+        "## Radical Simplification Matrix",
         "| Dimension | Complicated Corporate Version | The Beer-Mat Truth |",
         "| :--- | :--- | :--- |",
-        f"| **The Value** | Multi-stakeholder transformation platform | {value_exchange[:60]} |",
-        f"| **The Problem** | Structural legacy friction across verticals | {friction[:60]} |",
-        f"| **The Engine** | Proprietary algorithmically enabled stack | {solution[:60]} |",
-        f"| **The Math** | Multi-year recurring cashflow model | Keeps ${margin:.2f} profit out of every ${price:.2f} billed |",
-    ]
-    
+        f"| **The Value** | not given. This was not in the note. | {show_gap(value_exchange)} |",
+        f"| **The Problem** | not given. This was not in the note. | {show_gap(lever1)} |",
+        f"| **The Engine** | not given. This was not in the note. | {show_gap(lever2)} |",
+        f"| **The Math** | not given. This was not in the note. | {math_lines[0]} |",
+    ])
+    if extra:
+        report_lines.append("")
+        report_lines.append("## Also in the note")
+        for phrase in extra:
+            report_lines.append(f"- {phrase}")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": value_exchange if value_exchange != "not given" else "not given. This was not in the note.",
+        "added_findings": False,
+        "value_exchange": value_exchange,
+        "levers": [lever1, lever2, lever3],
+        "unit_economics": {
+            "price": price,
+            "cost": cost,
+            "margin": margin,
+            "margin_pct": margin_pct,
+        },
+        "mermaid": mermaid_diag,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": value_exchange,
-            "value_exchange": value_exchange,
-            "unit_economics": {
-                "price": price,
-                "cost": cost,
-                "margin": margin,
-                "margin_pct": margin_pct
-            },
-            "mermaid": mermaid_diag
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
         print(f"\n[DxSkills] Beer-mat test written to: {args.output}")
 
 def cmd_spec(args):
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "We need to build an executive cognitive compiler. The front gate validates raw voice or text payloads. "
-        "The processing engine extracts intent and compiles spatial relationships into Mermaid diagrams. "
-        "The persistent vault writes clean markdown and canvas files locally with zero cloud dependencies. "
-        "The executive terrace renders high-signal BLUF dashboards with zero em dashes."
-    )
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
     title = getattr(args, "title", "") or "Executive Markdown Specification"
-    
-    sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
-    bluf = sentences[0] if sentences else "Whole-system architecture compiled from engineering notes."
-    
-    mermaid_diag = """```mermaid
-graph TD
-    subgraph IngressGate ["The Front Gate: Ingress & Validation"]
-        A["Raw User Input / Audio Stream"] --> B["Payload Sanity Check"]
-    end
-
-    subgraph CoreEngine ["The Workshop: Processing Engine"]
-        B --> C["Intent Extraction (Pass 1)"]
-        C --> D["Spatial Topology Engine (Pass 2)"]
-    end
-
-    subgraph VaultStorage ["The Archive: Persistent Vault"]
-        D --> E["Local Markdown Artifact"]
-        D --> F["Vector Graph / Canvas Node"]
-    end
-
-    subgraph OutputTerrace ["The Display: Executive Surface"]
-        E --> G["Clean BLUF Dashboard"]
-        F --> H["Live Mermaid Visualization"]
-    end
-```"""
-
+    bluf = phrases[0] if phrases else "not given. This was not in the note."
+    tradeoff_phrases = phrases[1:4]
+    action_phrases = phrases[4:]
+    diagram_phrases = phrases or ["not given"]
+    mermaid_lines = ["```mermaid", "graph TD"]
+    ids = []
+    for i, phrase in enumerate(diagram_phrases, 1):
+        node_id = f"n{i}"
+        ids.append(node_id)
+        mermaid_lines.append(f'    {node_id}["{mermaid_label(phrase)}"]')
+    for left, right in zip(ids, ids[1:]):
+        mermaid_lines.append(f"    {left} --> {right}")
+    mermaid_lines.append("```")
+    mermaid_diag = "\n".join(mermaid_lines)
     report_lines = [
         f"# {title}",
         "",
-        "> **Cognitive Archetype:** Steve Jobs (Whole-System Spatial Metaphors & Direct Technical Clarity)",
+        "> **Cognitive Archetype:** Steve Jobs (Whole-System Spatial Metaphors and Direct Technical Clarity)",
+        "> **What this is:** Your words in a spec frame. No finding was added.",
         f"> **Bottom Line Up Front (BLUF):** {bluf}",
         "",
-        "## 🏛️ Whole-System Spatial Metaphor",
+        "## Whole-System Spatial Metaphor",
         mermaid_diag,
         "",
-        "## ⚖️ Technical Tradeoff & Decision Matrix",
+        "## Technical Tradeoff & Decision Matrix",
         "| Architectural Dilemma | Chosen Direction | Rejected Alternative | Decisive Rationale |",
         "| :--- | :--- | :--- | :--- |",
-        "| **State Persistence** | Pure Client-Side Local State | Heavy Cloud Database | Zero login friction; instant launch; complete user privacy. |",
-        "| **Diagram Engine** | Browser-Native Mermaid.js | Heavy WebGL Bundle | Lightweight footprint; plain-text exportable; renders everywhere. |",
-        "| **API Protocol** | Model Context Protocol (MCP) | Custom REST Endpoints | Universal native compatibility across Claude, Cursor, and Antigravity. |",
-        "| **Prose Scaffolding** | Direct Grounded Markdown | Long Narrative Outlines | Eliminates reading drag and cognitive fatigue. |",
+    ]
+    tradeoffs = []
+    if tradeoff_phrases:
+        for phrase in tradeoff_phrases:
+            report_lines.append(f"| {phrase} | not given. This was not in the note. | not given. This was not in the note. | not given. This was not in the note. |")
+            tradeoffs.append({
+                "dilemma": phrase,
+                "chosen": "not given",
+                "rejected": "not given",
+                "rationale": "not given. This was not in the note.",
+            })
+    else:
+        report_lines.append("| not given. This was not in the note. | not given. This was not in the note. | not given. This was not in the note. | not given. This was not in the note. |")
+    report_lines.extend([
         "",
-        "## ⚡ Executive Specification Breakdown",
+        "## Executive Specification Breakdown",
         "### 1. User Experience Guarantee",
-        "- **Comprehension Window:** Grasp the entire system topology in under 5 seconds.",
-        "- **Input Tolerance:** Zero formatting tax on input. Accept messy shorthand without complaint.",
-        "- **Latency Target:** Sub-50ms local compilation for text and diagrams.",
+        "- not given. This was not in the note.",
         "",
         "### 2. Core Technical Constraints",
-        "- **Zero External Dependency:** All essential compilation runs locally or in-browser.",
-        "- **Zero AI Fluff:** No synthetic filler, no conversational preambles, strictly zero em dashes.",
-        "- **Deterministic Format:** Always lead with BLUF, followed by Mermaid diagram and decisions.",
+        "- not given. This was not in the note.",
         "",
         "### 3. Concrete Action Sequence",
-        "1. [ ] Wire up input stream directly to intent parser.",
-        "2. [ ] Render visual Mermaid state graph before generating prose.",
-        "3. [ ] Run automated lint gate to enforce zero em dashes.",
-        "4. [ ] Export single self-contained deliverable.",
-    ]
-    
+    ])
+    if action_phrases:
+        for phrase in action_phrases:
+            report_lines.append(f"- {phrase}")
+    else:
+        report_lines.append("- not given. This was not in the note.")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": bluf,
+        "added_findings": False,
+        "phrases": phrases,
+        "mermaid": mermaid_diag,
+        "tradeoffs": tradeoffs,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": bluf,
-            "mermaid": mermaid_diag,
-            "tradeoffs": [
-                {"dilemma": "State Persistence", "chosen": "Pure Client-Side Local State", "rationale": "Zero login friction and privacy."},
-                {"dilemma": "Diagram Engine", "chosen": "Browser-Native Mermaid.js", "rationale": "Lightweight plain-text rendering."},
-                {"dilemma": "API Protocol", "chosen": "Model Context Protocol (MCP)", "rationale": "Universal IDE compatibility."}
-            ]
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
         print(f"\n[DxSkills] Executive specification written to: {args.output}")
 
 def cmd_taxonomy(args):
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "We are managing complex systems. Instead of SKU-9842 and SKU-9843, we name the base API router River Delta, "
-        "the caching cluster The Workbench, and the persistent storage The Archive Vault. For assembly, unpack components, "
-        "align rails, turn cam locks 90 degrees, and anchor safety bracket to wall."
-    )
-    title = getattr(args, "title", "") or "Visual Mnemonic Taxonomy & Procedural Schema"
-    
-    mermaid_diag = """```mermaid
-graph TD
-    subgraph Step1 ["Step 1: Unpack & Inspect"]
-        A["Verify Components: Rails, Screws, Brackets"]
-    end
-    subgraph Step2 ["Step 2: Base Alignment"]
-        B["Lay Side Rail Flat on Floor"]
-        C["Slot Base Board into Bottom Groove"]
-    end
-    subgraph Step3 ["Step 3: Mechanical Fastening"]
-        D["Turn Cam Locks 90 Degrees Clockwise"]
-    end
-    subgraph Step4 ["Step 4: Upright Position"]
-        E["Rotate Unit 90 Degrees Upright"]
-        F["Anchor Safety Bracket to Wall"]
-    end
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-```"""
-
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
+    title = getattr(args, "title", "") or "Visual Mnemonic Taxonomy and Procedural Schema"
+    bluf = phrases[0] if phrases else "not given. This was not in the note."
+    rows = phrases or ["not given"]
+    mermaid_lines = ["```mermaid", "graph TD"]
+    ids = []
+    for i, phrase in enumerate(rows, 1):
+        node_id = f"s{i}"
+        ids.append(node_id)
+        mermaid_lines.append(f'    {node_id}["{mermaid_label(phrase)}"]')
+    for left, right in zip(ids, ids[1:]):
+        mermaid_lines.append(f"    {left} --> {right}")
+    mermaid_lines.append("```")
+    mermaid_diag = "\n".join(mermaid_lines)
     report_lines = [
         f"# {title}",
         "",
-        "> **Cognitive Archetype:** Ingvar Kamprad (Visual Mnemonic Taxonomy & Wordless Assembly)",
-        "> **Bottom Line Up Front (BLUF):** Replace abstract alphanumeric codes and dense procedural text with memorable physical categories and step-by-step visual flows.",
+        "> **Cognitive Archetype:** Ingvar Kamprad (Visual Mnemonic Taxonomy and Wordless Assembly)",
+        "> **What this is:** Your words in a taxonomy frame. No mnemonic was added.",
+        f"> **Bottom Line Up Front (BLUF):** {bluf}",
         "",
-        "## 🧭 Visual Mnemonic Taxonomy",
-        "| Abstract Code / Term | Mnemonic Category | Physical Analogy | Cognitive Anchor |",
+        "## Visual Mnemonic Taxonomy",
+        "| Phrase from the note | Mnemonic you wrote | Physical analogy you wrote | Cognitive anchor you wrote |",
         "| :--- | :--- | :--- | :--- |",
-        "| **API Gateway Routing** | River Delta | Water distributing to branches | Fast routing, split flows |",
-        "| **In-Memory Cache (Redis)** | The Workbench | Tools laid out right in front | Zero-reach instant retrieval |",
-        "| **Database Storage (SQL)** | The Archive Vault | Heavy stone walls with locks | Permanent durability |",
-        "| **Edge CDN Delivery** | Local Outposts | Stashes placed across terrain | Low latency, nearby stock |",
+    ]
+    taxonomy = []
+    for phrase in rows:
+        mnemonic = "not given"
+        analogy = "not given"
+        report_lines.append(f"| {phrase} | {mnemonic}. This was not in the note. | {analogy}. This was not in the note. | not given. This was not in the note. |")
+        taxonomy.append({"code": phrase, "mnemonic": mnemonic, "analogy": analogy})
+    report_lines.extend([
         "",
-        "## 📐 Pictorial Assembly Schema (Step-by-Step Flow)",
+        "## Pictorial Assembly Schema (Step-by-Step Flow)",
         mermaid_diag,
         "",
-        "## 📦 Spatial Volume & Geometric Verification",
+        "## Spatial Volume & Geometric Verification",
         "| Step | Component | Spatial Action | Verification Rule |",
         "| :--- | :--- | :--- | :--- |",
-        "| **01** | Base & Rail | Align grooved edges inward. | Both grooves form continuous track. |",
-        "| **02** | Shelves | Insert wooden dowels by hand. | Zero tools needed; flush with face. |",
-        "| **03** | Fasteners | Tighten locking screws. | Rotate 1/4 turn until firm stop. |",
-        "| **04** | Anchoring | Fix bracket directly into wall stud. | Unit cannot tilt forward under load. |",
-    ]
-    
+    ])
+    for i, phrase in enumerate(rows, 1):
+        report_lines.append(f"| {i:02d} | {phrase} | not given. This was not in the note. | not given. This was not in the note. |")
+    if not phrases:
+        report_lines.append("")
+        report_lines.append("No note was given. No category or assembly step was invented.")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": bluf,
+        "added_findings": False,
+        "taxonomy": taxonomy if phrases else [],
+        "mermaid": mermaid_diag,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": "Replace abstract codes with memorable physical categories and pictorial node flows.",
-            "taxonomy": [
-                {"code": "API Gateway", "mnemonic": "River Delta", "analogy": "Water distributing to branches"},
-                {"code": "Redis Cache", "mnemonic": "The Workbench", "analogy": "Tools laid out right in front"},
-                {"code": "SQL Database", "mnemonic": "The Archive Vault", "analogy": "Heavy stone walls with locks"}
-            ],
-            "mermaid": mermaid_diag
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
         print(f"\n[DxSkills] Mnemonic taxonomy written to: {args.output}")
 
 def cmd_finance(args):
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "Gross Revenue: $120,450. Delivery Costs / COGS: $35,120. Operational Overhead: $45,300. "
-        "Net Profit Retained: $30,030. Bank Cash Balance: $360,000. Runway is over 12 months with positive cash flow."
-    )
-    title = getattr(args, "title", "") or "Financial & Metric Conversational Digest"
-    
-    mermaid_diag = """```mermaid
-graph TD
-    A["Gross Inflows: $120,000"] --> B["The Operating Funnel"]
-    B -->|Direct Delivery: $35,000| C["Gross Profit: $85,000 - 71%"]
-    C -->|Overhead and Payroll: $45,000| D["Operating Cash Flow: $40,000"]
-    D -->|Taxes and Reserves: $10,000| E["Net Cash Retained: $30,000"]
-
-    subgraph Runway ["Cash Runway Status"]
-        F["Total Bank Cash: $360,000"]
-        G["Net Monthly Burn: $0 - Cash-Flow Positive"]
-        H["Runway: Infinite - Self-Sustaining"]
-    end
-```"""
-
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
+    title = getattr(args, "title", "") or "Financial and Metric Conversational Digest"
+    answers = [phrase_at(phrases, i) for i in range(4)]
+    extra = phrases[4:]
+    number_lines, found, total = arithmetic_lines(text)
+    bluf = phrases[0] if phrases else "not given. This was not in the note."
+    mermaid_nodes = [
+        ("A", answers[0]),
+        ("B", "The Operating Funnel"),
+        ("C", answers[1]),
+        ("D", answers[2]),
+        ("E", answers[3]),
+    ]
+    mermaid_lines = [
+        "```mermaid",
+        "graph TD",
+        *[f'    {node_id}["{mermaid_label(label)}"]' for node_id, label in mermaid_nodes],
+        "    A --> B",
+        "    B --> C",
+        "    C --> D",
+        "    D --> E",
+    ]
+    if found:
+        mermaid_lines.append(f'    S["Sum of numbers you wrote: {format_amount(total)}"]')
+    mermaid_lines.append("```")
+    mermaid_diag = "\n".join(mermaid_lines)
+    answer_labels = [
+        "Cash through the front door",
+        "Cash out the back door",
+        "Cash in the register right now",
+        "Where the margin lives",
+    ]
     report_lines = [
         f"# {title}",
         "",
         "> **Cognitive Archetype:** Richard Branson (Boardroom Financial Scaffolding)",
-        "> **Bottom Line Up Front (BLUF):** Business generated $120k revenue, kept 71% gross margin, and banked $30k net cash with 12 months cash runway.",
+        "> **What this is:** Your words in a finance frame. No figure was added.",
+        f"> **Bottom Line Up Front (BLUF):** {bluf}",
         "",
-        "## 💬 The Four Boardroom Answers",
-        "1. **Cash through the front door:** $120k gross revenue across active accounts.",
-        "2. **Cash out the back door:** $35k direct delivery costs and $45k fixed operational overhead.",
-        "3. **Cash in the register right now:** $360k in bank reserves (12+ months operating expenses).",
-        "4. **Where the margin lives:** Gross margin remains high at 71%, retaining 71 cents per dollar.",
+        "## The Four Boardroom Answers",
+    ]
+    for index, (label, answer) in enumerate(zip(answer_labels, answers), 1):
+        report_lines.append(f"{index}. **{label}:** {show_gap(answer)}")
+    report_lines.extend([
         "",
-        "## 📊 Visual Cash-Flow Topology",
+        "## Numbers in the note",
+        *number_lines,
+        "",
+        "## Visual Cash-Flow Topology",
         mermaid_diag,
         "",
-        "## 📋 Conversational Financial Matrix",
-        "| Financial Metric | Spreadsheet Value | Conversational Translation | Health Status |",
+        "## Conversational Financial Matrix",
+        "| Financial Metric | What you wrote | Conversational Translation | Health Status |",
         "| :--- | :--- | :--- | :--- |",
-        "| **Gross Revenue** | $120,450.00 | Brought in $120k across core contracts | Healthy (+12% MoM) |",
-        "| **Cost of Goods** | $35,120.00 | Direct delivery costs (compute, hosting) | Expected (29% of rev) |",
-        "| **Overhead** | $45,300.00 | Fixed operational overhead sits steady | Controlled |",
-        "| **Net Cash Retained** | $30,030.00 | Clean profit banked into reserve fund | Strong |",
-        "| **Cash Runway** | $360,000.00 | Over 12 months total expenses in reserve | Safe |",
+    ])
+    metric_names = ["Gross Revenue", "Cost of Goods", "Overhead", "Net Cash Retained"]
+    for name, answer in zip(metric_names, answers):
+        report_lines.append(
+            f"| **{name}** | {show_gap(answer)} | not given. This was not in the note. | not given. This was not in the note. |"
+        )
+    report_lines.extend([
         "",
-        "## 🎯 The Three Boardroom Takeaways",
-        "- **The Good News:** Gross margins remain robust at 71%, demonstrating strong pricing power.",
-        "- **The Watch Item:** Compute and delivery costs increased slightly with new user volume.",
-        "- **The Next Move:** Lock in annual committed server pricing to save $1,200 per month.",
-    ]
-    
+        "## The Three Boardroom Takeaways",
+    ])
+    if extra:
+        for phrase in extra:
+            report_lines.append(f"- {phrase}")
+    else:
+        report_lines.append("- not given. This was not in the note.")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": bluf,
+        "added_findings": False,
+        "answers": answers,
+        "metrics": {
+            "numbers_written": [value for _raw, value in found],
+            "sum": total,
+            "sum_label": "arithmetic on the numbers you wrote" if found else "no numbers were in the note",
+            "revenue": None,
+            "net_profit": None,
+            "cash_balance": None,
+        },
+        "mermaid": mermaid_diag,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": "Generated $120k revenue with 71% gross margin and $30k net retained profit.",
-            "metrics": {
-                "revenue": 120450.0,
-                "cogs": 35120.0,
-                "overhead": 45300.0,
-                "net_profit": 30030.0,
-                "cash_balance": 360000.0
-            },
-            "mermaid": mermaid_diag
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
@@ -886,7 +955,7 @@ def main():
     p_voice.add_argument("--simulate", action="store_true", help="Clean the built-in sample and label it as a sample")
 
     # storyboard (Gavin Newsom)
-    p_story = subparsers.add_parser("storyboard", aliases=["visual-storyboard", "speech-scaffold"], help="Compile unscripted speeches and policy briefs into 4-room spatial memory storyboards")
+    p_story = subparsers.add_parser("storyboard", aliases=["visual-storyboard", "speech-scaffold"], help="Lay your words into a 4-room frame. Does not add findings you did not write.")
     p_story.add_argument("input", nargs="?", default="", help="Raw speech notes, policy brief, or text file")
     p_story.add_argument("--title", "-t", default="", help="Storyboard presentation title")
     p_story.add_argument("--output", "-o", default="", help="Output markdown filepath")
@@ -895,30 +964,30 @@ def main():
     p_story.add_argument("--json", "-j", action="store_true", help="Output raw JSON storyboard payload")
 
     # napkin (Richard Branson)
-    p_napkin = subparsers.add_parser("napkin", aliases=["beer-mat", "radical-simplify"], help="Radically simplify business pitches into a single-card Back-of-the-Beer-Mat test")
+    p_napkin = subparsers.add_parser("napkin", aliases=["beer-mat", "radical-simplify"], help="Lay your words into a beer-mat frame. Does not add numbers you did not write.")
     p_napkin.add_argument("input", nargs="?", default="", help="Raw pitch text, business plan, or text file")
     p_napkin.add_argument("--title", "-t", default="", help="Pitch or venture title")
-    p_napkin.add_argument("--price", "-p", type=float, default=4.0, help="Unit price or revenue per customer (default: 4.0)")
-    p_napkin.add_argument("--cost", "-c", type=float, default=0.60, help="Unit cost or delivery COGS (default: 0.60)")
+    p_napkin.add_argument("--price", "-p", type=float, default=None, help="Unit price only if you pass one. No default price is assumed.")
+    p_napkin.add_argument("--cost", "-c", type=float, default=None, help="Unit cost only if you pass one. No default cost is assumed.")
     p_napkin.add_argument("--output", "-o", default="", help="Output markdown filepath")
     p_napkin.add_argument("--json", "-j", action="store_true", help="Output raw JSON napkin payload")
 
     # spec (Steve Jobs)
-    p_spec = subparsers.add_parser("spec", aliases=["executive-spec", "jobs-spec"], help="Compile disordered engineering notes into an Executive Markdown Spec and whole-system architecture")
+    p_spec = subparsers.add_parser("spec", aliases=["executive-spec", "jobs-spec"], help="Lay your words into a spec frame. Does not add findings you did not write.")
     p_spec.add_argument("input", nargs="?", default="", help="Engineering notes, whiteboard fragments, or text file")
     p_spec.add_argument("--title", "-t", default="", help="System or product title")
     p_spec.add_argument("--output", "-o", default="", help="Output markdown filepath")
     p_spec.add_argument("--json", "-j", action="store_true", help="Output raw JSON spec payload")
 
     # taxonomy (Ingvar Kamprad)
-    p_tax = subparsers.add_parser("taxonomy", aliases=["mnemonic-taxonomy", "kamprad-schema"], help="Convert abstract alphanumeric codes and dense procedures into visual mnemonic categories and pictorial flows")
+    p_tax = subparsers.add_parser("taxonomy", aliases=["mnemonic-taxonomy", "kamprad-schema"], help="Lay your words into a taxonomy frame. Does not add mnemonics you did not write.")
     p_tax.add_argument("input", nargs="?", default="", help="Technical codes, manual text, or text file")
     p_tax.add_argument("--title", "-t", default="", help="Taxonomy title")
     p_tax.add_argument("--output", "-o", default="", help="Output markdown filepath")
     p_tax.add_argument("--json", "-j", action="store_true", help="Output raw JSON taxonomy payload")
 
     # finance (Richard Branson)
-    p_fin = subparsers.add_parser("finance", aliases=["financial-digest", "balance-sheet"], help="Translate financial balance sheets and spreadsheets into conversational executive digests and cash-flow diagrams")
+    p_fin = subparsers.add_parser("finance", aliases=["financial-digest", "balance-sheet"], help="Lay your words into a finance frame. Does not add numbers you did not write.")
     p_fin.add_argument("input", nargs="?", default="", help="Spreadsheet dump, financial notes, or text file")
     p_fin.add_argument("--title", "-t", default="", help="Financial report title")
     p_fin.add_argument("--output", "-o", default="", help="Output markdown filepath")
@@ -2288,14 +2357,10 @@ def main():
                 print(f"  - HTML: {args.html}")
     elif args.command in ["cinematic-storyboard", "animatic-storyboard"]:
         import scripts.spatial_storyboard as ss
-        text = read_input(args.input) if args.input else (
-            "Establish the friction: Linear text walls overload phonological working memory.\n"
-            "Inciting shift: Non-linear thinkers struggle to communicate complex holistic architectures through sequential slides.\n"
-            "Core exploration: The DxSkills cognitive engine decouples spatial mental models from linear output streams.\n"
-            "Technical deep dive: High-dimensional vector similarity clusters ideas into constellation topologies.\n"
-            "Multi-vault bridge: Cross-repository synchronizers identify dangling wikilinks and orphan nodes in real time.\n"
-            "Resolution vista: The user presents a hardened spatial canvas that disarms reductionist critics instantly."
-        )
+        text = optional_text(getattr(args, "input", ""))
+        if not text.strip():
+            print("No notes were given. No shots were invented.")
+            return
         storyboard, canvas_data, svg_code = ss.run_storyboard(
             text,
             title=args.title or None,
