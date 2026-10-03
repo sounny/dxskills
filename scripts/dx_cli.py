@@ -1482,12 +1482,13 @@ def main():
     p_decision.add_argument("--demo", action="store_true", help="Run with demonstration strategic software initiatives")
 
     # shed
-    p_shed = subparsers.add_parser("shed", help="Autonomous cognitive dynamic working memory stress-tester and load shedder")
-    p_shed.add_argument("input", nargs="?", default="", help="Target markdown outline or structured notes")
-    p_shed.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_shed.add_argument("--svg", "-s", default="", help="Output cognitive load stress gauge SVG filepath")
-    p_shed.add_argument("--target-cdi", type=float, default=0.55, help="Target Cognitive Degradation Index threshold (default: 0.55)")
-    p_shed.add_argument("--json", "-j", action="store_true", help="Output raw JSON load shedding telemetry")
+    p_shed = subparsers.add_parser("shed", help="List the notes you pass. It does not invent a tree or a cognitive load score.")
+    p_shed.add_argument("input", nargs="?", default="", help="Notes you pass. Omit them and no nodes are assumed.")
+    p_shed.add_argument("--canvas", "-c", default="", help="Canvas path. Written only for --demo, which is a built-in sample.")
+    p_shed.add_argument("--svg", "-s", default="", help="SVG path. Written only for --demo, which is a built-in sample.")
+    p_shed.add_argument("--target-cdi", type=float, default=0.55, help="Used only by --demo. It does not score your notes.")
+    p_shed.add_argument("--json", "-j", action="store_true", help="Print JSON. Scores appear only for the built-in --demo sample.")
+    p_shed.add_argument("--demo", action="store_true", help="Show a built-in sample. It is not the user's notes.")
     
     # resilience / break
     p_resilience = subparsers.add_parser("resilience", aliases=["break", "fatigue"], help="Run a fatigue formula on numbers you pass. Does not track eyes.")
@@ -3457,11 +3458,15 @@ def main():
             print(f"[DxSkills] Decision Matrix SVG exported to: {args.svg}")
     elif args.command == "shed":
         import scripts.load_shedder as ls
-        shedder = ls.WorkingMemoryLoadShedder()
-        if args.input:
-            content = read_input(args.input)
-            shedder.load_from_markdown(content)
-        else:
+
+        def _shed_lines(raw):
+            return [line.strip() for line in (raw or "").splitlines() if line.strip()]
+
+        notes = optional_text(args.input)
+        user_lines = _shed_lines(notes)
+
+        if args.demo:
+            shedder = ls.WorkingMemoryLoadShedder()
             sample_outline = """# Distributed Storage Engine
 - Master coordinator node
   - Heartbeat lease monitor
@@ -3483,45 +3488,98 @@ def main():
     - Micro-buffer watermark high
     - Micro-buffer watermark low"""
             shedder.load_from_markdown(sample_outline)
-
-        audit = shedder.execute_load_shedding(target_cdi=args.target_cdi)
-
-        if args.json:
-            out = {
-                "initial_load_points": audit.initial_telemetry.total_load_points,
-                "initial_cdi": audit.initial_telemetry.cognitive_degradation_index,
-                "initial_status": audit.initial_telemetry.status,
-                "post_shed_load_points": audit.post_shed_telemetry.total_load_points,
-                "post_shed_cdi": audit.post_shed_telemetry.cognitive_degradation_index,
-                "post_shed_status": audit.post_shed_telemetry.status,
-                "load_points_freed": audit.load_points_freed,
-                "reduction_percentage": audit.reduction_percentage,
-                "pruned_leaves_count": audit.pruned_leaves_count,
-                "retained_nodes_count": len(audit.retained_nodes),
-                "shed_nodes": [
-                    {
-                        "label": n.label,
-                        "depth": n.depth,
-                        "shed_tier": n.shed_tier
-                    }
-                    for n in audit.shed_nodes
-                ]
+            audit = shedder.execute_load_shedding(target_cdi=args.target_cdi)
+            note = (
+                "Built-in sample, not the user's notes. "
+                "The tree, branches, and scores below are a canned demonstration. "
+                "They were not written by the user."
+            )
+            if args.json:
+                out = {
+                    "built_in_sample": True,
+                    "not_the_users_notes": True,
+                    "note": note,
+                    "initial_load_points": audit.initial_telemetry.total_load_points,
+                    "initial_cdi": audit.initial_telemetry.cognitive_degradation_index,
+                    "initial_status": audit.initial_telemetry.status,
+                    "post_shed_load_points": audit.post_shed_telemetry.total_load_points,
+                    "post_shed_cdi": audit.post_shed_telemetry.cognitive_degradation_index,
+                    "post_shed_status": audit.post_shed_telemetry.status,
+                    "load_points_freed": audit.load_points_freed,
+                    "reduction_percentage": audit.reduction_percentage,
+                    "pruned_leaves_count": audit.pruned_leaves_count,
+                    "retained_nodes_count": len(audit.retained_nodes),
+                    "shed_nodes": [
+                        {
+                            "label": n.label,
+                            "depth": n.depth,
+                            "shed_tier": n.shed_tier
+                        }
+                        for n in audit.shed_nodes
+                    ]
+                }
+                print(json.dumps(out, indent=2))
+            else:
+                print("")
+                print(note)
+                if user_lines:
+                    print("Notes passed with --demo were not used in this sample.")
+                print("")
+                print(shedder.export_summary_markdown(audit))
+            if args.canvas:
+                canvas_data = shedder.export_canvas(audit)
+                with open(args.canvas, "w", encoding="utf-8") as f:
+                    json.dump(canvas_data, f, indent=2)
+                print(f"\n[DxSkills] Built-in sample canvas, not the user's notes, exported to: {args.canvas}")
+            if args.svg:
+                svg_code = shedder.export_svg_gauge(audit)
+                with open(args.svg, "w", encoding="utf-8") as f:
+                    f.write(svg_code)
+                print(f"[DxSkills] Built-in sample SVG, not the user's notes, exported to: {args.svg}")
+        elif not user_lines:
+            payload = {
+                "notes_given": False,
+                "nodes": [],
+                "scored": False,
+                "load": "not given",
+                "reason": "No notes were given and no load was scored.",
             }
-            print(json.dumps(out, indent=2))
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("No notes were given.")
+                print("No load was scored.")
+                print("")
+                print("| Node | Load |")
+                print("| :--- | :--- |")
+                print("| not given | not given |")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. No notes were given.")
         else:
-            print("\n" + shedder.export_summary_markdown(audit))
-
-        if args.canvas:
-            canvas_data = shedder.export_canvas(audit)
-            with open(args.canvas, "w", encoding="utf-8") as f:
-                json.dump(canvas_data, f, indent=2)
-            print(f"\n[DxSkills] Decluttered Cognitive Canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = shedder.export_svg_gauge(audit)
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(svg_code)
-            print(f"[DxSkills] Cognitive Stress Gauge SVG exported to: {args.svg}")
+            payload = {
+                "notes_given": True,
+                "nodes": user_lines,
+                "scored": False,
+                "load": "not given",
+                "reason": "Not scored. No cognitive load was measured from these lines.",
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("Nodes from the lines you wrote:")
+                for line in user_lines:
+                    print(f"- {line}")
+                print("")
+                print("| Node | Load |")
+                print("| :--- | :--- |")
+                for line in user_lines:
+                    safe = line.replace("|", "/")
+                    print(f"| {safe} | not given |")
+                print("")
+                print("Not scored.")
+                print("No cognitive load was measured. The old CDI and stress points came from a canned tree or from fixed weights, not from a count of these words.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. No load was scored.")
     elif args.command in ["resilience", "break", "fatigue"]:
         given = {
             "minutes": args.minutes,
