@@ -2322,10 +2322,10 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
                   </tr>
                   <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
                     <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">parity</td>
-                    <td class="py-3 px-4 text-mono-500">[--json] [--verbose]</td>
-                    <td class="py-3 px-4 font-sans text-xs">Audits lossless synchronization across Markdown, Audio Digest, Canvas, and Notion.</td>
+                    <td class="py-3 px-4 text-mono-500">&lt;note&gt; [--json]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Checks the note you pass. Counts words, says whether an em dash is present, and lists your lines. Nothing is checked when no note is given.</td>
                     <td class="py-3 px-4 text-right">
-                      <button onclick="copyCliCommand('python scripts/dx_cli.py parity')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py parity "Ship the notes Friday."')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
                     </td>
                   </tr>
                   <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
@@ -7193,8 +7193,8 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       <div class="pt-2 border-t border-mono-100 dark:border-mono-800 flex items-center justify-between flex-wrap gap-2 text-[11px] font-mono">
         <div class="flex items-center gap-1.5 text-mono-500">
           <span>Run via CLI:</span>
-          <code class="px-2 py-0.5 rounded bg-mono-100 dark:bg-mono-800 text-mono-900 dark:text-mono-100">python scripts/dx_cli.py parity</code>
-          <button onclick="navigator.clipboard.writeText('python scripts/dx_cli.py parity'); alert('CLI command copied!');" class="text-mono-400 hover:text-mono-950 dark:hover:text-white transition" title="Copy command">
+          <code class="px-2 py-0.5 rounded bg-mono-100 dark:bg-mono-800 text-mono-900 dark:text-mono-100">python scripts/dx_cli.py parity "Ship the notes Friday."</code>
+          <button onclick="navigator.clipboard.writeText('python scripts/dx_cli.py parity "Ship the notes Friday."'); alert('CLI command copied!');" class="text-mono-400 hover:text-mono-950 dark:hover:text-white transition" title="Copy command">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i>
           </button>
         </div>

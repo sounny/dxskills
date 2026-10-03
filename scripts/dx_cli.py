@@ -815,6 +815,38 @@ def cmd_finance(args):
             f.write(out_text)
         print(f"\n[DxSkills] Financial digest written to: {args.output}")
 
+def cmd_parity(args):
+    """Check only the note the user passed. Never invent an audit."""
+    note = optional_text(getattr(args, "input", ""))
+    if not note.strip():
+        print("Nothing was checked because no note was given.")
+        print("Pass a note to check that text only.")
+        print('Example: python3 scripts/dx_cli.py parity "Ship the notes Friday."')
+        sys.exit(1)
+    lines = note.splitlines() or [note]
+    word_count = len(note.split())
+    contains_em_dash = "\u2014" in note
+    payload = {
+        "checked": True,
+        "input_only": True,
+        "word_count": word_count,
+        "contains_em_dash": contains_em_dash,
+        "lines": lines,
+    }
+    if getattr(args, "json", False):
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return
+    em_label = "yes" if contains_em_dash else "no"
+    report = [
+        "Checked only the note you passed.",
+        "Words: %d" % word_count,
+        "Em dash: %s" % em_label,
+        "Lines you wrote:",
+    ]
+    report.extend(lines)
+    print("\n".join(report))
+
+
 def cmd_export(args):
     text = read_input(args.input)
     fmt = args.format.lower()
@@ -1046,11 +1078,11 @@ def main():
     p_canvas.add_argument("--output", "-o", default="", help="Output filepath")
     
     # parity
-    p_parity = subparsers.add_parser("parity", help="Verify lossless multi-modal synchronization across visual, audio, and text")
-    p_parity.add_argument("input", nargs="?", default="", help="Raw text or path to file (defaults to benchmark sample)")
-    p_parity.add_argument("--title", "-t", default="", help="Specification title")
-    p_parity.add_argument("--lang", "-l", default="en", choices=["en", "fr"], help="Audio language ('en' or 'fr')")
-    p_parity.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_parity = subparsers.add_parser("parity", help="Count words, flag an em dash, and list lines in the note you pass")
+    p_parity.add_argument("input", nargs="?", default="", help="Raw text, a file path, or piped stdin. Nothing is checked if empty.")
+    p_parity.add_argument("--title", "-t", default="", help="Unused. Kept so older calls still parse. Not applied to the check.")
+    p_parity.add_argument("--lang", "-l", default="en", choices=["en", "fr"], help="Unused. Kept so older calls still parse. Not applied to the check.")
+    p_parity.add_argument("--json", "-j", action="store_true", help="Output the same checks as JSON")
     
     # companion
     p_comp = subparsers.add_parser("companion", help="Launch desktop menubar companion floating HUD or background daemon")
@@ -2136,24 +2168,7 @@ def main():
                 print("\n=== [DxSkills: Obsidian Canvas JSON] ===")
                 print(canvas_json)
     elif args.command == "parity":
-        import scripts.multimodal_parity as mp
-        text = read_input(args.input) if args.input else """# Example Strategic Deliverable
-> **BLUF:** Deploying low-latency cognitive offload layer to eliminate phonological friction.
-
-## Core Spatial Architecture
-- High-contrast visual grid with 3:1 spatial margin.
-- Zero linear paragraphs over 3 sentences.
-
-## Execution Milestones
-- [ ] 1. Ship Manifest V3 browser extension and test suite.
-- [ ] 2. Benchmark multi-modal parity across 10 sample corpora.
-- [ ] 3. Verify zero em dash compliance across export pipelines.
-"""
-        res = mp.validate_multimodal_parity(text, title=args.title or None, lang=args.lang)
-        if args.json:
-            print(json.dumps(res, indent=2))
-        else:
-            print(mp.format_terminal_parity_report(res))
+        cmd_parity(args)
     elif args.command == "companion":
         import scripts.desktop_companion as dc
         companion = dc.DesktopCompanion()
