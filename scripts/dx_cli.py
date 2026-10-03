@@ -12,6 +12,7 @@ import re
 import json
 import argparse
 import subprocess
+import select
 import urllib.request
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -26,6 +27,13 @@ if SKILL_DIR not in sys.path:
 VERSION_FILE = os.path.join(SKILL_DIR, "VERSION")
 REMOTE_VERSION_URL = "https://raw.githubusercontent.com/sounny/dxskills/main/VERSION"
 
+PATH_SUFFIXES = (".pdf", ".txt", ".md", ".markdown")
+
+def looks_like_file_path(input_arg):
+    if "/" in input_arg or "\\" in input_arg:
+        return True
+    return input_arg.lower().endswith(PATH_SUFFIXES)
+
 def read_input(input_arg):
     if not input_arg:
         if not sys.stdin.isatty():
@@ -33,68 +41,256 @@ def read_input(input_arg):
         print("[DxSkills] Error: No input provided. Provide text or pipe via stdin.")
         sys.exit(1)
     if os.path.isfile(input_arg):
+        if input_arg.lower().endswith(".pdf"):
+            print("[DxSkills] This command does not extract PDF text. The file was not read.")
+            sys.exit(1)
         with open(input_arg, "r", encoding="utf-8") as f:
             return f.read().strip()
+    if looks_like_file_path(input_arg):
+        print(f"[DxSkills] File not found: {input_arg}")
+        sys.exit(1)
     return input_arg.strip()
+
+def piped_text():
+    """Read piped stdin only when data is already waiting. Never block."""
+    if sys.stdin.isatty():
+        return ""
+    try:
+        readable, _, _ = select.select([sys.stdin], [], [], 0)
+    except (ValueError, OSError):
+        return ""
+    if not readable:
+        return ""
+    return sys.stdin.read().strip()
+
+def optional_text(input_arg):
+    """Read text, a real file, or piped stdin. Empty string if nothing was given."""
+    if input_arg:
+        return read_input(input_arg)
+    return piped_text()
+
+def emit_rendered(rendered, payload, json_mode, out_path):
+    body = json.dumps(payload, indent=2, ensure_ascii=False) if json_mode else rendered
+    print(body)
+    if out_path:
+        parent = os.path.dirname(os.path.abspath(out_path))
+        if parent and not os.path.isdir(parent):
+            print(f"[DxSkills] Output directory not found: {parent}")
+            sys.exit(1)
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(body)
+            if not body.endswith("\n"):
+                f.write("\n")
+        print(f"[DxSkills] Wrote the same output to {out_path}")
 
 def cmd_dump(args):
     text = read_input(args.input)
-    print("\n=== [DxSkills: dx-dump / Brain Dump to Architecture] ===")
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     if not lines and text.strip():
         lines = [text.strip()]
 
-    print("\n> **Bottom Line Up Front (BLUF):**")
+    out = []
+    out.append("\n=== [DxSkills: dx-dump / Brain Dump to Architecture] ===")
+    out.append("\n> **Bottom Line Up Front (BLUF):**")
     if lines:
-        print(f"> {lines[0].lstrip('*-#0123456789. ')}")
+        bluf = lines[0].lstrip("*-#0123456789. ")
+        out.append(f"> {bluf}")
     else:
-        print("> (empty)")
-    print(f"> {len(lines)} line(s). Wording unchanged. No task was added.")
-
-    print("\n### 1. Your lines")
+        bluf = ""
+        out.append("> (empty)")
+    out.append(f"> {len(lines)} line(s). Wording unchanged. No task was added.")
+    out.append("\n### 1. Your lines")
+    items = []
     for i, line in enumerate(lines, 1):
         clean_line = line.lstrip("*-#0123456789. ")
-        print(f"- **Line {i}:** {clean_line}")
-
-    print("\n### 2. What is actually in the note")
-    print("| Line | Words | Text |")
-    print("| :--- | :--- | :--- |")
-    for i, line in enumerate(lines, 1):
-        clean_line = line.lstrip("*-#0123456789. ")
-        print(f"| {i} | {len(clean_line.split())} | {clean_line} |")
+        out.append(f"- **Line {i}:** {clean_line}")
+        items.append({"line": i, "words": len(clean_line.split()), "text": clean_line})
+    out.append("\n### 2. What is actually in the note")
+    out.append("| Line | Words | Text |")
+    out.append("| :--- | :--- | :--- |")
+    for item in items:
+        out.append(f"| {item['line']} | {item['words']} | {item['text']} |")
+    verbose = bool(getattr(args, "verbose", False))
+    if verbose:
+        out.append(f"\nInput length: {len(text)} characters.")
+    payload = {
+        "command": "dump",
+        "wording_unchanged": True,
+        "task_added": False,
+        "line_count": len(lines),
+        "bluf": bluf,
+        "lines": items,
+    }
+    if verbose:
+        payload["input_length"] = len(text)
+    emit_rendered("\n".join(out), payload, bool(getattr(args, "json", False)), getattr(args, "out", "") or "")
 
 def cmd_read(args):
     text = read_input(args.input)
-    print("\n=== [DxSkills: dx-read / Anti-Wall-of-Text Filter] ===")
     words = text.split()
-    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+    paragraphs = [para.strip() for para in text.split("\n\n") if para.strip()]
     if not paragraphs and text.strip():
         paragraphs = [text.strip()]
     sentences = [s.strip() for s in re.split(r"(?<=[.?!])\s+", text.strip()) if s.strip()] if text.strip() else []
 
-    print("\n> **Bottom Line Up Front (BLUF):**")
+    out = []
+    out.append("\n=== [DxSkills: dx-read / Anti-Wall-of-Text Filter] ===")
+    out.append("\n> **Bottom Line Up Front (BLUF):**")
     if sentences:
-        print(f"> {sentences[0]}")
+        bluf = sentences[0]
+        out.append(f"> {bluf}")
     elif paragraphs:
-        print(f"> {paragraphs[0]}")
+        bluf = paragraphs[0]
+        out.append(f"> {bluf}")
     else:
-        print("> (empty)")
-    print(f"> {len(words)} words, {len(sentences)} sentence(s). Wording unchanged.")
-
-    print("\n### 1. Sentences")
-    if not sentences:
-        print("- (none)")
-    for i, sentence in enumerate(sentences[:12], 1):
-        print(f"- **{i}.** {sentence}")
+        bluf = ""
+        out.append("> (empty)")
+    out.append(f"> {len(words)} words, {len(sentences)} sentence(s). Wording unchanged.")
+    out.append("\n### 1. Sentences")
+    shown = sentences[:12]
+    if not shown:
+        out.append("- (none)")
+    for i, sentence in enumerate(shown, 1):
+        out.append(f"- **{i}.** {sentence}")
     if len(sentences) > 12:
-        print(f"- {len(sentences) - 12} more sentence(s) not shown.")
-
-    print("\n### 2. Paragraphs")
-    print("| Part | Words | First sentence |")
-    print("| :--- | :--- | :--- |")
+        out.append(f"- {len(sentences) - 12} more sentence(s) not shown.")
+    out.append("\n### 2. Paragraphs")
+    out.append("| Part | Words | First sentence |")
+    out.append("| :--- | :--- | :--- |")
+    para_items = []
     for i, para in enumerate(paragraphs, 1):
         lead = re.split(r"(?<=[.?!])\s+", para)[0]
-        print(f"| {i} | {len(para.split())} | {lead} |")
+        out.append(f"| {i} | {len(para.split())} | {lead} |")
+        para_items.append({"part": i, "words": len(para.split()), "first_sentence": lead})
+    payload = {
+        "command": "read",
+        "wording_unchanged": True,
+        "task_added": False,
+        "word_count": len(words),
+        "sentence_count": len(sentences),
+        "bluf": bluf,
+        "sentences": shown,
+        "paragraphs": para_items,
+    }
+    emit_rendered("\n".join(out), payload, bool(getattr(args, "json", False)), "")
+
+def phrases_from_notes(text):
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    if not lines and text.strip():
+        lines = [text.strip()]
+    if len(lines) == 1 and "," in lines[0]:
+        parts = [part.strip() for part in lines[0].split(",") if part.strip()]
+        if len(parts) > 1:
+            return parts
+    return lines
+
+def cmd_map(args):
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
+    diagram_type = args.type
+    if not phrases:
+        print("[DxSkills] No notes were given. Pass your own lines or a quoted string.")
+        print('Example: python3 scripts/dx_cli.py map --type arch "notes here"')
+        print("No diagram was invented.")
+        return
+    safe = [phrase.replace('"', "'") for phrase in phrases]
+    out = []
+    out.append(f"\n=== [DxSkills: dx-map / {diagram_type}] ===")
+    out.append("This diagram is your lines, not a generated architecture.")
+    out.append("No node was added beyond the phrases you wrote.")
+    out.append("")
+    out.append("```mermaid")
+    if diagram_type == "mindmap":
+        out.append("mindmap")
+        out.append(f"  {safe[0]}")
+        for phrase in safe[1:]:
+            out.append(f"    {phrase}")
+    else:
+        direction = "LR" if diagram_type == "flywheel" else "TD"
+        out.append(f"flowchart {direction}")
+        ids = []
+        for i, phrase in enumerate(safe, 1):
+            nid = f"n{i}"
+            ids.append(nid)
+            out.append(f'  {nid}["{phrase}"]')
+        for left, right in zip(ids, ids[1:]):
+            out.append(f"  {left} --> {right}")
+    out.append("```")
+    print("\n".join(out))
+
+INTERVIEW_TRACKS = {
+    "grant": os.path.join(SKILL_DIR, "skills", "dx-interview", "templates", "grant_proposal_interview.md"),
+    "system": os.path.join(SKILL_DIR, "skills", "dx-interview", "templates", "technical_design_interview.md"),
+    "syllabus": os.path.join(SKILL_DIR, "skills", "dx-interview", "templates", "course_syllabus_interview.md"),
+}
+
+def phase1_questions(path):
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+    questions = []
+    in_phase = False
+    for line in content.splitlines():
+        if line.startswith("## Phase 1"):
+            in_phase = True
+            continue
+        if in_phase and (line.startswith("## ") or line.strip() == "---"):
+            break
+        match = re.match(r"^\d+\.\s+(.*\S)\s*$", line)
+        if in_phase and match:
+            questions.append(match.group(1).strip())
+    return questions
+
+def cmd_interview(args):
+    path = INTERVIEW_TRACKS[args.track]
+    questions = phase1_questions(path)
+    rel = os.path.relpath(path, SKILL_DIR)
+    print(f"\n=== [DxSkills: dx-interview / {args.track}] ===")
+    print(f"Questions from {rel}")
+    print("These are the template questions. No proposal was filled in.")
+    print("")
+    if not questions:
+        print("[DxSkills] No questions were found in the template.")
+        print("Answers were not collected. Phase 2 was not compiled.")
+        return
+    for i, question in enumerate(questions, 1):
+        print(f"{i}. {question}")
+    print("")
+    if not sys.stdin.isatty():
+        print("Answers were not collected. Phase 2 was not compiled.")
+        return
+    print("Type one line per question. This records your words only and does not invent work packages.")
+    answers = []
+    for i, _question in enumerate(questions, 1):
+        try:
+            answers.append(input(f"Answer {i}: ").strip())
+        except EOFError:
+            print("")
+            print("Answers were not collected. Phase 2 was not compiled.")
+            return
+    print("")
+    print("Your answers, wording unchanged:")
+    for i, answer in enumerate(answers, 1):
+        print(f"{i}. {answer if answer else '(blank)'}")
+    print("Phase 2 was not compiled. No work package was added.")
+
+def cmd_voice(args):
+    from scripts.voice_streamer import BUILTIN_SAMPLE_CHUNKS, clean_speech_chunk
+    print("Microphone is not open.")
+    if getattr(args, "simulate", False):
+        print("Built-in sample, not your speech.")
+        for i, chunk in enumerate(BUILTIN_SAMPLE_CHUNKS, 1):
+            print(f"[sample {i}] {clean_speech_chunk(chunk)}")
+        print("No canvas, svg, or markdown file was written.")
+        return
+    text = optional_text(getattr(args, "input", ""))
+    if not text:
+        print('Pass a transcript string. Example: python3 scripts/dx_cli.py voice "Um, ship the notes on Friday."')
+        print("Or run: python3 scripts/dx_cli.py voice --simulate")
+        print("No transcript was invented.")
+        return
+    print("Transcript you supplied. The microphone was not used.")
+    print(clean_speech_chunk(text))
+    print("No canvas, svg, or markdown file was written.")
 
 def cmd_storyboard(args):
     if getattr(args, "canvas", "") or getattr(args, "svg", ""):
@@ -664,12 +860,30 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
     
     # dump
-    p_dump = subparsers.add_parser("dump", help="Compile messy notes into structured architecture")
+    p_dump = subparsers.add_parser("dump", help="Repeat your lines and count words. Does not add tasks.")
     p_dump.add_argument("input", nargs="?", default="", help="Raw text or path to text file")
+    p_dump.add_argument("--json", action="store_true", help="Print the same counts and text as JSON")
+    p_dump.add_argument("--out", default="", help="Write the same output to this file")
+    p_dump.add_argument("--verbose", action="store_true", help="Print the input length in characters")
     
     # read
-    p_read = subparsers.add_parser("read", help="Decompose dense walls of text into visual signposts")
-    p_read.add_argument("input", nargs="?", default="", help="Dense text or path to text file")
+    p_read = subparsers.add_parser("read", help="Count words and sentences. Does not extract PDF text.")
+    p_read.add_argument("input", nargs="?", default="", help="Dense text or path to a text file")
+    p_read.add_argument("--json", action="store_true", help="Print the same counts and text as JSON")
+
+    # map
+    p_map = subparsers.add_parser("map", help="Quote your own lines as Mermaid nodes. Does not invent an architecture.")
+    p_map.add_argument("--type", required=True, choices=["arch", "flywheel", "curriculum", "decision", "mindmap"], help="Layout name. Nodes still come from your notes.")
+    p_map.add_argument("input", nargs="?", default="", help="Your lines, a comma-separated list, or a text file")
+
+    # interview
+    p_interview = subparsers.add_parser("interview", help="Print template questions. Does not fill in answers.")
+    p_interview.add_argument("--track", required=True, choices=["grant", "system", "syllabus"], help="Question template: grant, system, or syllabus")
+
+    # voice
+    p_voice = subparsers.add_parser("voice", help="Clean a transcript string. Does not open a microphone.")
+    p_voice.add_argument("input", nargs="?", default="", help="Transcript text to clean. Not audio.")
+    p_voice.add_argument("--simulate", action="store_true", help="Clean the built-in sample and label it as a sample")
 
     # storyboard (Gavin Newsom)
     p_story = subparsers.add_parser("storyboard", aliases=["visual-storyboard", "speech-scaffold"], help="Compile unscripted speeches and policy briefs into 4-room spatial memory storyboards")
@@ -1761,6 +1975,12 @@ def main():
         cmd_dump(args)
     elif args.command == "read":
         cmd_read(args)
+    elif args.command == "map":
+        cmd_map(args)
+    elif args.command == "interview":
+        cmd_interview(args)
+    elif args.command == "voice":
+        cmd_voice(args)
     elif args.command in ["storyboard", "visual-storyboard", "speech-scaffold"]:
         cmd_storyboard(args)
     elif args.command in ["napkin", "beer-mat", "radical-simplify"]:

@@ -1890,16 +1890,16 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
                   <span class="text-xs font-mono text-mono-500">Target: Executive Action Scaffolding</span>
                 </div>
                 <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
-                  Captures disordered thoughts, rambling voice transcripts, or meeting fragments and formats them into a single-screen executive brief. Strips conversational tangents and synthesizes the core decision, a 4-quadrant Eisenhower matrix, and sequential DAG execution steps.
+                  Lists the lines you pass and counts the words in each line. The wording is unchanged. No task, Eisenhower matrix, or execution plan is added.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
                     <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Standard Outputs</span>
                     <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
-                      <li>• BLUF Decision Block (1 sentence)</li>
-                      <li>• Cowan 4-Item Focus Quadrant</li>
-                      <li>• Prioritized Action Matrix</li>
-                      <li>• Critical Path Execution Checklist</li>
+                      <li>• First line, repeated as the BLUF</li>
+                      <li>• Your lines, wording unchanged</li>
+                      <li>• Word count for each line</li>
+                      <li>• No task is added</li>
                     </ul>
                   </div>
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
@@ -1920,7 +1920,7 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
                   <span class="text-xs font-mono text-mono-500">Target: Visuospatial Mapping</span>
                 </div>
                 <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
-                  Translates technical systems, organizational flows, and curricula into validated Mermaid.js diagrams. Enforces syntax rules to prevent rendering crashes: avoids unescaped ampersands, wraps node text in double quotes, and restricts edge labels to clean alphanumeric descriptors.
+                  Quotes your own lines, or a comma-separated list of phrases, as Mermaid nodes. The diagram is those lines. It is not a generated architecture. With no notes, the command asks for them and does not invent a system.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
@@ -1934,7 +1934,7 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
                   </div>
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
                     <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">CLI Command</span>
-                    <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py map --type arch</code>
+                    <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py map --type arch "notes here"</code>
                     <span class="text-[10px] text-mono-500">Options: arch, flywheel, curriculum, decision, mindmap</span>
                   </div>
                 </div>
@@ -1950,22 +1950,22 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
                   <span class="text-xs font-mono text-mono-500">Target: High-Speed Document Triage</span>
                 </div>
                 <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
-                  Converts 50-page research publications, legal contracts, and corporate memos into 1-page comparison tables. Renders core trade-offs, methodological risks, and empirical findings side-by-side without requiring serial reading of dense paragraphs.
+                  Splits the text you pass into sentences and paragraphs and counts the words. Wording is unchanged. This command does not extract PDF text and does not build a comparison matrix.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
                     <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Structural Sections</span>
                     <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
-                      <li>• BLUF Finding (1 sentence summary)</li>
-                      <li>• 4-Pillar Contrast Table</li>
-                      <li>• Methodological Vulnerabilities & Trade-offs</li>
-                      <li>• Next Actions and Immediate Decisions</li>
+                      <li>• First sentence, repeated</li>
+                      <li>• Sentence list, wording unchanged</li>
+                      <li>• Word count per paragraph</li>
+                      <li>• --json prints those same counts</li>
                     </ul>
                   </div>
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
                     <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">CLI Command</span>
-                    <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py read path/to/doc.pdf</code>
-                    <span class="text-[10px] text-mono-500">Input: text file, pdf, or markdown memo</span>
+                    <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py read "Your paragraph here."</code>
+                    <span class="text-[10px] text-mono-500">Flag: --json. A missing path is reported, not counted. PDF text is not extracted.</span>
                   </div>
                 </div>
               </div>
@@ -1980,21 +1980,21 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
                   <span class="text-xs font-mono text-mono-500">Target: Guided Specification Extraction</span>
                 </div>
                 <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
-                  Eliminates the blank-page problem. Guides the user through a branching sequence of targeted questions across 3 tracks: Grant Proposals, Technical System Architecture, and Academic Syllabi. Automatically compiles user answers into publication-ready markdown deliverables.
+                  Prints the questions from the grant, system, or syllabus template. It does not fill in a proposal, a work-package table, or any answer you did not type.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
                     <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Interview Tracks</span>
                     <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
-                      <li>• grant: NIH / NSF / Foundation proposals</li>
-                      <li>• system: Distributed system architecture spec</li>
-                      <li>• syllabus: 16-week academic course blueprint</li>
+                      <li>• grant: questions from the grant proposal template</li>
+                      <li>• system: questions from the technical design template</li>
+                      <li>• syllabus: questions from the course syllabus template</li>
                     </ul>
                   </div>
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
                     <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">CLI Command</span>
                     <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py interview --track grant</code>
-                    <span class="text-[10px] text-mono-500">Interactive terminal wizard with auto-export</span>
+                    <span class="text-[10px] text-mono-500">Prints template questions. Answers are not invented.</span>
                   </div>
                 </div>
               </div>
@@ -2004,26 +2004,26 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-mono-200 dark:border-mono-800 pb-3">
                   <div class="flex items-center gap-3">
                     <span class="px-2.5 py-1 rounded-md bg-mono-950 text-white dark:bg-mono-100 dark:text-mono-950 font-mono text-xs font-bold">skills/dx-voice</span>
-                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Real-Time Voice Streaming & Transcription</h4>
+                    <h4 class="text-lg font-bold text-mono-950 dark:text-mono-100">Transcript Cleanup (Microphone Stays Closed)</h4>
                   </div>
                   <span class="text-xs font-mono text-mono-500">Target: Phonological Friction Elimination</span>
                 </div>
                 <p class="text-xs text-mono-600 dark:text-mono-400 font-sans leading-relaxed">
-                  Speech-to-structure transcription harness. Dyslexic thinkers often articulate concepts orally with high clarity but encounter friction when typing. dx-voice streams audio, strips filler words, isolates the central thesis, and generates structured spatial cards and Mermaid diagrams in real time.
+                  Cleans filler words from a transcript you supply. --simulate runs a built-in sample through that cleaner and labels it as a sample, not your speech. The microphone is not opened, and no transcript is invented.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
                     <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">Key Pipelines</span>
                     <ul class="space-y-1 text-[11px] text-mono-700 dark:text-mono-300">
-                      <li>• Audio capture buffer with silence detection</li>
-                      <li>• Punctuation restoration and disfluency pruning</li>
-                      <li>• Dual export to Obsidian Canvas and Markdown</li>
+                      <li>• Built-in sample, labeled as a sample (--simulate)</li>
+                      <li>• Filler-word cleanup of a transcript string you pass</li>
+                      <li>• Microphone stays closed. No canvas file is written.</li>
                     </ul>
                   </div>
                   <div class="p-3 rounded-lg bg-white dark:bg-mono-950 border border-mono-200 dark:border-mono-800">
                     <span class="text-mono-400 uppercase text-[10px] block font-bold mb-1">CLI Command</span>
                     <code class="text-mono-950 dark:text-mono-100 block mb-2">python scripts/dx_cli.py voice --simulate</code>
-                    <span class="text-[10px] text-mono-500">Production module: scripts/voice_streamer.py</span>
+                    <span class="text-[10px] text-mono-500">Cleaner: scripts/voice_streamer.py. Microphone is not opened.</span>
                   </div>
                 </div>
               </div>
@@ -2229,10 +2229,10 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
                 <span class="text-mono-500">Python 3.10+</span>
               </div>
               <div class="p-3 rounded-lg bg-mono-900 text-mono-100 overflow-x-auto">
-                <code>python scripts/dx_cli.py &lt;command&gt; [arguments] [--out &lt;file&gt;] [--json] [--verbose]</code>
+                <code>python scripts/dx_cli.py dump [text] [--out &lt;file&gt;] [--json] [--verbose]</code>
               </div>
               <p class="text-mono-600 dark:text-mono-400 font-sans text-xs">
-                All subcommands support the <code>--json</code> flag for headless pipeline ingestion and <code>--out</code> to save formatted deliverables directly to disk.
+                dump accepts <code>--out</code>, <code>--json</code>, and <code>--verbose</code>. read accepts <code>--json</code>. Those flags print or save the same counts and text. They do not add scores or tasks. Other subcommands do not all accept these flags.
               </p>
             </div>
 
@@ -2251,31 +2251,31 @@ You are acting as a dedicated cognitive scaffold for a non-linear, spatial think
                   <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
                     <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">dump</td>
                     <td class="py-3 px-4 text-mono-500">&lt;text&gt; [--out &lt;file&gt;] [--json]</td>
-                    <td class="py-3 px-4 font-sans text-xs">Compiles unstructured brain-dumps into structured BLUF + 4-item matrices.</td>
+                    <td class="py-3 px-4 font-sans text-xs">Repeats your lines, counts words, and leaves the wording unchanged. No matrix is added.</td>
                     <td class="py-3 px-4 text-right">
-                      <button onclick="copyCliCommand('python scripts/dx_cli.py dump "Project roadmap ideas"')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py dump --json &quot;Project roadmap ideas&quot;')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
                     </td>
                   </tr>
                   <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
                     <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">map</td>
-                    <td class="py-3 px-4 text-mono-500">--type &lt;arch|flywheel|curriculum|decision|mindmap&gt;</td>
-                    <td class="py-3 px-4 font-sans text-xs">Generates syntax-safe Mermaid.js diagrams with verified layout grammar.</td>
+                    <td class="py-3 px-4 text-mono-500">--type &lt;arch|flywheel|curriculum|decision|mindmap&gt; [your notes]</td>
+                    <td class="py-3 px-4 font-sans text-xs">Quotes your own lines as Mermaid nodes. Does not invent an architecture.</td>
                     <td class="py-3 px-4 text-right">
-                      <button onclick="copyCliCommand('python scripts/dx_cli.py map --type arch')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py map --type arch &quot;notes here&quot;')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
                     </td>
                   </tr>
                   <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
                     <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">read</td>
                     <td class="py-3 px-4 text-mono-500">&lt;file&gt; [--json]</td>
-                    <td class="py-3 px-4 font-sans text-xs">Synthesizes dense documents into 1-page executive comparison matrices.</td>
+                    <td class="py-3 px-4 font-sans text-xs">Counts words and sentences in text you pass. Does not extract PDF text.</td>
                     <td class="py-3 px-4 text-right">
-                      <button onclick="copyCliCommand('python scripts/dx_cli.py read path/to/document.txt')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
+                      <button onclick="copyCliCommand('python scripts/dx_cli.py read --json &quot;Your paragraph here.&quot;')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
                     </td>
                   </tr>
                   <tr class="hover:bg-mono-50 dark:hover:bg-mono-900/50 transition">
                     <td class="py-3 px-4 font-bold text-mono-950 dark:text-mono-100">interview</td>
                     <td class="py-3 px-4 text-mono-500">--track &lt;grant|system|syllabus&gt;</td>
-                    <td class="py-3 px-4 font-sans text-xs">Interactive terminal diagnostic wizard compiling user answers into specifications.</td>
+                    <td class="py-3 px-4 font-sans text-xs">Prints the template questions for a track. Does not fill in answers.</td>
                     <td class="py-3 px-4 text-right">
                       <button onclick="copyCliCommand('python scripts/dx_cli.py interview --track grant')" class="text-mono-500 hover:text-mono-950 dark:hover:text-white transition">Copy</button>
                     </td>
@@ -4179,9 +4179,13 @@ This curriculum eliminates passive lecture memorization. Students learn through 
     };
 
     let activePlaygroundPreset = "outage";
+    // Canned leader copy only when a leader preset button just loaded its sample.
+    let playgroundButtonExample = null;
 
     function loadPlaygroundSample(preset) {
       activePlaygroundPreset = preset;
+      const cannedPresets = ["newsom", "branson", "jobs", "kamprad", "finance"];
+      playgroundButtonExample = cannedPresets.indexOf(preset) !== -1 ? preset : null;
       const sample = playgroundSamples[preset];
       if (!sample) return;
       const input = document.getElementById('playground-input');
@@ -4225,18 +4229,11 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       let sentences = cleanText.split(/(?<=[.?!])\s+/).filter(s => s.trim().length > 0);
       if (sentences.length === 0) sentences = [cleanText];
 
-      const rawLower = raw.toLowerCase();
       let archetype = null;
-      if (activePlaygroundPreset === 'newsom' || rawLower.includes('aqueduct') || rawLower.includes('clean energy transition') || rawLower.includes('porch') || rawLower.includes('storyboard')) {
-        archetype = 'newsom';
-      } else if (activePlaygroundPreset === 'branson' || rawLower.includes('beer-mat') || rawLower.includes('featherweight form')) {
-        archetype = 'branson';
-      } else if (activePlaygroundPreset === 'jobs' || rawLower.includes('executive markdown spec') || rawLower.includes('front gate') || rawLower.includes('whiteboard')) {
-        archetype = 'jobs';
-      } else if (activePlaygroundPreset === 'kamprad' || rawLower.includes('kamprad') || rawLower.includes('river delta') || rawLower.includes('cam lock') || rawLower.includes('swedish')) {
-        archetype = 'kamprad';
-      } else if (activePlaygroundPreset === 'finance' || rawLower.includes('balance sheet') || rawLower.includes('cogs') || (rawLower.includes('revenue') && rawLower.includes('profit'))) {
-        archetype = 'finance';
+      if (playgroundButtonExample && raw === playgroundSamples[playgroundButtonExample]) {
+        archetype = playgroundButtonExample;
+      } else {
+        playgroundButtonExample = null;
       }
 
       const archBadge = document.getElementById('play-archetype-badge');
@@ -4255,8 +4252,8 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       if (archetype === 'newsom') {
         if (archBadge) {
           archBadge.classList.remove('hidden');
-          archTitle.innerText = "Gavin Newsom Archetype";
-          archRole.innerText = "4-Room Spatial Memory & Unscripted Speech Scaffolding";
+          archTitle.innerText = "Example: Gavin Newsom Archetype";
+          archRole.innerText = "Labeled example. 4-Room Spatial Memory and Unscripted Speech Scaffolding";
         }
         blufSentence = "We are addressing the state clean energy transition. Ground-breaking begins next quarter with five pilot agricultural counties to prove grid resilience.";
         if (visualCard) {
@@ -4316,8 +4313,8 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       } else if (archetype === 'branson') {
         if (archBadge) {
           archBadge.classList.remove('hidden');
-          archTitle.innerText = "Richard Branson Archetype";
-          archRole.innerText = "Back-of-a-Beer-Mat / Napkin Test (Radical Simplification)";
+          archTitle.innerText = "Example: Richard Branson Archetype";
+          archRole.innerText = "Labeled example. Back-of-a-Beer-Mat / Napkin Test (Radical Simplification)";
         }
         blufSentence = "Radical simplification: Deliver instant edge form processing for $4/mo with 85% gross margin ($3.40 cash profit per customer).";
         if (visualCard) {
@@ -4380,8 +4377,8 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       } else if (archetype === 'jobs') {
         if (archBadge) {
           archBadge.classList.remove('hidden');
-          archTitle.innerText = "Steve Jobs Archetype";
-          archRole.innerText = "Executive Markdown Spec & Whole-System Architecture";
+          archTitle.innerText = "Example: Steve Jobs Archetype";
+          archRole.innerText = "Labeled example. Executive Markdown Spec and Whole-System Architecture";
         }
         blufSentence = "Executive Markdown Spec: Whole-system spatial architecture with pure client-side local state and sub-50ms latency.";
         if (visualCard) {
@@ -4435,8 +4432,8 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       } else if (archetype === 'kamprad') {
         if (archBadge) {
           archBadge.classList.remove('hidden');
-          archTitle.innerText = "Ingvar Kamprad Archetype";
-          archRole.innerText = "Visual Mnemonic Taxonomy & Pictorial Assembly Schema";
+          archTitle.innerText = "Example: Ingvar Kamprad Archetype";
+          archRole.innerText = "Labeled example. Visual Mnemonic Taxonomy and Pictorial Assembly Schema";
         }
         blufSentence = "Visual Mnemonic Taxonomy: Replacing abstract alphanumeric codes with physical landscape categories and pictorial assembly schemas.";
         if (visualCard) {
@@ -4492,8 +4489,8 @@ This curriculum eliminates passive lecture memorization. Students learn through 
       } else if (archetype === 'finance') {
         if (archBadge) {
           archBadge.classList.remove('hidden');
-          archTitle.innerText = "Richard Branson Archetype";
-          archRole.innerText = "Conversational Financial Digest (Cash-Flow Funnel)";
+          archTitle.innerText = "Example: Richard Branson Archetype";
+          archRole.innerText = "Labeled example. Conversational Financial Digest (Cash-Flow Funnel)";
         }
         blufSentence = "Generated $120,450 revenue with 71% gross margin and $30,030 net cash profit; $360,000 cash in bank with infinite runway.";
         if (visualCard) {

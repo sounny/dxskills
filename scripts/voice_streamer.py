@@ -315,14 +315,17 @@ def simulate_streaming_dictation(streamer, chunks, delay=0.0):
             time.sleep(delay)
     return results
 
+# Built-in sample only. Not a user transcript and not microphone audio.
+BUILTIN_SAMPLE_CHUNKS = [
+    "Um, the bottom line is that we need to ship the spatial canvas pipeline by Friday.",
+    "Like, you know, our first focus area is decoupling worker queues to prevent database lock contention.",
+    "Second focus area is setting up automated telemetry alerts for memory spikes.",
+    "Third, we must deploy the canary cluster to production and verify latency under load."
+]
+
 if __name__ == "__main__":
     streamer = LiveCanvasStreamer(session_title="Quarterly Strategy Dictation")
-    sample_chunks = [
-        "Um, the bottom line is that we need to ship the spatial canvas pipeline by Friday.",
-        "Like, you know, our first focus area is decoupling worker queues to prevent database lock contention.",
-        "Second focus area is setting up automated telemetry alerts for memory spikes.",
-        "Third, we must deploy the canary cluster to production and verify latency under load."
-    ]
+    sample_chunks = BUILTIN_SAMPLE_CHUNKS
     print("=== [DxSkills: Live Voice-to-Canvas Streamer] ===")
     for idx, c in enumerate(sample_chunks, 1):
         status = streamer.process_chunk(c)
