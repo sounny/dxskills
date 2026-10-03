@@ -42,15 +42,28 @@ def calculate_cognitive_stamina(minutes_active, words_drafted=0, edits_count=0):
         "recommendation": recommendation
     }
 
-def print_stamina_report(metrics):
+def print_stamina_report(metrics, minutes_given=True, words_given=True):
+    minutes = metrics["minutes_active"]
+    words = metrics["words_drafted"]
+    score = metrics["stamina_score"]
     print("\n=== [DxSkills: Cognitive Fatigue & Working Memory Stamina] ===")
-    print(f"> **Stamina Score:** {metrics['stamina_score']}% ({metrics['status']})")
-    print(f"> **Session Duration:** {metrics['minutes_active']} minutes | **Phonological Buffer:** {metrics['zone']}")
-    print("\n### Cognitive Science Analysis")
-    print("- **Phonological Loop:** Continuous linear reading and typing exhausts working memory buffers (Baddeley Model).")
-    print("- **Spatial Detachment:** Non-linear thinkers recover peak output by decoupling gaze and transitioning to spatial diagrams.")
-    print("\n### Recommended Action")
-    print(f"> {metrics['recommendation']}")
+    print(f"Formula result: {score} on {minutes} minutes and {words} words.")
+    print("This figure is a formula on those numbers, not a measured saturation and not a medical or cognitive finding.")
+    if not minutes_given:
+        print("Minutes were not given. The formula used 0 minutes. It did not assume a 30 minute session.")
+    if not words_given:
+        print("Words were not given. The formula used 0 words. It did not assume 500 words.")
+    print("No session was observed.")
+    if score < 45.0:
+        print(
+            f"Reset Due: the formula crossed below the stated threshold of 45 "
+            f"(result {score} on {minutes} minutes and {words} words). "
+            "That label is the formula crossing a threshold, not an observed session."
+        )
+    print("\n### General note")
+    print("Background only, not a finding about this run.")
+    print("- The phonological loop is a working-memory idea from the Baddeley model. This sentence does not measure you.")
+    print("- Some people vary linear reading with spatial diagrams. This is not a diagnosis and not evidence that a ceiling was reached.")
 
 def run_terminal_box_breathing(cycles=3):
     phases = [

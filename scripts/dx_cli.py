@@ -1192,9 +1192,18 @@ def main():
     p_tui = subparsers.add_parser("tui", help="Launch interactive terminal scaffolding interface")
 
     # stamina
-    p_stamina = subparsers.add_parser("stamina", help="Estimate working memory fatigue and phonological load")
-    p_stamina.add_argument("--minutes", "-m", type=int, default=30, help="Minutes of active drafting (default: 30)")
-    p_stamina.add_argument("--words", "-w", type=int, default=500, help="Words drafted or processed (default: 500)")
+    p_stamina = subparsers.add_parser(
+        "stamina",
+        help="Apply a stamina formula to minutes and words you pass. Does not measure a session.",
+    )
+    p_stamina.add_argument(
+        "--minutes", "-m", type=int, default=None,
+        help="Minutes to plug into the formula. Omit to skip. There is no default session.",
+    )
+    p_stamina.add_argument(
+        "--words", "-w", type=int, default=None,
+        help="Word count to plug into the formula. Omit to skip. There is no default word count.",
+    )
 
     # reset
     p_reset = subparsers.add_parser("reset", help="Launch 60-second terminal box breathing spatial reset")
@@ -2254,8 +2263,18 @@ def main():
         tui_mod.main_menu()
     elif args.command == "stamina":
         import scripts.cognitive_fatigue as cf
-        report = cf.calculate_cognitive_stamina(minutes_active=args.minutes, words_drafted=args.words)
-        cf.print_stamina_report(report)
+        if args.minutes is None and args.words is None:
+            print("No session length or word count was given.")
+            print("Example: python3 scripts/dx_cli.py stamina --minutes 10 --words 40")
+        else:
+            minutes = 0 if args.minutes is None else args.minutes
+            words = 0 if args.words is None else args.words
+            report = cf.calculate_cognitive_stamina(minutes_active=minutes, words_drafted=words)
+            cf.print_stamina_report(
+                report,
+                minutes_given=args.minutes is not None,
+                words_given=args.words is not None,
+            )
     elif args.command == "reset":
         import scripts.cognitive_fatigue as cf
         cf.run_terminal_box_breathing(cycles=args.cycles)
