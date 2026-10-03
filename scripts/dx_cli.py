@@ -1500,14 +1500,14 @@ def main():
     p_resilience.add_argument("--json", "-j", action="store_true", help="Output raw JSON fatigue telemetry")
     
     # reflector / bias
-    p_reflector = subparsers.add_parser("reflector", aliases=["bias", "blindspot"], help="Autonomous cognitive multi-perspective metacognitive reflector and bias breaker")
-    p_reflector.add_argument("title", nargs="?", default="Strategic Architecture Spec", help="Thesis or architectural proposal title")
-    p_reflector.add_argument("--assumptions", "-a", nargs="*", default=[], help="List of assumptions in format 'Label:validated' or 'Label'")
-    p_reflector.add_argument("--perspectives", "-p", type=int, default=2, help="Number of distinct analytical viewpoints consulted (default: 2)")
-    p_reflector.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_reflector.add_argument("--svg", "-s", default="", help="Output dialectic radar SVG filepath")
-    p_reflector.add_argument("--json", "-j", action="store_true", help="Output raw JSON assessment telemetry")
-    p_reflector.add_argument("--demo", action="store_true", help="Run with demonstration assumptions suite")
+    p_reflector = subparsers.add_parser("reflector", aliases=["bias", "blindspot"], help="List a thesis and the assumptions you pass. It does not invent a spec or a score.")
+    p_reflector.add_argument("title", nargs="?", default=None, help="Thesis title you pass. Omit it and no thesis is assumed.")
+    p_reflector.add_argument("--assumptions", "-a", nargs="*", default=[], help="Assumptions you write, as 'Label:validated' or 'Label'. None are invented.")
+    p_reflector.add_argument("--perspectives", "-p", type=int, default=2, help="Optional perspective count. It is not used to score your words.")
+    p_reflector.add_argument("--canvas", "-c", default="", help="Canvas path. Written only for --demo, which is a built-in sample.")
+    p_reflector.add_argument("--svg", "-s", default="", help="SVG path. Written only for --demo, which is a built-in sample.")
+    p_reflector.add_argument("--json", "-j", action="store_true", help="Print JSON. Scores appear only for the built-in --demo sample.")
+    p_reflector.add_argument("--demo", action="store_true", help="Show a built-in sample. It is not the user's thesis.")
     
     # horizon
     p_horizon = subparsers.add_parser("horizon", help="Autonomous cognitive multi-scale working memory horizon visualizer")
@@ -3568,46 +3568,121 @@ def main():
                 print("No canvas or svg was written. Those files used to draw a simulated session.")
     elif args.command in ["reflector", "bias", "blindspot"]:
         import scripts.metacognitive_reflector as mr
-        reflector = mr.MetacognitiveReflector()
-        assumptions = []
-        if args.demo or not args.assumptions:
-            assumptions = [
+
+        def _parse_reflector_assumptions(items):
+            parsed = []
+            for item in items or []:
+                raw = item.strip()
+                if not raw:
+                    continue
+                if ":" in raw:
+                    lbl, val = raw.rsplit(":", 1)
+                    label = lbl.strip()
+                    if not label:
+                        continue
+                    parsed.append({
+                        "label": label,
+                        "validated": val.strip().lower() in ["true", "1", "yes"],
+                    })
+                else:
+                    parsed.append({"label": raw, "validated": False})
+            return parsed
+
+        title = (args.title or "").strip()
+        user_assumptions = _parse_reflector_assumptions(args.assumptions)
+
+        if args.demo:
+            sample_title = "Strategic Architecture Spec"
+            sample_assumptions = [
                 {"label": "Sub-millisecond Edge Replication", "validated": False},
                 {"label": "Zero Consensus Split-Brain", "validated": True},
                 {"label": "Infinite Memory Pool", "validated": False},
                 {"label": "Immutable Audit Log Guarantee", "validated": True},
                 {"label": "Instantaneous Client Re-connection", "validated": False},
             ]
-        else:
-            for item in args.assumptions:
-                if ":" in item:
-                    lbl, val = item.rsplit(":", 1)
-                    assumptions.append({"label": lbl.strip(), "validated": val.strip().lower() in ["true", "1", "yes"]})
-                else:
-                    assumptions.append({"label": item.strip(), "validated": False})
-
-        assessment = reflector.assess_thesis(
-            args.title, assumptions, perspective_breadth=args.perspectives
-        )
-
-        if args.json:
-            out = {
-                "assessment": assessment.to_dict(),
-                "lenses": [l.to_dict() for l in assessment.lenses],
+            reflector = mr.MetacognitiveReflector()
+            assessment = reflector.assess_thesis(
+                sample_title, sample_assumptions, perspective_breadth=args.perspectives
+            )
+            note = (
+                "Built-in sample, not the user's thesis. "
+                "The title, assumptions, verdict, and scores below are a canned demonstration. "
+                "They were not written by the user."
+            )
+            if args.json:
+                out = {
+                    "built_in_sample": True,
+                    "not_the_users_thesis": True,
+                    "note": note,
+                    "assessment": assessment.to_dict(),
+                    "lenses": [lens.to_dict() for lens in assessment.lenses],
+                }
+                print(json.dumps(out, indent=2))
+            else:
+                print("")
+                print(note)
+                if title or user_assumptions:
+                    print("A title or assumptions passed with --demo were not used in this sample.")
+                print("")
+                print(reflector.export_summary_markdown(assessment))
+            if args.canvas:
+                reflector.export_canvas(assessment, output_path=args.canvas)
+                print(f"\n[DxSkills] Built-in sample canvas, not the user's thesis, exported to: {args.canvas}")
+            if args.svg:
+                svg_code = reflector.export_svg_radar(assessment)
+                with open(args.svg, "w", encoding="utf-8") as f:
+                    f.write(svg_code)
+                print(f"[DxSkills] Built-in sample SVG, not the user's thesis, exported to: {args.svg}")
+        elif not title and not user_assumptions:
+            payload = {
+                "thesis": None,
+                "assumptions": [],
+                "scored": False,
+                "reason": "No thesis was given.",
             }
-            print(json.dumps(out, indent=2))
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("No thesis was given.")
+                print("No title and no assumptions were passed, so no score, verdict, or anchors were computed.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. No thesis was given.")
+        elif not user_assumptions:
+            payload = {
+                "thesis": title,
+                "assumptions": [],
+                "scored": False,
+                "reason": "No assumptions were given, so no score was computed.",
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print(title)
+                print("No assumptions were given, so no score was computed.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. No assumptions were given.")
         else:
-            print("\n" + reflector.export_summary_markdown(assessment))
-
-        if args.canvas:
-            reflector.export_canvas(assessment, output_path=args.canvas)
-            print(f"\n[DxSkills] Metacognitive Reflector .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = reflector.export_svg_radar(assessment)
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(svg_code)
-            print(f"[DxSkills] Metacognitive Radar SVG exported to: {args.svg}")
+            payload = {
+                "thesis": title or None,
+                "assumptions": user_assumptions,
+                "scored": False,
+                "reason": "Not scored. The count formula does not depend on the words you wrote.",
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                if title:
+                    print(title)
+                else:
+                    print("No title was given.")
+                print("Assumptions you wrote:")
+                for item in user_assumptions:
+                    flag = "validated" if item["validated"] else "not marked validated"
+                    print(f"- {item['label']} ({flag})")
+                print("Not scored.")
+                print("No fixation score is shown. The old figure used only a count of labels, a validated flag, and a perspective count. It did not depend on the words you wrote.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. Those files used to draw a score that does not depend on the words you wrote.")
     elif args.command == "horizon":
         import scripts.horizon_visualizer as hv
         viz = hv.WorkingMemoryHorizonVisualizer()
