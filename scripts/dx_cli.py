@@ -292,6 +292,83 @@ def cmd_voice(args):
     print(clean_speech_chunk(text))
     print("No canvas, svg, or markdown file was written.")
 
+
+def dictation_file_body(cleaned, kind):
+    if kind == "markdown":
+        return cleaned
+    if kind == "canvas":
+        payload = {
+            "nodes": [{
+                "id": "node-1",
+                "type": "text",
+                "text": cleaned,
+                "x": 0,
+                "y": 0,
+                "width": 420,
+                "height": 180,
+            }],
+            "edges": [],
+        }
+        return json.dumps(payload, indent=2, ensure_ascii=False)
+    safe = cleaned.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    tspans = []
+    lines = safe.splitlines() or [""]
+    for index, line in enumerate(lines):
+        dy = "0" if index == 0 else "22"
+        tspans.append('<tspan x="24" dy="%s">%s</tspan>' % (dy, line))
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="720" height="240">'
+        '<rect width="720" height="240" fill="#ffffff"/>'
+        '<text x="24" y="40" font-family="sans-serif" font-size="16">'
+        + "".join(tspans)
+        + "</text></svg>"
+    )
+
+
+def cmd_dictation(args):
+    from scripts.voice_streamer import clean_speech_chunk
+    supplied = optional_text(getattr(args, "input", ""))
+    if not supplied:
+        print("Microphone is not open. No transcript was invented.")
+        print("No live stream is running.")
+        return
+    cleaned = clean_speech_chunk(supplied)
+    print("Microphone is not open.")
+    print("Transcript you supplied. The microphone was not used.")
+    print(cleaned if cleaned else "(empty after filler cleanup)")
+    print("No action items were added.")
+
+    jobs = []
+    canvas_path = getattr(args, "canvas", "") or ""
+    svg_path = getattr(args, "svg", "") or ""
+    export_prefix = getattr(args, "export", "") or ""
+    if canvas_path:
+        jobs.append((canvas_path, "canvas"))
+    if svg_path:
+        jobs.append((svg_path, "svg"))
+    if export_prefix:
+        jobs.append((export_prefix + ".canvas", "canvas"))
+        jobs.append((export_prefix + ".svg", "svg"))
+        jobs.append((export_prefix + ".md", "markdown"))
+    if not jobs:
+        print("No canvas, svg, or markdown file was written.")
+        return
+
+    for path, _kind in jobs:
+        parent = os.path.dirname(os.path.abspath(path))
+        if parent and not os.path.isdir(parent):
+            print("[DxSkills] Output directory not found: %s" % parent)
+            sys.exit(1)
+
+    for path, kind in jobs:
+        body = dictation_file_body(cleaned, kind)
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(body)
+            if not body.endswith("\n"):
+                handle.write("\n")
+        print("[DxSkills] Wrote your text to %s" % path)
+
+
 def mermaid_label(text):
     clean = str(text).replace("\\", " ").replace('"', "'").replace("[", "(").replace("]", ")")
     clean = clean.replace("\n", " ").replace("\r", " ").strip()
@@ -1091,9 +1168,9 @@ def main():
     p_comp.add_argument("--compile", "-c", nargs="?", default="", help="Compile input directly")
     
     # dictation / voice-stream
-    p_stream = subparsers.add_parser("dictation", help="Stream voice dictation in real time into Obsidian Canvas (.canvas) and SVG")
-    p_stream.add_argument("input", nargs="?", default="", help="Input text, audio transcript, or file path")
-    p_stream.add_argument("--title", "-t", default="Voice Dictation Session", help="Session title")
+    p_stream = subparsers.add_parser("dictation", help="Clean a transcript string. Does not open a microphone.")
+    p_stream.add_argument("input", nargs="?", default="", help="Transcript text, a file path, or piped stdin. Not audio.")
+    p_stream.add_argument("--title", "-t", default="", help="Unused. Kept so older calls still parse. Not applied to the transcript.")
     p_stream.add_argument("--canvas", "-c", default="", help="Output .canvas file path")
     p_stream.add_argument("--svg", "-s", default="", help="Output vector .svg file path")
     p_stream.add_argument("--export", "-e", default="", help="Base filepath prefix to export .canvas, .svg, and .md")
@@ -2180,31 +2257,7 @@ def main():
         else:
             companion.launch_floating_hud()
     elif args.command == "dictation":
-        import scripts.voice_streamer as vs
-        text = read_input(args.input) if args.input else "The primary objective is to launch the voice streaming canvas engine. First, decouple audio chunk queues. Second, verify live Obsidian Canvas JSON updates. Third, ship the release to production."
-        streamer = vs.LiveCanvasStreamer(session_title=args.title)
-        chunks = [s.strip() + "." for s in text.split(".") if s.strip()]
-        print(f"\n=== [DxSkills: Live Voice Dictation & Canvas Streamer] ===")
-        for idx, chunk in enumerate(chunks, 1):
-            status = streamer.process_chunk(chunk)
-            print(f" [Stream Chunk {idx}] Nodes: {status['nodes_count']} | Edges: {status['edges_count']} | BLUF: {status['bluf'][:40]}...")
-        
-        if args.export:
-            files = streamer.export_session(output_prefix=args.export)
-            print(f"\n[DxSkills] Session exported:")
-            for k, p in files.items():
-                print(f"  - {k}: {p}")
-        elif args.canvas:
-            with open(args.canvas, "w", encoding="utf-8") as f:
-                f.write(streamer.get_canvas_json())
-            print(f"\n[DxSkills] Saved Obsidian Canvas: {args.canvas}")
-        elif args.svg:
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(streamer.get_canvas_svg())
-            print(f"\n[DxSkills] Saved Vector SVG Canvas: {args.svg}")
-        else:
-            print("\n--- Finalized D-Mode Markdown Summary ---")
-            print(streamer.get_markdown_summary())
+        cmd_dictation(args)
     elif args.command == "cluster":
         import scripts.spatial_cluster as sc
         raw_nodes = []
