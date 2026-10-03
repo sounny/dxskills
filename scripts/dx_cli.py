@@ -325,6 +325,52 @@ def dictation_file_body(cleaned, kind):
     )
 
 
+def cmd_debate(args):
+    supplied = optional_text(getattr(args, "input", ""))
+    if not supplied or not supplied.strip():
+        print("No claim was given.")
+        print("No score was computed.")
+        return
+
+    claim = supplied.strip()
+    topic = (getattr(args, "topic", "") or "").strip()
+    cell = claim.replace("|", "\\|").replace("\n", " ")
+    lines = ["# Socratic Debate", ""]
+    if topic:
+        lines.append("Topic you supplied: %s" % topic)
+        lines.append("")
+    lines.append("Claim:")
+    lines.append(claim)
+    lines.append("")
+    lines.append("No score was computed.")
+    lines.append("")
+    lines.append("## Adversarial Cross-Examination Matrix")
+    lines.append("")
+    lines.append("| ID | Proposition / Claim | Skeptic Attack (Reductionist) | Pragmatist Challenge (Operational) | Steel-Manned Defense | Verification Artifact |")
+    lines.append("|:---|:---------------------|:------------------------------|:------------------------------------|:---------------------|:----------------------|")
+    lines.append("| **claim-1** | %s | not given | not given | not given | not given |" % cell)
+    lines.append("")
+    lines.append("## Dialectical Synthesis")
+    lines.append("")
+    lines.append("Synthesis was not in the note.")
+    lines.append("")
+    body = "\n".join(lines)
+    print(body)
+
+    out_path = getattr(args, "output", "") or ""
+    if not out_path:
+        return
+    parent = os.path.dirname(os.path.abspath(out_path))
+    if parent and not os.path.isdir(parent):
+        print("[DxSkills] Output directory not found: %s" % parent)
+        sys.exit(1)
+    with open(out_path, "w", encoding="utf-8") as handle:
+        handle.write(body)
+        if not body.endswith("\n"):
+            handle.write("\n")
+    print("[DxSkills] Wrote the same output to %s" % out_path)
+
+
 def cmd_dictation(args):
     from scripts.voice_streamer import clean_speech_chunk
     supplied = optional_text(getattr(args, "input", ""))
@@ -1183,11 +1229,11 @@ def main():
     p_cluster.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     
     # debate
-    p_debate = subparsers.add_parser("debate", help="Autonomous Socratic debate and adversarial thesis stress-testing simulator")
-    p_debate.add_argument("input", nargs="?", default="", help="Input text, proposal markdown file, or raw claim")
-    p_debate.add_argument("--topic", "-t", default="", help="Explicit topic title for the debate")
-    p_debate.add_argument("--format", "-f", choices=["markdown", "html", "canvas", "json"], default="markdown", help="Output format (default: markdown)")
-    p_debate.add_argument("--output", "-o", default="", help="Output filepath")
+    p_debate = subparsers.add_parser("debate", help="Print the claim you pass. Does not compute a score or fill debate cells.")
+    p_debate.add_argument("input", nargs="?", default="", help="Claim text, a file path, or piped stdin")
+    p_debate.add_argument("--topic", "-t", default="", help="Optional label you supply. Not treated as a claim.")
+    p_debate.add_argument("--format", "-f", choices=["markdown", "html", "canvas", "json"], default="markdown", help="Accepted for older calls. Output stays a plain table and is not generated.")
+    p_debate.add_argument("--output", "-o", default="", help="Write the same plain table to this path")
     
     # sync
     p_sync = subparsers.add_parser("sync", help="Multi-vault spatial bi-directional synchronizer and topology resolver")
@@ -2301,22 +2347,7 @@ def main():
         else:
             print(sc.format_cluster_terminal_report(res))
     elif args.command == "debate":
-        import scripts.socratic_debate as sd
-        text = read_input(args.input) if args.input else (
-            "Our spatial canvas architecture effortlessly eliminates all cognitive friction for non-linear thinkers. "
-            "Because users navigate ideas spatially, traditional linear hierarchies will become completely obsolete. "
-            "The engine automatically syncs high-dimensional vector graphs without any configuration overhead."
-        )
-        debate_data, formatted = sd.run_socratic_debate(
-            text,
-            topic=args.topic or None,
-            output_format=args.format,
-            output_file=args.output or None
-        )
-        if not args.output:
-            print(formatted)
-        else:
-            print(f"\n[DxSkills] Debate output written to: {args.output} (Score: {debate_data['thesis_readiness_score']}/100)")
+        cmd_debate(args)
     elif args.command == "sync":
         import scripts.vault_sync as vs
         vault_paths = args.vaults if args.vaults else [os.getcwd()]

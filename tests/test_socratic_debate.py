@@ -134,14 +134,29 @@ class TestSocraticDebate(unittest.TestCase):
         import subprocess
         cli_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "dx_cli.py"))
         res = subprocess.run(
-            [sys.executable, cli_path, "debate", "--topic", "CLI Integration Test"],
+            [sys.executable, cli_path, "debate", "The notes should ship Friday."],
             capture_output=True,
             text=True,
             check=True
         )
         self.assertEqual(res.returncode, 0)
-        self.assertIn("Socratic Debate & Stress-Testing Matrix: CLI Integration Test", res.stdout)
+        self.assertIn("The notes should ship Friday.", res.stdout)
+        self.assertIn("No score was computed.", res.stdout)
+        self.assertIn("not given", res.stdout)
+        self.assertNotIn("90/100", res.stdout)
+        self.assertNotIn("null hypothesis", res.stdout)
+        self.assertNotIn("day-one adoption", res.stdout)
         self.assertNotIn(chr(8212), res.stdout)
+
+        empty = subprocess.run(
+            [sys.executable, cli_path, "debate"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        self.assertIn("No claim was given.", empty.stdout)
+        self.assertNotIn("90/100", empty.stdout)
+        self.assertNotIn("null hypothesis", empty.stdout)
 
     def test_zero_em_dash_in_source(self):
         script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "socratic_debate.py"))
