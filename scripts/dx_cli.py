@@ -970,6 +970,36 @@ def cmd_parity(args):
     print("\n".join(report))
 
 
+def cmd_audit(args):
+    """Report formulas on the note. Do not invent a metacognitive score."""
+    import scripts.metacognition_audit as ma
+    text = optional_text(getattr(args, "input", ""))
+    if not text.strip():
+        print("No note was given.")
+        print("No score was printed.")
+        return
+    canvas = getattr(args, "canvas", "") or ""
+    svg = getattr(args, "svg", "") or ""
+    title = getattr(args, "title", "") or None
+    if canvas or svg:
+        ma.run_audit(
+            text,
+            title=title,
+            output_canvas=canvas or None,
+            output_svg=svg or None,
+        )
+    if getattr(args, "json", False):
+        print(json.dumps(ma.honest_audit_payload(text, title=title), indent=2))
+    else:
+        print(ma.format_terminal_audit(text))
+    if canvas or svg:
+        print("[DxSkills] Completed audit. No metacognitive score was measured.")
+        if canvas:
+            print("  - Scorecard Canvas: %s" % canvas)
+        if svg:
+            print("  - SVG Dashboard: %s" % svg)
+
+
 def cmd_export(args):
     text = read_input(args.input)
     fmt = args.format.lower()
@@ -2506,41 +2536,7 @@ def main():
             if args.svg:
                 print(f"  - SVG Diff Dashboard: {args.svg}")
     elif args.command == "audit":
-        import scripts.metacognition_audit as ma
-        text = read_input(args.input) if args.input else (
-            "# Strategic Spatial Deliverable\n"
-            "> **BLUF:** Decouple phonological working memory from spatial reasoning models.\n\n"
-            "## Architectural Vectors\n"
-            "- 1. High-contrast spatial canvas topology.\n"
-            "- 2. Automated cross-vault synchronization without manual ID linking.\n"
-            "- 3. Lossless multi-modal audio-spatial flashcards.\n\n"
-            "| Pillar | Latency | Status |\n"
-            "| :--- | :--- | :--- |\n"
-            "| Canvas | 0ms | Active |\n"
-            "| Audio | 12ms | Verified |\n"
-        )
-        audit_data, canvas_data, svg_code = ma.run_audit(
-            text,
-            title=args.title or None,
-            output_canvas=args.canvas or None,
-            output_svg=args.svg or None
-        )
-        if args.json:
-            print(json.dumps(audit_data, indent=2))
-        elif not (args.canvas or args.svg):
-            m = audit_data["metrics"]
-            print(f"\n=== [DxSkills: Metacognitive Synthesis Audit ({m['cognitive_leverage_score']}/100)] ===")
-            print(f"Phonological Friction: {m['phonological_friction']}% | Spatial Leverage: {m['spatial_leverage']}%")
-            print(f"Working Memory Tax: {m['working_memory_tax']}% | Connectivity: {m['connectivity_score']}%")
-            print("\nPrimary Directives:")
-            for r in audit_data["recommendations"]:
-                print(f"  - {r}")
-        else:
-            print(f"\n[DxSkills] Completed audit (Cognitive Leverage: {audit_data['metrics']['cognitive_leverage_score']}/100).")
-            if args.canvas:
-                print(f"  - Scorecard Canvas: {args.canvas}")
-            if args.svg:
-                print(f"  - SVG Dashboard: {args.svg}")
+        cmd_audit(args)
     elif args.command == "buffer":
         import scripts.memory_buffer as mb
         text = read_input(args.input) if args.input else (
