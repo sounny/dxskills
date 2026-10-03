@@ -41,40 +41,60 @@ def cmd_dump(args):
     text = read_input(args.input)
     print("\n=== [DxSkills: dx-dump / Brain Dump to Architecture] ===")
     lines = [line.strip() for line in text.splitlines() if line.strip()]
-    
+    if not lines and text.strip():
+        lines = [text.strip()]
+
     print("\n> **Bottom Line Up Front (BLUF):**")
-    print(f"> Accelerated synthesis compiled from {len(lines)} raw thoughts / fragments.")
-    
-    print("\n### 1. Extracted Focus Areas")
+    if lines:
+        print(f"> {lines[0].lstrip('*-#0123456789. ')}")
+    else:
+        print("> (empty)")
+    print(f"> {len(lines)} line(s). Wording unchanged. No task was added.")
+
+    print("\n### 1. Your lines")
     for i, line in enumerate(lines, 1):
         clean_line = line.lstrip("*-#0123456789. ")
-        print(f"- **Focus {i}:** {clean_line}")
-        
-    print("\n### 2. Operational Action Matrix")
-    print("| Item | Priority | Assigned Scope | Next Checkpoint |")
-    print("| :--- | :--- | :--- | :--- |")
+        print(f"- **Line {i}:** {clean_line}")
+
+    print("\n### 2. What is actually in the note")
+    print("| Line | Words | Text |")
+    print("| :--- | :--- | :--- |")
     for i, line in enumerate(lines, 1):
-        snippet = line[:40] + ("..." if len(line) > 40 else "")
-        print(f"| Task {i} | High | {snippet} | Review & Validate |")
+        clean_line = line.lstrip("*-#0123456789. ")
+        print(f"| {i} | {len(clean_line.split())} | {clean_line} |")
 
 def cmd_read(args):
     text = read_input(args.input)
     print("\n=== [DxSkills: dx-read / Anti-Wall-of-Text Filter] ===")
     words = text.split()
-    print("\n> **Bottom Line Up Front (BLUF):**")
-    print(f"> Document condensed from {len(words)} words to high-contrast visual anchors.")
-    
     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
-    print("\n### 1. Key Thematic Anchors")
-    for i, p in enumerate(paragraphs[:4], 1):
-        lead = " ".join(p.split()[:5])
-        print(f"- **Point {i} ({lead}...):** {p[:120]}...")
-        
-    print("\n### 2. Strategic Takeaway Matrix")
-    print("| Section | Primary Takeaway | Action Required |")
+    if not paragraphs and text.strip():
+        paragraphs = [text.strip()]
+    sentences = [s.strip() for s in re.split(r"(?<=[.?!])\s+", text.strip()) if s.strip()] if text.strip() else []
+
+    print("\n> **Bottom Line Up Front (BLUF):**")
+    if sentences:
+        print(f"> {sentences[0]}")
+    elif paragraphs:
+        print(f"> {paragraphs[0]}")
+    else:
+        print("> (empty)")
+    print(f"> {len(words)} words, {len(sentences)} sentence(s). Wording unchanged.")
+
+    print("\n### 1. Sentences")
+    if not sentences:
+        print("- (none)")
+    for i, sentence in enumerate(sentences[:12], 1):
+        print(f"- **{i}.** {sentence}")
+    if len(sentences) > 12:
+        print(f"- {len(sentences) - 12} more sentence(s) not shown.")
+
+    print("\n### 2. Paragraphs")
+    print("| Part | Words | First sentence |")
     print("| :--- | :--- | :--- |")
-    for i, p in enumerate(paragraphs[:3], 1):
-        print(f"| Part {i} | Core insight extracted from narrative | Review and adopt |")
+    for i, para in enumerate(paragraphs, 1):
+        lead = re.split(r"(?<=[.?!])\s+", para)[0]
+        print(f"| {i} | {len(para.split())} | {lead} |")
 
 def cmd_storyboard(args):
     if getattr(args, "canvas", "") or getattr(args, "svg", ""):
