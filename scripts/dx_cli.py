@@ -4483,62 +4483,71 @@ def main():
             print(f"[DxSkills] Saccadic trajectory SVG exported to: {args.svg}")
     elif args.command in ["concept-lattice", "lattice", "fca", "resonance-compiler"]:
         import scripts.concept_lattice as clat
+        demo_context = {
+            "mechanical_damper": ["energy_dissipation", "resilience", "hardware", "analog"],
+            "viscoelastic_mount": ["energy_dissipation", "resilience", "hardware", "isolation"],
+            "rate_limiter": ["energy_dissipation", "resilience", "software", "backpressure"],
+            "circuit_breaker": ["resilience", "software", "fault_tolerance", "isolation"],
+            "biological_homeostasis": ["resilience", "adaptation", "feedback_loop", "organic"],
+            "immune_system": ["resilience", "fault_tolerance", "adaptation", "organic"],
+        }
 
-        compiler = clat.ConceptLatticeCompiler(min_resonance=args.min_resonance)
-
-        if args.input and os.path.isfile(args.input):
-            with open(args.input, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            if "nodes" in raw_data:
-                compiler.load_from_canvas(raw_data)
-            elif isinstance(raw_data, dict):
-                compiler.load_context(raw_data)
-        elif args.demo or not args.input:
-            demo_context = {
-                "mechanical_damper": ["energy_dissipation", "resilience", "hardware", "analog"],
-                "viscoelastic_mount": ["energy_dissipation", "resilience", "hardware", "isolation"],
-                "rate_limiter": ["energy_dissipation", "resilience", "software", "backpressure"],
-                "circuit_breaker": ["resilience", "software", "fault_tolerance", "isolation"],
-                "biological_homeostasis": ["resilience", "adaptation", "feedback_loop", "organic"],
-                "immune_system": ["resilience", "fault_tolerance", "adaptation", "organic"],
-            }
-            compiler.load_context(demo_context)
-
-        concepts, edges, leaps, telemetry = compiler.compute_lattice()
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
-        else:
-            print("\n" + "=" * 64)
-            print("  Formal Concept Lattice & Associative Resonance Telemetry")
-            print("=" * 64)
-            print(f"  Total Objects:              {telemetry.total_objects}")
-            print(f"  Total Attributes:           {telemetry.total_attributes}")
-            print(f"  Formal Concepts Discovered: {telemetry.total_concepts}")
-            print(f"  Hasse Cover Edges:          {telemetry.total_hasse_edges}")
-            print(f"  Max Topological Depth:      {telemetry.max_lattice_depth}")
-            print(f"  Associative Leaps Found:    {telemetry.associative_leaps_count}")
-            print(f"  Top Resonance Score:        {telemetry.top_resonance_score:.3f}")
-            print(f"  Galois Connectivity Index:  {telemetry.galois_connectivity_index:.3f}")
-            print("-" * 64)
+        def _print_lattice(compiler, leaps, telemetry, sample_label):
+            if sample_label:
+                print(sample_label)
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+                return
+            print("")
+            print("=== [DxSkills: lattice formula] ===")
+            print(f"Objects: {telemetry.total_objects} | Attributes: {telemetry.total_attributes} | Concepts: {telemetry.total_concepts}")
+            print(f"Cover edges figure: {telemetry.total_hasse_edges} | Depth figure: {telemetry.max_lattice_depth}")
+            print(f"Leaps figure: {telemetry.associative_leaps_count} | Top score figure: {telemetry.top_resonance_score:.3f}")
+            print(f"Connectivity figure: {telemetry.galois_connectivity_index:.3f}")
+            print(f"The {args.min_resonance} resonance floor is a formula input, not a measured link.")
+            print("These figures are a formula on the labels in the file, not a study of intuition.")
             if leaps:
-                print("  Top Cross-Domain Associative Leaps (Eide & Eide I-Strength):")
-                for idx, leap in enumerate(leaps[:5], 1):
+                print("Leaps the formula counted:")
+                for leap in leaps[:5]:
                     src_str = ", ".join(leap.source_extent[:2])
                     tgt_str = ", ".join(leap.target_extent[:2])
-                    inv_str = ", ".join(leap.shared_intent)
-                    print(f"    {idx}. [{leap.category.value}] Score: {leap.resonance_score:.2f}")
-                    print(f"       Bridge: ({src_str}) <---> ({tgt_str})")
-                    print(f"       Invariants: {inv_str}")
-            print("=" * 64 + "\n")
+                    print(f"- {src_str} with {tgt_str}: {leap.resonance_score:.2f}")
 
-        if args.output_canvas:
-            compiler.to_canvas(args.output_canvas, canvas_title="Formal Concept Lattice")
-            print(f"[DxSkills] Concept lattice .canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            compiler.to_svg(args.svg)
-            print(f"[DxSkills] Concept lattice SVG written to: {args.svg}")
+        compiler = clat.ConceptLatticeCompiler(min_resonance=args.min_resonance)
+        if args.demo and not args.input:
+            compiler.load_context(demo_context)
+            _, _, leaps, telemetry = compiler.compute_lattice()
+            _print_lattice(compiler, leaps, telemetry, "Built-in sample, not your notes. No lattice was measured.")
+        elif not args.input:
+            print("No context was given. No lattice was scored.")
+        elif not os.path.isfile(args.input):
+            print(f"File not found: {args.input}")
+            print("No lattice was scored.")
+            sys.exit(1)
+        else:
+            try:
+                with open(args.input, "r", encoding="utf-8") as handle:
+                    raw_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No lattice was scored.")
+                sys.exit(1)
+            loaded = False
+            if isinstance(raw_data, dict) and "nodes" in raw_data:
+                compiler.load_from_canvas(raw_data)
+                loaded = True
+            elif isinstance(raw_data, dict) and raw_data and all(isinstance(v, list) for v in raw_data.values()):
+                compiler.load_context(raw_data)
+                loaded = True
+            if not loaded:
+                print("The file was not an object-to-attribute map or a canvas. No lattice was scored.")
+            elif not compiler.all_objects:
+                print("The file had no objects. No lattice was scored.")
+            else:
+                _, _, leaps, telemetry = compiler.compute_lattice()
+                _print_lattice(compiler, leaps, telemetry, "")
+                print(f"Formula on {args.input}.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as a measured lattice.")
     elif args.command in ["action-sequencer", "sequencer", "dag-runner", "executive-scaffold"]:
         import scripts.action_sequencer as aseq
 
