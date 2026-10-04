@@ -4192,41 +4192,67 @@ def main():
             print(f"[DxSkills] Saccade velocity profile SVG exported to: {args.svg}")
     elif args.command in ["scanpath", "flow", "compress-reading"]:
         import scripts.scanpath_compressor as spc
+        sample_text = (
+            "Distributed consensus engines mandate deterministic execution across cluster boundaries. "
+            "Unsynchronized concurrent mutations risk catastrophic state corruption and partitioned quorums. "
+            "Spatial cognitive architectures eliminate phonological decoding strain by mapping complex "
+            "topologies directly into two-dimensional associative graphs."
+        )
         compressor = spc.SaccadicScanpathCompressor(target_line_chars=args.chars)
-        raw_text = ""
-        if args.input and os.path.isfile(args.input):
-            with open(args.input, "r", encoding="utf-8", errors="ignore") as f:
-                raw_text = f.read()
-        elif args.demo or not args.input:
-            raw_text = (
-                "Distributed consensus engines mandate deterministic execution across cluster boundaries. "
-                "Unsynchronized concurrent mutations risk catastrophic state corruption and partitioned quorums. "
-                "Spatial cognitive architectures eliminate phonological decoding strain by mapping complex "
-                "topologies directly into two-dimensional associative graphs."
-            )
-
-        mode = spc.GuidanceMode(args.mode)
-        guided_text, telemetry = compressor.compress_and_guide(raw_text, mode=mode)
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+        if args.demo and not args.input:
+            mode = spc.GuidanceMode(args.mode)
+            guided_text, telemetry = compressor.compress_and_guide(sample_text, mode=mode)
+            print("Built-in sample, not your reading. No eyes were tracked.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + compressor.generate_markdown_report(telemetry))
+                print("\n## Guided Reading Preview\n")
+                print(guided_text[:400] + "..." if len(guided_text) > 400 else guided_text)
+        elif not args.input:
+            print("No text was given. No reading was scored.")
+        elif not os.path.isfile(args.input):
+            print(f"File not found: {args.input}")
+            print("No reading was scored.")
+            sys.exit(1)
         else:
-            print("\n" + compressor.generate_markdown_report(telemetry))
-            print("\n## Guided Reading Preview\n")
-            print(guided_text[:400] + "..." if len(guided_text) > 400 else guided_text)
-
-        if args.output:
-            with open(args.output, "w", encoding="utf-8") as f:
-                f.write(guided_text)
-            print(f"\n[DxSkills] Guided reading text written to: {args.output}")
-
-        if args.canvas:
-            compressor.export_canvas(guided_text, telemetry, output_path=args.canvas)
-            print(f"[DxSkills] Reading corridor .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = compressor.export_svg_scanpath(telemetry, output_path=args.svg)
-            print(f"[DxSkills] Saccadic trajectory SVG exported to: {args.svg}")
+            with open(args.input, "r", encoding="utf-8", errors="ignore") as handle:
+                raw_text = handle.read()
+            if not raw_text.strip():
+                print("The file was empty. No reading was scored.")
+            else:
+                mode = spc.GuidanceMode(args.mode)
+                guided_text, telemetry = compressor.compress_and_guide(raw_text, mode=mode)
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "file": args.input,
+                    "mode": args.mode,
+                    "words": telemetry.total_words,
+                    "lines": telemetry.total_lines,
+                    "characters": telemetry.raw_characters_count,
+                    "regression_count_figure": telemetry.estimated_regressions_count,
+                    "regression_rate_figure_pct": telemetry.regression_rate_pct,
+                    "efficiency_figure": telemetry.scanpath_efficiency_ratio,
+                    "baseline_wpm_input": telemetry.baseline_wpm,
+                    "projected_wpm_figure": telemetry.projected_wpm,
+                    "speedup_figure_pct": telemetry.wpm_speedup_pct,
+                    "relief_figure": telemetry.ocular_relief_score,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: scanpath formula] ===")
+                    print(f"Formula on {telemetry.total_words} words in {args.input}, mode {args.mode}.")
+                    print(f"Regression count figure: {telemetry.estimated_regressions_count} ({telemetry.regression_rate_pct}%)")
+                    print(f"Efficiency figure: {telemetry.scanpath_efficiency_ratio} | Relief figure: {telemetry.ocular_relief_score}")
+                    print(f"Pace figure: {telemetry.baseline_wpm} WPM to {telemetry.projected_wpm} WPM ({telemetry.wpm_speedup_pct}%)")
+                    print("The 175 WPM baseline is a formula input, not a measured pace.")
+                    print("These figures are a formula on word length in the file, not a measurement of your eyes.")
+                    print("No guided file was written.")
+        if args.output or args.canvas or args.svg:
+            print("No markdown, canvas, or svg was written. Those files used to present the result as measured reading.")
     elif args.command in ["visual-metronome", "metronome", "pace-reading"]:
         import scripts.visual_metronome as vpm
 
