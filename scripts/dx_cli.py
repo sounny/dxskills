@@ -1351,12 +1351,12 @@ def main():
     p_data.add_argument("--json", "-j", action="store_true", help="Print the notes as JSON")
     
     # palace
-    p_palace = subparsers.add_parser("palace", help="Autonomous cognitive spatial mind palace virtual tour and spatial audio navigator")
-    p_palace.add_argument("input", nargs="?", default="", help="Input markdown note, topic outline, or text file")
-    p_palace.add_argument("--title", "-t", default="", help="Mind Palace title")
-    p_palace.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_palace.add_argument("--svg", "-s", default="", help="Output vector SVG blueprint floorplan filepath")
-    p_palace.add_argument("--json", "-j", action="store_true", help="Output raw JSON palace telemetry")
+    p_palace = subparsers.add_parser("palace", help="List lines you pass. Does not build a mind palace or audio tour.")
+    p_palace.add_argument("input", nargs="?", default="", help="Note text or a text file. No default note.")
+    p_palace.add_argument("--title", "-t", default="", help="Title to print with the lines. No palace is named.")
+    p_palace.add_argument("--canvas", "-c", default="", help="Ignored. No canvas is written.")
+    p_palace.add_argument("--svg", "-s", default="", help="Ignored. No svg is written.")
+    p_palace.add_argument("--json", "-j", action="store_true", help="Print the lines as JSON")
     
     # code-arch
     p_code = subparsers.add_parser("code-arch", help="Autonomous spatial multi-modal code architecture and dependency graph decompiler")
@@ -2650,35 +2650,30 @@ def main():
                         handle.write(json.dumps({"title": item["title"], "text": item["text"]}, ensure_ascii=False) + "\n")
                 print(f"Wrote your words to {args.output}. Not a training corpus.")
     elif args.command == "palace":
-        import scripts.mind_palace as mp_tour
-        text = read_input(args.input) if args.input else (
-            "# Spatial Memory Architecture\n"
-            "- Linear text creates phonological loop bottleneck.\n"
-            "- Method-of-loci memory palaces activate hippocampal spatial navigation.\n"
-            "- Binaural acoustic orientation reinforces episodic memory recall.\n"
-            "- Structured chambers allow non-linear review without cognitive exhaustion."
-        )
-        palace, canvas_data, svg_code = mp_tour.run_mind_palace(
-            text,
-            title=args.title or None,
-            output_canvas=args.canvas or None,
-            output_svg=args.svg or None
-        )
-        if args.json:
-            print(json.dumps(palace, indent=2))
-        elif not (args.canvas or args.svg):
-            print(f"\n=== [DxSkills: Cognitive Mind Palace ({palace['total_chambers']} Chambers | {palace['total_loci']} Loci)] ===")
-            for c in palace["chambers"]:
-                print(f"\n[{c['name']}] - {c['theme']}")
-                for loc in c["loci"]:
-                    sa = loc["spatial_audio"]
-                    print(f"  * {loc['fixture']}: {loc['title']} (Azimuth: {sa['azimuth_degrees']} deg, Pan: {sa['stereo_pan']})")
+        note = optional_text(getattr(args, "input", ""))
+        lines = [line.strip() for line in note.splitlines() if line.strip()]
+        if not lines:
+            print("No notes were given. No chambers were built.")
         else:
-            print(f"\n[DxSkills] Mind Palace projected: {palace['total_chambers']} Chambers with {palace['total_loci']} Memory Loci.")
-            if args.canvas:
-                print(f"  - Canvas: {args.canvas}")
-            if args.svg:
-                print(f"  - Blueprint: {args.svg}")
+            payload = {
+                "title": args.title or None,
+                "lines": lines,
+                "chambers_built": 0,
+                "audio_measured": False,
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("")
+                print("=== [DxSkills: palace] ===")
+                if args.title:
+                    print(f"Title you passed: {args.title}")
+                print(f"Lines you gave: {len(lines)}")
+                print("No chambers, themes, or audio angles were added.")
+                for line in lines:
+                    print(f"- {line}")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. Those files used to draw invented chambers.")
     elif args.command == "code-arch":
         import scripts.code_decompiler as cdec
         target_path = os.path.abspath(args.target)

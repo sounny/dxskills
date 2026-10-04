@@ -119,8 +119,10 @@ class TestMindPalace(unittest.TestCase):
                 text=True
             )
             self.assertEqual(res.returncode, 0, f"CLI stderr: {res.stderr}")
-            self.assertIn("[DxSkills] Mind Palace projected:", res.stdout)
-            self.assertTrue(os.path.exists(out_canvas))
+            self.assertIn("Establish entry friction", res.stdout)
+            self.assertIn("No chambers, themes, or audio angles were added.", res.stdout)
+            self.assertNotIn("The Grand Atrium", res.stdout)
+            self.assertFalse(os.path.exists(out_canvas))
 
     def test_zero_em_dash_compliance(self):
         script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "mind_palace.py"))
