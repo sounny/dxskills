@@ -1549,16 +1549,16 @@ def main():
     p_examine.add_argument("--demo", action="store_true", help="Print a built-in sample system. Not your system.")
 
     # audio-pacer / pacer / soundstage
-    p_pacer = subparsers.add_parser("audio-pacer", aliases=["pacer", "soundstage"], help="Autonomous cognitive spatial saliency decoupler and multi-track audio pacer")
-    p_pacer.add_argument("task", nargs="?", default="Cognitive Architecture Sprint", help="Task name or description")
-    p_pacer.add_argument("--complexity", "-k", type=float, default=0.7, help="Task complexity 0.0 to 1.0 (default: 0.7)")
-    p_pacer.add_argument("--load", "-l", type=float, default=0.6, help="Cognitive load saturation 0.0 to 1.0 (default: 0.6)")
-    p_pacer.add_argument("--streams", "-s", nargs="*", default=[], help="Streams in format 'Name:Type' where Type in primary_focus, telemetry_log, rhythmic_pacer, alert_urgent, background_ambience")
-    p_pacer.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_pacer.add_argument("--svg", default="", help="Output 2D soundstage radar SVG filepath")
-    p_pacer.add_argument("--manifest", "-m", default="", help="Output Web Audio API manifest JSON filepath")
-    p_pacer.add_argument("--json", "-j", action="store_true", help="Output raw JSON soundstage configuration")
-    p_pacer.add_argument("--demo", action="store_true", help="Run with demonstration multi-track stream setup")
+    p_pacer = subparsers.add_parser("audio-pacer", aliases=["pacer", "soundstage"], help="Run a cadence formula on complexity and load you pass. Does not open a soundstage.")
+    p_pacer.add_argument("task", nargs="?", default="", help="Task name you pass. No default task.")
+    p_pacer.add_argument("--complexity", "-k", type=float, default=None, help="Complexity for the formula, 0 to 1. No default.")
+    p_pacer.add_argument("--load", "-l", type=float, default=None, help="Load for the formula, 0 to 1. No default.")
+    p_pacer.add_argument("--streams", "-s", nargs="*", default=None, help="Stream names you pass. No default channels.")
+    p_pacer.add_argument("--canvas", "-c", default="", help="Ignored. No canvas is written.")
+    p_pacer.add_argument("--svg", default="", help="Ignored. No svg is written.")
+    p_pacer.add_argument("--manifest", "-m", default="", help="Ignored. No audio manifest is written.")
+    p_pacer.add_argument("--json", "-j", action="store_true", help="Print the formula as JSON")
+    p_pacer.add_argument("--demo", action="store_true", help="Print a built-in sample soundstage. Not your task.")
 
     # fovea / tunnel
     p_fovea = subparsers.add_parser("fovea", aliases=["tunnel", "attention-tunnel"], help="Autonomous cognitive spatial multi-scale attention tunnel and peripheral fovea synchronizer")
@@ -3927,52 +3927,65 @@ def main():
             print("No canvas or svg was written. Those files used to draw an invented rigor score.")
     elif args.command in ["audio-pacer", "pacer", "soundstage"]:
         import scripts.audio_pacer as ap
-        pacer = ap.SpatialAudioPacer()
-        task_profile = ap.CognitiveTaskProfile(
-            task_name=args.task,
-            complexity_score=args.complexity,
-            cognitive_load=args.load,
-        )
-        raw_streams = []
-        if args.demo or not args.streams:
+        streams = args.streams or []
+        if args.demo and not streams and args.complexity is None and args.load is None and not (args.task or "").strip():
+            pacer = ap.SpatialAudioPacer()
+            task_profile = ap.CognitiveTaskProfile(
+                task_name="Built-in sample",
+                complexity_score=0.7,
+                cognitive_load=0.6,
+            )
             raw_streams = [
                 {"id": "s1", "name": "Primary Code IDE", "track_type": ap.AudioTrackType.PRIMARY_FOCUS, "description": "Active coding AST buffer"},
                 {"id": "s2", "name": "Telemetry Logs", "track_type": ap.AudioTrackType.TELEMETRY_LOG, "description": "Build pipeline and test stream"},
                 {"id": "s3", "name": "Rhythmic Metronome", "track_type": ap.AudioTrackType.RHYTHMIC_PACER, "description": "Cognitive grounding pulse"},
                 {"id": "s4", "name": "Production Alerts", "track_type": ap.AudioTrackType.ALERT_URGENT, "description": "Critical exception alerts"},
             ]
+            config = pacer.decouple_saliency(task_profile, raw_streams)
+            print("Built-in sample, not your task. No soundstage was measured.")
+            if args.json:
+                print(json.dumps(config.to_dict(), indent=2))
+            else:
+                print(pacer.generate_markdown_report(config))
+        elif not (args.task or "").strip() and args.complexity is None and args.load is None and not streams:
+            print("No task was given. No cadence was computed.")
         else:
-            for idx, item in enumerate(args.streams):
-                if ":" in item:
-                    s_name, s_type = item.rsplit(":", 1)
+            names = []
+            for item in streams:
+                names.append(item.split(":", 1)[0].strip() or "not given")
+            if args.complexity is None or args.load is None:
+                print("No cadence was computed. The formula needs --complexity and --load.")
+                if (args.task or "").strip():
+                    print(f"Task you passed: {args.task}")
+                if names:
+                    print("Streams you passed: " + "; ".join(names))
+            else:
+                pacer = ap.SpatialAudioPacer()
+                bpm = pacer.calculate_pacing_bpm(args.complexity, args.load)
+                band = pacer.determine_entrainment_band(bpm)
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "task": (args.task or "").strip() or "not given",
+                    "complexity": args.complexity,
+                    "load": args.load,
+                    "streams": names,
+                    "cadence_bpm_figure": bpm,
+                    "formula_band": band,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
                 else:
-                    s_name, s_type = item, "telemetry_log"
-                raw_streams.append({
-                    "id": f"stream_{idx+1}",
-                    "name": s_name.strip(),
-                    "track_type": s_type.strip(),
-                })
-
-        config = pacer.decouple_saliency(task_profile, raw_streams)
-
-        if args.json:
-            print(json.dumps(config.to_dict(), indent=2))
-        else:
-            print("\n" + pacer.generate_markdown_report(config))
-
-        if args.canvas:
-            pacer.export_canvas(config, output_path=args.canvas)
-            print(f"\n[DxSkills] Spatial Soundstage .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            pacer.export_svg_soundstage(config, output_path=args.svg)
-            print(f"[DxSkills] Soundstage Radar SVG exported to: {args.svg}")
-
-        if args.manifest:
-            manifest_data = pacer.generate_web_audio_manifest(config)
-            with open(args.manifest, "w", encoding="utf-8") as f:
-                json.dump(manifest_data, f, indent=2)
-            print(f"[DxSkills] Web Audio manifest exported to: {args.manifest}")
+                    print("")
+                    print("=== [DxSkills: audio-pacer formula] ===")
+                    if payload["task"] != "not given":
+                        print(f"Task you passed: {payload['task']}")
+                    print(f"Formula on complexity {args.complexity} and load {args.load}.")
+                    print(f"Cadence figure: {bpm} BPM | Formula band: {band}")
+                    print("Streams you passed: " + ("; ".join(names) if names else "none"))
+                    print("This cadence is a formula on the numbers you passed, not a measured soundstage. No azimuths were added.")
+        if args.canvas or args.svg or args.manifest:
+            print("No canvas, svg, or audio manifest was written. Those files used to draw an invented soundstage.")
     elif args.command in ["fovea", "tunnel", "attention-tunnel"]:
         import scripts.fovea_synchronizer as fs
         sync = fs.SpatialFoveaSynchronizer()
