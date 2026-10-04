@@ -4616,44 +4616,82 @@ def main():
             print("No canvas or svg was written. Those files used to present the result as a measured plan.")
     elif args.command in ["cognitive-aperture", "aperture", "scope-bound", "cowan-lens"]:
         import scripts.cognitive_aperture as cap
-
+        demo_tasks = {
+            "task_urgent_bug": {"title": "Fix Critical Production Regression", "cognitive_weight": 8.0, "urgency_score": 0.95, "strategic_alignment": 0.3},
+            "task_auth_audit": {"title": "Resolve Token Refresh Leak", "cognitive_weight": 7.0, "urgency_score": 0.90, "strategic_alignment": 0.4},
+            "task_cli_test": {"title": "Complete Suite Unit Tests", "cognitive_weight": 6.0, "urgency_score": 0.85, "strategic_alignment": 0.5},
+            "task_deploy_run": {"title": "Staging Deployment Runway", "cognitive_weight": 5.0, "urgency_score": 0.80, "strategic_alignment": 0.5},
+            "task_refactor_css": {"title": "Refactor Titanium CSS Variables", "cognitive_weight": 4.0, "urgency_score": 0.50, "strategic_alignment": 0.4},
+            "task_doc_cleanup": {"title": "Review Backlog Markdown Archives", "cognitive_weight": 3.0, "urgency_score": 0.35, "strategic_alignment": 0.3},
+            "task_future_arch": {"title": "2030 Holographic Canvas Spec", "cognitive_weight": 9.0, "urgency_score": 0.15, "strategic_alignment": 0.95},
+            "task_infra_migration": {"title": "Multi-Region Cloud Redundancy", "cognitive_weight": 8.5, "urgency_score": 0.20, "strategic_alignment": 0.90},
+        }
         harness = cap.CognitiveApertureHarness(capacity_limit=args.capacity)
-
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            if "nodes" in raw_data:
-                harness.load_canvas(raw_data)
-            elif isinstance(raw_data, dict):
-                harness.load_dict(raw_data)
-        elif args.demo or not args.canvas:
-            demo_tasks = {
-                "task_urgent_bug": {"title": "Fix Critical Production Regression", "cognitive_weight": 8.0, "urgency_score": 0.95, "strategic_alignment": 0.3},
-                "task_auth_audit": {"title": "Resolve Token Refresh Leak", "cognitive_weight": 7.0, "urgency_score": 0.90, "strategic_alignment": 0.4},
-                "task_cli_test": {"title": "Complete Suite Unit Tests", "cognitive_weight": 6.0, "urgency_score": 0.85, "strategic_alignment": 0.5},
-                "task_deploy_run": {"title": "Staging Deployment Runway", "cognitive_weight": 5.0, "urgency_score": 0.80, "strategic_alignment": 0.5},
-                "task_refactor_css": {"title": "Refactor Titanium CSS Variables", "cognitive_weight": 4.0, "urgency_score": 0.50, "strategic_alignment": 0.4},
-                "task_doc_cleanup": {"title": "Review Backlog Markdown Archives", "cognitive_weight": 3.0, "urgency_score": 0.35, "strategic_alignment": 0.3},
-                "task_future_arch": {"title": "2030 Holographic Canvas Spec", "cognitive_weight": 9.0, "urgency_score": 0.15, "strategic_alignment": 0.95},
-                "task_infra_migration": {"title": "Multi-Region Cloud Redundancy", "cognitive_weight": 8.5, "urgency_score": 0.20, "strategic_alignment": 0.90},
-            }
+        if args.demo and not args.canvas:
             harness.load_dict(demo_tasks)
-
-        manual_pins = args.focal if args.focal else None
-        entities, telemetry = harness.calibrate_aperture(manual_focal_ids=manual_pins)
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+            _, telemetry = harness.calibrate_aperture(manual_focal_ids=args.focal or None)
+            print("Built-in sample, not your tasks. No memory was measured.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + harness.render_ascii_lens(telemetry))
+        elif not args.canvas:
+            print("No tasks were given. No aperture was scored.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No aperture was scored.")
+            sys.exit(1)
         else:
-            print("\n" + harness.render_ascii_lens(telemetry))
-
-        if args.output_canvas:
-            harness.to_canvas(args.output_canvas, canvas_title="Cognitive Aperture Runway")
-            print(f"[DxSkills] Aperture canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            harness.to_svg(args.svg)
-            print(f"[DxSkills] Cognitive aperture SVG written to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    raw_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No aperture was scored.")
+                sys.exit(1)
+            loaded = False
+            if isinstance(raw_data, dict) and "nodes" in raw_data:
+                harness.load_canvas(raw_data)
+                loaded = True
+            elif isinstance(raw_data, dict) and raw_data:
+                harness.load_dict(raw_data)
+                loaded = True
+            if not loaded:
+                print("The file was not a task map or a canvas. No aperture was scored.")
+            elif not harness.entities:
+                print("The file had no tasks. No aperture was scored.")
+            else:
+                _, telemetry = harness.calibrate_aperture(manual_focal_ids=args.focal or None)
+                if args.json:
+                    print(json.dumps({
+                        "formula": True,
+                        "measured": False,
+                        "file": args.canvas,
+                        "tasks": telemetry.total_entities,
+                        "capacity_input": telemetry.capacity_limit,
+                        "focal_figure": telemetry.focal_count,
+                        "peripheral_figure": telemetry.peripheral_count,
+                        "horizon_figure": telemetry.horizon_count,
+                        "strain_figure": telemetry.working_memory_strain_index,
+                        "drift_figure": telemetry.scope_drift_index,
+                        "efficiency_figure_pct": telemetry.aperture_focus_efficiency_pct,
+                    }, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: aperture formula] ===")
+                    print(f"Formula on {telemetry.total_entities} tasks in {args.canvas}. Capacity input: {telemetry.capacity_limit}.")
+                    print(f"Focal figure: {telemetry.focal_count} | Peripheral figure: {telemetry.peripheral_count} | Horizon figure: {telemetry.horizon_count}")
+                    print(f"Strain figure: {telemetry.working_memory_strain_index:.2f} | Drift figure: {telemetry.scope_drift_index:.2f} | Efficiency figure: {telemetry.aperture_focus_efficiency_pct:.1f}%")
+                    needs_fill = False
+                    if isinstance(raw_data, dict) and "nodes" not in raw_data:
+                        for info in raw_data.values():
+                            if not isinstance(info, dict) or any(key not in info for key in ("cognitive_weight", "urgency_score", "strategic_alignment")):
+                                needs_fill = True
+                                break
+                    if needs_fill:
+                        print("Missing weight, urgency, or alignment is filled with 5, 0.5, and 0.5. That fill is not a measurement.")
+                    print("These figures are a formula on the numbers in the file, not a measurement of memory.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as measured memory.")
     elif args.command in ["dialectic-synthesizer", "triad", "dialectic-mesh", "aufhebung"]:
         import scripts.dialectic_synthesizer as dsynt
 
