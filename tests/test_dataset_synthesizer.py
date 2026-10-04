@@ -130,8 +130,14 @@ class TestDatasetSynthesizer(unittest.TestCase):
                 text=True
             )
             self.assertEqual(res.returncode, 0, f"CLI stderr: {res.stderr}")
-            self.assertIn("[DxSkills] Compiled", res.stdout)
+            self.assertIn("Wrote your words", res.stdout)
+            self.assertIn("not scored", res.stdout)
+            self.assertNotIn("85.0", res.stdout)
             self.assertTrue(os.path.exists(out_jsonl))
+            with open(out_jsonl, "r", encoding="utf-8") as handle:
+                written = handle.read()
+            self.assertIn("Strategic Spatial Deliverable", written)
+            self.assertNotIn("Deconstruct linear text", written)
 
     def test_zero_em_dash_compliance(self):
         script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts", "dataset_synthesizer.py"))

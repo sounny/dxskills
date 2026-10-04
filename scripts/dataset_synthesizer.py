@@ -293,16 +293,13 @@ def main():
             corpus.append((args.title or "Interactive CLI Sample", args.input))
     else:
         if not sys.stdin.isatty():
-            corpus.append((args.title or "Standard Ingest", sys.stdin.read()))
-        else:
-            corpus.append((
-                "Core Spatial Scaffolding",
-                "# Cognitive Spatial Architecture\n"
-                "> **BLUF:** Decouple phonological memory from spatial reasoning models.\n\n"
-                "- Spatial Vector 1: 2D radial coordinate positioning.\n"
-                "- Spatial Vector 2: Multi-vault topology federation without orphan links.\n"
-                "- Spatial Vector 3: Working memory dual-channel stamina balance."
-            ))
+            piped = sys.stdin.read()
+            if piped.strip():
+                corpus.append((args.title or "Standard Ingest", piped))
+        if not corpus:
+            print("No notes were given. No pairs were compiled.")
+            print("Nothing was scored.")
+            return
 
     dataset, meta = compile_dataset(corpus, output_filepath=args.output, fmt=args.format)
 

@@ -98,17 +98,6 @@ class StoryboardSequencer:
                     if len(clean) > 12:
                         shots.append(clean)
 
-        if not shots:
-            # Default demonstrative 3-act pitch storyboard
-            shots = [
-                "Establish the friction: Linear text walls overload phonological working memory in traditional documentation.",
-                "Inciting shift: Non-linear thinkers struggle to communicate complex holistic architectures through sequential slides.",
-                "Core exploration: The DxSkills cognitive engine decouples spatial mental models from linear output streams.",
-                "Technical deep dive: High-dimensional vector similarity clusters ideas into constellation topologies.",
-                "Multi-vault bridge: Cross-repository synchronizers identify dangling wikilinks and orphan nodes in real time.",
-                "Resolution vista: The user presents a hardened spatial canvas that disarms reductionist critics instantly."
-            ]
-
         return shots
 
 
@@ -284,14 +273,8 @@ def main():
         if not sys.stdin.isatty():
             content = sys.stdin.read()
         else:
-            content = (
-                "Establish the friction: Linear text walls overload phonological working memory.\n"
-                "Inciting shift: Non-linear thinkers struggle to communicate complex holistic architectures through sequential slides.\n"
-                "Core exploration: The DxSkills cognitive engine decouples spatial mental models from linear output streams.\n"
-                "Technical deep dive: High-dimensional vector similarity clusters ideas into constellation topologies.\n"
-                "Multi-vault bridge: Cross-repository synchronizers identify dangling wikilinks and orphan nodes in real time.\n"
-                "Resolution vista: The user presents a hardened spatial canvas that disarms reductionist critics instantly."
-            )
+            print("No notes were given. No shots were invented.")
+            return
 
     storyboard, canvas_data, svg_code = run_storyboard(
         content,
