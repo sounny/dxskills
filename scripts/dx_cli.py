@@ -4377,51 +4377,74 @@ def main():
             print("No canvas or svg was written. Those files used to present the result as measured attention.")
     elif args.command in ["dual-code", "dual-coder", "dual-track"]:
         import scripts.dual_code_interleaver as dci
-
+        sample_canvas = {
+            "nodes": [
+                {"id": "node-consensus", "text": "Raft Consensus Module\n\nCoordinates cluster leader election and log replication across distributed instances."},
+                {"id": "node-wal", "text": "Write-Ahead Storage Log\n\nPersists append-only state mutations to durable NVMe storage before commit confirmation."},
+                {"id": "node-telemetry", "text": "Cluster Telemetry Gateway\n\nAggregates Prometheus metrics, health heartbeats, and cluster topology status."},
+            ]
+        }
+        sample_prose = (
+            "The Raft consensus module coordinates cluster leader election and ensures deterministic log replication. "
+            "The write-ahead storage log persists append-only state mutations directly to durable disk. "
+            "The cluster telemetry gateway aggregates health heartbeats and distributes performance metrics across nodes."
+        )
         interleaver = dci.DualCodeInterleaver()
-
-        canvas_data = {}
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                canvas_data = json.load(f)
-        elif args.demo or not args.canvas:
-            canvas_data = {
-                "nodes": [
-                    {"id": "node-consensus", "text": "Raft Consensus Module\n\nCoordinates cluster leader election and log replication across distributed instances."},
-                    {"id": "node-wal", "text": "Write-Ahead Storage Log\n\nPersists append-only state mutations to durable NVMe storage before commit confirmation."},
-                    {"id": "node-telemetry", "text": "Cluster Telemetry Gateway\n\nAggregates Prometheus metrics, health heartbeats, and cluster topology status."},
-                ]
-            }
-
-        prose_text = ""
-        if args.prose and os.path.isfile(args.prose):
-            with open(args.prose, "r", encoding="utf-8", errors="ignore") as f:
-                prose_text = f.read()
-        elif args.demo or not args.prose:
-            prose_text = (
-                "The Raft consensus module coordinates cluster leader election and ensures deterministic log replication. "
-                "The write-ahead storage log persists append-only state mutations directly to durable disk. "
-                "The cluster telemetry gateway aggregates health heartbeats and distributes performance metrics across nodes."
-            )
-
-        blocks, telemetry = interleaver.align_channels(canvas_data, prose_text)
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+        if args.demo and not args.canvas and not args.prose:
+            _, telemetry = interleaver.align_channels(sample_canvas, sample_prose)
+            print("Built-in sample, not your canvas or your prose. Nothing was paired.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + interleaver.render_ascii_dual_stream(telemetry))
+        elif not args.canvas and not args.prose:
+            print("No canvas or prose was given. No pairing was scored.")
+        elif not args.canvas or not args.prose:
+            missing = "canvas" if not args.canvas else "prose"
+            print(f"No {missing} was given. No pairing was scored.")
+        elif not os.path.isfile(args.canvas) or not os.path.isfile(args.prose):
+            missing_path = args.canvas if not os.path.isfile(args.canvas) else args.prose
+            print(f"File not found: {missing_path}")
+            print("No pairing was scored.")
+            sys.exit(1)
         else:
-            print("\n" + interleaver.render_ascii_dual_stream(telemetry))
-
-        if args.output_markdown:
-            interleaver.export_interleaved_markdown(telemetry, args.output_markdown)
-            print(f"[DxSkills] Interleaved specification written to: {args.output_markdown}")
-
-        if args.output_canvas:
-            interleaver.export_canvas(telemetry, args.output_canvas)
-            print(f"[DxSkills] Dual-code .canvas exported to: {args.output_canvas}")
-
-        if args.svg:
-            interleaver.export_svg_dual_track(telemetry, args.svg)
-            print(f"[DxSkills] Dual-track SVG exported to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    canvas_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The canvas was not JSON. No pairing was scored.")
+                sys.exit(1)
+            with open(args.prose, "r", encoding="utf-8", errors="ignore") as handle:
+                prose_text = handle.read()
+            if not prose_text.strip():
+                print("The prose file was empty. No pairing was scored.")
+            else:
+                _, telemetry = interleaver.align_channels(canvas_data, prose_text)
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "canvas": args.canvas,
+                    "prose": args.prose,
+                    "nodes": telemetry.total_nodes,
+                    "sentences": telemetry.total_verbal_sentences,
+                    "mapped_figure": telemetry.mapped_associations_count,
+                    "unmapped_figure": telemetry.unmapped_verbal_count,
+                    "balance_figure": telemetry.dual_code_balance_ratio,
+                    "friction_figure_pct": telemetry.cognitive_friction_reduction_pct,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: dual-code formula] ===")
+                    noun = "node" if telemetry.total_nodes == 1 else "nodes"
+                    print(f"Formula on {telemetry.total_nodes} {noun} in {args.canvas} and the prose in {args.prose}.")
+                    print(f"Sentences counted: {telemetry.total_verbal_sentences} | Mapped figure: {telemetry.mapped_associations_count} | Unmapped figure: {telemetry.unmapped_verbal_count}")
+                    print(f"Balance figure: {telemetry.dual_code_balance_ratio:.3f} | Friction figure: {telemetry.cognitive_friction_reduction_pct:.1f}%")
+                    print("These figures are a formula on shared words, not a measurement of memory.")
+                    print("Nothing was paired into a new file.")
+        if args.output_markdown or args.output_canvas or args.svg:
+            print("No markdown, canvas, or svg was written. Those files used to present the result as measured memory.")
     elif args.command in ["saccadic-pivot", "pivot", "anchor-restore"]:
         import scripts.saccadic_pivot as spiv
 
