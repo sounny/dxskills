@@ -1561,15 +1561,15 @@ def main():
     p_pacer.add_argument("--demo", action="store_true", help="Print a built-in sample soundstage. Not your task.")
 
     # fovea / tunnel
-    p_fovea = subparsers.add_parser("fovea", aliases=["tunnel", "attention-tunnel"], help="Autonomous cognitive spatial multi-scale attention tunnel and peripheral fovea synchronizer")
-    p_fovea.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath")
-    p_fovea.add_argument("--focus", "-f", default="", help="Node ID to focus on")
-    p_fovea.add_argument("--load", "-l", type=float, default=0.6, help="Cognitive load saturation 0.0 to 1.0 (default: 0.6)")
-    p_fovea.add_argument("--mode", "-m", choices=["desaturate_damp", "blur_attenuate", "minimal_skeleton", "adaptive_lod"], default="desaturate_damp", help="Damping mode (default: desaturate_damp)")
-    p_fovea.add_argument("--output-canvas", "-o", default="", help="Output synchronized .canvas filepath")
-    p_fovea.add_argument("--svg", "-s", default="", help="Output attention tunnel radar SVG filepath")
-    p_fovea.add_argument("--json", "-j", action="store_true", help="Output raw JSON fovea telemetry")
-    p_fovea.add_argument("--demo", action="store_true", help="Run with demonstration spatial canvas layout")
+    p_fovea = subparsers.add_parser("fovea", aliases=["tunnel", "attention-tunnel"], help="Run a tunnel formula on a canvas and a load you pass. Does not measure eyes.")
+    p_fovea.add_argument("canvas", nargs="?", default="", help="Canvas JSON file. No default canvas.")
+    p_fovea.add_argument("--focus", "-f", default="", help="Node id to use as the formula focus. No default node.")
+    p_fovea.add_argument("--load", "-l", type=float, default=None, help="Load number for the formula, 0 to 1. No default.")
+    p_fovea.add_argument("--mode", "-m", choices=["desaturate_damp", "blur_attenuate", "minimal_skeleton", "adaptive_lod"], default="desaturate_damp", help="Mode name passed into the formula. Not a measured strategy.")
+    p_fovea.add_argument("--output-canvas", "-o", default="", help="Ignored. No canvas is written.")
+    p_fovea.add_argument("--svg", "-s", default="", help="Ignored. No svg is written.")
+    p_fovea.add_argument("--json", "-j", action="store_true", help="Print the formula as JSON")
+    p_fovea.add_argument("--demo", action="store_true", help="Print a built-in sample canvas. Not your canvas.")
 
     # consensus / merge / resolve-conflict
     p_cons = subparsers.add_parser("consensus", aliases=["merge", "resolve-conflict"], help="Autonomous cognitive multi-agent workspace consensus and semantic conflict synthesizer")
@@ -3988,62 +3988,78 @@ def main():
             print("No canvas, svg, or audio manifest was written. Those files used to draw an invented soundstage.")
     elif args.command in ["fovea", "tunnel", "attention-tunnel"]:
         import scripts.fovea_synchronizer as fs
-        sync = fs.SpatialFoveaSynchronizer()
-        canvas_data = None
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                canvas_data = json.load(f)
-        elif args.demo or not args.canvas:
-            canvas_data = {
-                "nodes": [
-                    {"id": "node_core", "x": 0, "y": 0, "width": 260, "height": 140, "color": "1", "text": "### Raft Distributed Consensus\nActive leader heartbeat loop and log replication barrier."},
-                    {"id": "node_wal", "x": 200, "y": 160, "width": 240, "height": 130, "color": "2", "text": "### Write-Ahead Log Ring\nIn-memory circular buffer and fsync batcher."},
-                    {"id": "node_cache", "x": -220, "y": 180, "width": 240, "height": 130, "color": "3", "text": "### L1 Saliency Cache\nLRU eviction cache with TTL invalidation hooks."},
-                    {"id": "node_cold", "x": 850, "y": 750, "width": 250, "height": 140, "color": "4", "text": "### S3 Glacier Cold Storage\nPeriodic multi-part archival upload pipeline."},
-                    {"id": "node_audit", "x": -800, "y": 700, "width": 250, "height": 140, "color": "5", "text": "### Audit Compliance Sink\nCryptographic append-only ledger for telemetry."},
-                ],
-                "edges": []
-            }
-        
-        mode = fs.DampingMode(args.mode)
-        focus_id = args.focus if args.focus else (canvas_data["nodes"][0]["id"] if canvas_data.get("nodes") else None)
-        transformed_canvas, telemetry = sync.apply_attention_tunnel(
-            canvas_data, focus_node_id=focus_id, cognitive_load=args.load, damping_mode=mode
-        )
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+        sample_canvas = {
+            "nodes": [
+                {"id": "node_core", "x": 0, "y": 0, "width": 260, "height": 140, "color": "1", "text": "### Raft Distributed Consensus\nActive leader heartbeat loop and log replication barrier."},
+                {"id": "node_wal", "x": 200, "y": 160, "width": 240, "height": 130, "color": "2", "text": "### Write-Ahead Log Ring\nIn-memory circular buffer and fsync batcher."},
+                {"id": "node_cache", "x": -220, "y": 180, "width": 240, "height": 130, "color": "3", "text": "### L1 Saliency Cache\nLRU eviction cache with TTL invalidation hooks."},
+                {"id": "node_cold", "x": 850, "y": 750, "width": 250, "height": 140, "color": "4", "text": "### S3 Glacier Cold Storage\nPeriodic multi-part archival upload pipeline."},
+                {"id": "node_audit", "x": -800, "y": 700, "width": 250, "height": 140, "color": "5", "text": "### Audit Compliance Sink\nCryptographic append-only ledger for telemetry."},
+            ],
+            "edges": []
+        }
+        if args.demo and not args.canvas:
+            sync = fs.SpatialFoveaSynchronizer()
+            mode = fs.DampingMode(args.mode)
+            _, telemetry = sync.apply_attention_tunnel(
+                sample_canvas, focus_node_id="node_core", cognitive_load=0.6, damping_mode=mode
+            )
+            print("Built-in sample, not your canvas. No eyes were tracked.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print(sync.generate_markdown_report(telemetry))
+        elif not args.canvas:
+            print("No canvas was given. No tunnel was computed.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No tunnel was computed.")
+            sys.exit(1)
         else:
-            print("\n" + sync.generate_markdown_report(telemetry))
-
-        if args.output_canvas:
-            with open(args.output_canvas, "w", encoding="utf-8") as f:
-                json.dump(transformed_canvas, f, indent=2)
-            print(f"\n[DxSkills] Attention-tunneled .canvas exported to: {args.output_canvas}")
-
-        if args.svg:
-            anchors = []
-            fx = canvas_data["nodes"][0].get("x", 0)
-            fy = canvas_data["nodes"][0].get("y", 0)
-            for n in transformed_canvas.get("nodes", []):
-                nx = n.get("x", 0)
-                ny = n.get("y", 0)
-                d = math.hypot(nx - fx, ny - fy)
-                ang = math.degrees(math.atan2(ny - fy, nx - fx))
-                is_f = (n.get("id") == focus_id) or (d <= telemetry.tunnel_radius_px)
-                anchors.append(fs.PeripheralAnchor(
-                    node_id=n.get("id", ""),
-                    label=n.get("text", "").split("\n")[0].replace("#", "").strip() or "Node",
-                    x=nx,
-                    y=ny,
-                    distance_from_focus=round(d, 1),
-                    angle_degrees=round(ang, 1),
-                    opacity=1.0 if is_f else 0.35,
-                    is_foveal=is_f,
-                    color=n.get("color", "1"),
-                ))
-            svg_code = sync.export_svg_tunnel(anchors, telemetry, output_path=args.svg)
-            print(f"[DxSkills] Attention tunnel radar SVG exported to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    canvas_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No tunnel was computed.")
+                sys.exit(1)
+            nodes = canvas_data.get("nodes", []) if isinstance(canvas_data, dict) else []
+            if args.load is None:
+                print(f"Nodes in the file: {len(nodes)}")
+                print("Load was not given, so the tunnel formula was not run.")
+            else:
+                sync = fs.SpatialFoveaSynchronizer()
+                mode = fs.DampingMode(args.mode)
+                focus_id = args.focus or (nodes[0].get("id") if nodes else None)
+                _, telemetry = sync.apply_attention_tunnel(
+                    canvas_data, focus_node_id=focus_id, cognitive_load=args.load, damping_mode=mode
+                )
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "file": args.canvas,
+                    "focus_id": telemetry.focus_node_id,
+                    "load": args.load,
+                    "mode": args.mode,
+                    "node_count": telemetry.total_nodes,
+                    "inside_radius": telemetry.foveal_nodes_count,
+                    "outside_radius": telemetry.damped_peripheral_count,
+                    "radius_px_figure": telemetry.tunnel_radius_px,
+                    "crowding_figure_pct": telemetry.crowding_reduction_pct,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: fovea formula] ===")
+                    print(f"Formula on {telemetry.total_nodes} nodes in {args.canvas}, load {args.load}, mode {args.mode}.")
+                    print(f"Focus id used: {telemetry.focus_node_id or 'not given'}")
+                    print(f"Radius figure: {telemetry.tunnel_radius_px} px | Inside: {telemetry.foveal_nodes_count} | Outside: {telemetry.damped_peripheral_count}")
+                    print(f"Crowding figure: {telemetry.crowding_reduction_pct}%")
+                    print("These figures are a formula on the file and the load you passed, not a measurement of your eyes.")
+                    if not args.focus:
+                        print("No --focus was passed, so the formula used the first node id in the file.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to draw the result as measured vision.")
     elif args.command in ["consensus", "merge", "resolve-conflict"]:
         import scripts.workspace_consensus as wc
         synthesizer = wc.WorkspaceConsensusSynthesizer()
