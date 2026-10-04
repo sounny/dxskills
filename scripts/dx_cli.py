@@ -1332,10 +1332,10 @@ def main():
     p_audit.add_argument("--json", "-j", action="store_true", help="Output raw JSON audit telemetry")
     
     # buffer
-    p_buf = subparsers.add_parser("buffer", help="Autonomous cognitive spatial working memory buffer monitor")
-    p_buf.add_argument("input", nargs="?", default="", help="Input draft text, transcription, or note file")
-    p_buf.add_argument("--minutes", "-m", type=float, default=15.0, help="Total active session minutes")
-    p_buf.add_argument("--uninterrupted", "-u", type=float, default=15.0, help="Continuous uninterrupted minutes")
+    p_buf = subparsers.add_parser("buffer", help="Run a buffer formula on a note and minutes you pass. Does not measure working memory.")
+    p_buf.add_argument("input", nargs="?", default="", help="Note text. No default note.")
+    p_buf.add_argument("--minutes", "-m", type=float, default=None, help="Minutes you want the formula to use. No default session.")
+    p_buf.add_argument("--uninterrupted", "-u", type=float, default=None, help="Uninterrupted minutes you want the formula to use. No default.")
     p_buf.add_argument("--title", "-t", default="", help="Memory buffer HUD title")
     p_buf.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_buf.add_argument("--svg", "-s", default="", help="Output vector SVG HUD filepath")
@@ -2558,37 +2558,49 @@ def main():
     elif args.command == "audit":
         cmd_audit(args)
     elif args.command == "buffer":
-        import scripts.memory_buffer as mb
-        text = read_input(args.input) if args.input else (
-            "# Cognitive Architecture Working Draft\n"
-            "> **BLUF:** Eliminating phonological working memory bottleneck through spatial anchors.\n\n"
-            "- Spatial Vector 1: High-contrast 2D node map.\n"
-            "- Spatial Vector 2: Dynamic buffer load evaluation.\n"
-            "- Spatial Vector 3: 4-4-4-4 Box Breathing reset triggers.\n\n"
-            "Reviewing technical documentation without visual anchors creates severe phonological loop friction."
-        )
-        telemetry, canvas_data, svg_code = mb.run_buffer_monitor(
-            text,
-            session_minutes=args.minutes,
-            uninterrupted_minutes=args.uninterrupted,
-            title=args.title or None,
-            output_canvas=args.canvas or None,
-            output_svg=args.svg or None
-        )
-        if args.json:
-            print(json.dumps(telemetry, indent=2))
-        elif not (args.canvas or args.svg):
-            m = telemetry["metrics"]
-            print(f"\n=== [DxSkills: Working Memory Buffer HUD ({m['exhaustion_risk'].upper()} RISK)] ===")
-            print(f"Phonological Saturation: {m['phonological_saturation_pct']}% | Visuospatial Utilization: {m['visuospatial_utilization_pct']}%")
-            print(f"Channel Asymmetry Index: {m['channel_asymmetry_index']} | Recommended Reset: {m['recommended_reset_seconds']}s")
-            print(f"\nAction: {telemetry['action_prompt']}")
+        note = optional_text(getattr(args, "input", ""))
+        if not note.strip() and args.minutes is None and args.uninterrupted is None:
+            print("Nothing was measured. No note and no minutes were given.")
+            print('Example: python3 scripts/dx_cli.py buffer --minutes 10 --uninterrupted 10 "Ship the notes Friday."')
+        elif not note.strip():
+            print("No note was given, so the text part of the formula was not run.")
+            print("Nothing was measured.")
+        elif args.minutes is None or args.uninterrupted is None:
+            words = len(note.split())
+            print(f"Words in the note: {words}")
+            print("Minutes were not given, so the duration part of the formula was not run.")
+            print("No saturation percentage was printed.")
         else:
-            print(f"\n[DxSkills] Buffer evaluated: {telemetry['metrics']['exhaustion_risk']} Risk ({telemetry['metrics']['phonological_saturation_pct']}% Phono Load).")
-            if args.canvas:
-                print(f"  - Canvas: {args.canvas}")
-            if args.svg:
-                print(f"  - SVG HUD: {args.svg}")
+            from scripts.memory_buffer import MemoryBufferTracker
+            telemetry = MemoryBufferTracker.evaluate_buffer(
+                note,
+                session_minutes=args.minutes,
+                uninterrupted_minutes=args.uninterrupted,
+            )
+            m = telemetry["metrics"]
+            payload = {
+                "formula": True,
+                "measured": False,
+                "minutes": args.minutes,
+                "uninterrupted_minutes": args.uninterrupted,
+                "word_count": telemetry["word_count"],
+                "phonological_saturation_pct": m["phonological_saturation_pct"],
+                "visuospatial_utilization_pct": m["visuospatial_utilization_pct"],
+                "channel_asymmetry_index": m["channel_asymmetry_index"],
+                "formula_band": m["exhaustion_risk"],
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("")
+                print("=== [DxSkills: buffer formula] ===")
+                print(f"Formula on {telemetry['word_count']} words, {args.minutes} minutes, and {args.uninterrupted} uninterrupted minutes.")
+                print(f"Phonological figure: {m['phonological_saturation_pct']}% | Visuospatial figure: {m['visuospatial_utilization_pct']}%")
+                print(f"Asymmetry figure: {m['channel_asymmetry_index']} | Formula band: {m['exhaustion_risk']}")
+                print("These figures are a formula on the note and the minutes you passed, not a measured working-memory state.")
+                print("Bands in the formula are under 40, under 60, under 80, and 80 or more, and also 30 or 45 uninterrupted minutes.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. Those files used to draw the result as measured telemetry.")
     elif args.command == "dataset":
         import scripts.dataset_synthesizer as dsync
         corpus = []
