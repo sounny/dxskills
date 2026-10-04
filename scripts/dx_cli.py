@@ -4740,44 +4740,77 @@ def main():
             print(f"[DxSkills] Dialectic synthesis SVG written to: {args.svg}")
     elif args.command in ["density-calibrator", "density", "whitespace-balancer", "bouma-lens"]:
         import scripts.density_calibrator as dcal
-
+        demo_nodes = {
+            "n_auth": {"title": "Core Auth", "x": 300, "y": 250, "width": 240, "height": 130, "text": "OAuth2 JWT verification and identity token issuer."},
+            "n_vault": {"title": "Token Vault", "x": 360, "y": 290, "width": 240, "height": 130, "text": "High entropy cryptographic key vault and rotating secret credentials."},
+            "n_session": {"title": "Session Cache", "x": 330, "y": 350, "width": 240, "height": 130, "text": "Redis-backed distributed session cache and rate limiting counter."},
+            "n_audit": {"title": "Audit Logger", "x": 400, "y": 320, "width": 240, "height": 130, "text": "Immutable security compliance audit event log stream."},
+            "n_gateway": {"title": "API Gateway", "x": 950, "y": 300, "width": 260, "height": 140, "text": "Edge TLS termination, reverse proxy, and global ingress routing."},
+            "n_billing": {"title": "Stripe Billing", "x": 1000, "y": 800, "width": 260, "height": 140, "text": "Subscription billing, webhook processing, and invoice generation."},
+        }
         calibrator = dcal.AttentionDensityCalibrator(
             foveal_sigma=args.foveal_sigma,
             bouma_factor=args.bouma_factor,
         )
-
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            if "nodes" in raw_data:
-                calibrator.load_canvas(raw_data)
-            elif isinstance(raw_data, dict):
-                calibrator.load_dict(raw_data)
-        elif args.demo or not args.canvas:
-            demo_nodes = {
-                "n_auth": {"title": "Core Auth", "x": 300, "y": 250, "width": 240, "height": 130, "text": "OAuth2 JWT verification and identity token issuer."},
-                "n_vault": {"title": "Token Vault", "x": 360, "y": 290, "width": 240, "height": 130, "text": "High entropy cryptographic key vault and rotating secret credentials."},
-                "n_session": {"title": "Session Cache", "x": 330, "y": 350, "width": 240, "height": 130, "text": "Redis-backed distributed session cache and rate limiting counter."},
-                "n_audit": {"title": "Audit Logger", "x": 400, "y": 320, "width": 240, "height": 130, "text": "Immutable security compliance audit event log stream."},
-                "n_gateway": {"title": "API Gateway", "x": 950, "y": 300, "width": 260, "height": 140, "text": "Edge TLS termination, reverse proxy, and global ingress routing."},
-                "n_billing": {"title": "Stripe Billing", "x": 1000, "y": 800, "width": 260, "height": 140, "text": "Subscription billing, webhook processing, and invoice generation."},
-            }
+        if args.demo and not args.canvas:
             calibrator.load_dict(demo_nodes)
-
-        nodes, hotspots, telemetry = calibrator.calibrate()
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+            _, _, telemetry = calibrator.calibrate()
+            print("Built-in sample, not your canvas. No eyes were tracked.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + calibrator.render_ascii_report(telemetry))
+        elif not args.canvas:
+            print("No canvas was given. No density was scored.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No density was scored.")
+            sys.exit(1)
         else:
-            print("\n" + calibrator.render_ascii_report(telemetry))
-
-        if args.output_canvas:
-            calibrator.to_canvas(args.output_canvas, canvas_title="Calibrated Whitespace Canvas")
-            print(f"[DxSkills] Rebalanced whitespace canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            calibrator.to_svg(args.svg)
-            print(f"[DxSkills] Attention density SVG written to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    raw_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No density was scored.")
+                sys.exit(1)
+            loaded = False
+            if isinstance(raw_data, dict) and "nodes" in raw_data:
+                calibrator.load_canvas(raw_data)
+                loaded = True
+            elif isinstance(raw_data, dict) and raw_data:
+                calibrator.load_dict(raw_data)
+                loaded = True
+            if not loaded:
+                print("The file was not a node map or a canvas. No density was scored.")
+            elif not calibrator.nodes:
+                print("The file had no nodes. No density was scored.")
+            else:
+                _, _, telemetry = calibrator.calibrate()
+                if args.json:
+                    print(json.dumps({
+                        "formula": True,
+                        "measured": False,
+                        "file": args.canvas,
+                        "nodes": telemetry.total_nodes,
+                        "hotspots_figure": telemetry.hotspots_count,
+                        "initial_density_figure": telemetry.initial_mean_density,
+                        "rebalanced_density_figure": telemetry.rebalanced_mean_density,
+                        "reduction_figure_pct": telemetry.density_reduction_pct,
+                        "fatigue_figure": telemetry.ocular_fatigue_mitigation_score,
+                        "sigma_input": args.foveal_sigma,
+                        "bouma_input": args.bouma_factor,
+                    }, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: density formula] ===")
+                    print(f"Formula on {telemetry.total_nodes} nodes in {args.canvas}.")
+                    print(f"Hotspots figure: {telemetry.hotspots_count} | Crowded nodes figure: {telemetry.crowded_nodes_count}")
+                    print(f"Initial density figure: {telemetry.initial_mean_density:.2f} | Rebalanced figure: {telemetry.rebalanced_mean_density:.2f}")
+                    print(f"Reduction figure: {telemetry.density_reduction_pct:.1f}% | Fatigue figure: {telemetry.ocular_fatigue_mitigation_score:.2f}")
+                    print(f"The {args.foveal_sigma} sigma and {args.bouma_factor} Bouma factor are formula inputs, not a measurement.")
+                    print("These figures are a formula on node positions in the file, not a measurement of your eyes. Nothing was moved.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as measured vision.")
     elif args.command in ["code-symbol-mesh", "code-mesh", "ast-mesh", "symbol-mesh", "interface-mapper"]:
         import scripts.code_symbol_mesh as csm
 
