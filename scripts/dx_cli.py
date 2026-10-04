@@ -1572,14 +1572,14 @@ def main():
     p_fovea.add_argument("--demo", action="store_true", help="Print a built-in sample canvas. Not your canvas.")
 
     # consensus / merge / resolve-conflict
-    p_cons = subparsers.add_parser("consensus", aliases=["merge", "resolve-conflict"], help="Autonomous cognitive multi-agent workspace consensus and semantic conflict synthesizer")
-    p_cons.add_argument("--base", "-b", default="", help="Base ancestor Obsidian .canvas filepath")
-    p_cons.add_argument("--branch-a", "-1", default="", help="Branch A Obsidian .canvas filepath")
-    p_cons.add_argument("--branch-b", "-2", default="", help="Branch B Obsidian .canvas filepath")
-    p_cons.add_argument("--output-canvas", "-o", default="", help="Output synthesized merge .canvas filepath")
-    p_cons.add_argument("--svg", "-s", default="", help="Output consensus radar SVG filepath")
-    p_cons.add_argument("--json", "-j", action="store_true", help="Output raw JSON consensus scorecard")
-    p_cons.add_argument("--demo", action="store_true", help="Run with demonstration divergent multi-agent canvases")
+    p_cons = subparsers.add_parser("consensus", aliases=["merge", "resolve-conflict"], help="Compare three canvas files you pass. Does not invent a merge.")
+    p_cons.add_argument("--base", "-b", default="", help="Base canvas JSON file. No default canvas.")
+    p_cons.add_argument("--branch-a", "-1", default="", help="First canvas JSON file. No default canvas.")
+    p_cons.add_argument("--branch-b", "-2", default="", help="Second canvas JSON file. No default canvas.")
+    p_cons.add_argument("--output-canvas", "-o", default="", help="Ignored. No merge file is written.")
+    p_cons.add_argument("--svg", "-s", default="", help="Ignored. No svg is written.")
+    p_cons.add_argument("--json", "-j", action="store_true", help="Print the comparison as JSON")
+    p_cons.add_argument("--demo", action="store_true", help="Print a built-in sample merge. Not your canvases.")
 
     # gaze / inertia / saccade-velocity
     p_gaze = subparsers.add_parser("gaze", aliases=["inertia", "saccade-velocity"], help="Autonomous cognitive spatial working memory saccade velocity and gaze inertia balancer")
@@ -4062,23 +4062,8 @@ def main():
             print("No canvas or svg was written. Those files used to draw the result as measured vision.")
     elif args.command in ["consensus", "merge", "resolve-conflict"]:
         import scripts.workspace_consensus as wc
-        synthesizer = wc.WorkspaceConsensusSynthesizer()
-        
-        base_canvas = {"nodes": [], "edges": []}
-        canvas_a = {"nodes": [], "edges": []}
-        canvas_b = {"nodes": [], "edges": []}
-        
-        if args.base and os.path.isfile(args.base):
-            with open(args.base, "r", encoding="utf-8") as f:
-                base_canvas = json.load(f)
-        if args.branch_a and os.path.isfile(args.branch_a):
-            with open(args.branch_a, "r", encoding="utf-8") as f:
-                canvas_a = json.load(f)
-        if args.branch_b and os.path.isfile(args.branch_b):
-            with open(args.branch_b, "r", encoding="utf-8") as f:
-                canvas_b = json.load(f)
-                
-        if args.demo or (not args.base and not args.branch_a):
+        if args.demo and not args.base and not args.branch_a and not args.branch_b:
+            synthesizer = wc.WorkspaceConsensusSynthesizer()
             base_canvas = {
                 "nodes": [
                     {"id": "n_core", "x": 0, "y": 0, "text": "### Master Pipeline\nShared deterministic state machine."},
@@ -4108,22 +4093,69 @@ def main():
                     {"id": "e3", "fromNode": "n_cache", "toNode": "n_agent_b"},
                 ]
             }
-
-        merged_canvas, scorecard = synthesizer.synthesize_visual_merge(base_canvas, canvas_a, canvas_b)
-
-        if args.json:
-            print(json.dumps(scorecard.to_dict(), indent=2))
+            _, scorecard = synthesizer.synthesize_visual_merge(base_canvas, canvas_a, canvas_b)
+            print("Built-in sample, not your canvases. Nothing was merged.")
+            if args.json:
+                print(json.dumps(scorecard.to_dict(), indent=2))
+            else:
+                print(synthesizer.generate_markdown_report(scorecard))
+        elif not args.base and not args.branch_a and not args.branch_b:
+            print("No canvases were given. No merge was scored.")
         else:
-            print("\n" + synthesizer.generate_markdown_report(scorecard))
-
-        if args.output_canvas:
-            with open(args.output_canvas, "w", encoding="utf-8") as f:
-                json.dump(merged_canvas, f, indent=2)
-            print(f"\n[DxSkills] Synthesized merge .canvas exported to: {args.output_canvas}")
-
-        if args.svg:
-            svg_code = synthesizer.export_svg_consensus_radar(scorecard, output_path=args.svg)
-            print(f"[DxSkills] Workspace consensus radar SVG exported to: {args.svg}")
+            missing = []
+            loaded = {}
+            for label, path in (("base", args.base), ("branch-a", args.branch_a), ("branch-b", args.branch_b)):
+                if not path:
+                    missing.append(label)
+                elif not os.path.isfile(path):
+                    print(f"File not found: {path}")
+                    missing.append(label)
+                else:
+                    try:
+                        with open(path, "r", encoding="utf-8") as handle:
+                            loaded[label] = json.load(handle)
+                    except json.JSONDecodeError:
+                        print(f"Not JSON: {path}")
+                        missing.append(label)
+            if missing:
+                print("No merge was scored. Need --base, --branch-a, and --branch-b.")
+                print("Missing: " + ", ".join(missing))
+            else:
+                synthesizer = wc.WorkspaceConsensusSynthesizer()
+                _, scorecard = synthesizer.synthesize_visual_merge(loaded["base"], loaded["branch-a"], loaded["branch-b"])
+                conflicts = []
+                for item in scorecard.conflicts:
+                    kind = item.conflict_type.value if hasattr(item.conflict_type, "value") else str(item.conflict_type)
+                    conflicts.append({"target": item.target_id, "kind": kind})
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "merged": False,
+                    "nodes": {
+                        "base": scorecard.total_nodes_base,
+                        "branch_a": scorecard.total_nodes_a,
+                        "branch_b": scorecard.total_nodes_b,
+                    },
+                    "differences": len(conflicts),
+                    "stability_figure": scorecard.consensus_stability_score,
+                    "conflicts": conflicts,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: consensus formula] ===")
+                    print(f"Nodes: base {scorecard.total_nodes_base}, branch-a {scorecard.total_nodes_a}, branch-b {scorecard.total_nodes_b}.")
+                    print(f"Differences the formula counted: {len(conflicts)}")
+                    print(f"Stability figure: {scorecard.consensus_stability_score}")
+                    print("This figure is a formula on those files, not a judgment that the work agrees. Nothing was merged.")
+                    if conflicts:
+                        for item in conflicts:
+                            print(f"- {item['target']}: {item['kind']}")
+                    else:
+                        print("No differing nodes were counted.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to draw an invented merge.")
     elif args.command in ["gaze", "inertia", "saccade-velocity"]:
         import scripts.gaze_inertia_balancer as gib
         balancer = gib.GazeInertiaBalancer()
