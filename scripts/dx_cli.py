@@ -4550,41 +4550,70 @@ def main():
             print("No canvas or svg was written. Those files used to present the result as a measured lattice.")
     elif args.command in ["action-sequencer", "sequencer", "dag-runner", "executive-scaffold"]:
         import scripts.action_sequencer as aseq
-
+        demo_tasks = {
+            "scope_problem": {"title": "Define Architecture Scope", "estimated_minutes": 20, "prerequisites": []},
+            "core_engine": {"title": "Implement Core DAG Parser", "estimated_minutes": 35, "prerequisites": ["scope_problem"]},
+            "stepping_stones": {"title": "Synthesize Micro-Commitment Prompter", "estimated_minutes": 25, "prerequisites": ["core_engine"]},
+            "cli_integration": {"title": "Wire CLI Subparsers & Handlers", "estimated_minutes": 15, "prerequisites": ["stepping_stones"]},
+            "svg_visualizer": {"title": "Draft SVG Critical Path Renderer", "estimated_minutes": 30, "prerequisites": ["core_engine"]},
+            "end_to_end_test": {"title": "Full System Integration Suite", "estimated_minutes": 20, "prerequisites": ["cli_integration", "svg_visualizer"]},
+        }
         sequencer = aseq.ActionSequencer(default_task_minutes=args.default_time)
-
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            if "nodes" in raw_data:
-                sequencer.load_canvas(raw_data)
-            elif isinstance(raw_data, dict):
-                sequencer.load_dict(raw_data)
-        elif args.demo or not args.canvas:
-            demo_tasks = {
-                "scope_problem": {"title": "Define Architecture Scope", "estimated_minutes": 20, "prerequisites": []},
-                "core_engine": {"title": "Implement Core DAG Parser", "estimated_minutes": 35, "prerequisites": ["scope_problem"]},
-                "stepping_stones": {"title": "Synthesize Micro-Commitment Prompter", "estimated_minutes": 25, "prerequisites": ["core_engine"]},
-                "cli_integration": {"title": "Wire CLI Subparsers & Handlers", "estimated_minutes": 15, "prerequisites": ["stepping_stones"]},
-                "svg_visualizer": {"title": "Draft SVG Critical Path Renderer", "estimated_minutes": 30, "prerequisites": ["core_engine"]},
-                "end_to_end_test": {"title": "Full System Integration Suite", "estimated_minutes": 20, "prerequisites": ["cli_integration", "svg_visualizer"]},
-            }
+        if args.demo and not args.canvas:
             sequencer.load_dict(demo_tasks)
-
-        nodes, telemetry = sequencer.sequence()
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+            _, telemetry = sequencer.sequence()
+            print("Built-in sample, not your tasks. No runway was measured.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + sequencer.render_ascii_plan(telemetry))
+        elif not args.canvas:
+            print("No tasks were given. No runway was scored.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No runway was scored.")
+            sys.exit(1)
         else:
-            print("\n" + sequencer.render_ascii_plan(telemetry))
-
-        if args.output_canvas:
-            sequencer.to_canvas(args.output_canvas, canvas_title="Executive Runway Canvas")
-            print(f"[DxSkills] Action runway .canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            sequencer.to_svg(args.svg)
-            print(f"[DxSkills] Critical path SVG written to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    raw_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No runway was scored.")
+                sys.exit(1)
+            if isinstance(raw_data, dict) and "nodes" in raw_data:
+                sequencer.load_canvas(raw_data)
+            elif isinstance(raw_data, dict) and raw_data:
+                sequencer.load_dict(raw_data)
+            else:
+                print("The file was not a task map or a canvas. No runway was scored.")
+                raw_data = None
+            if raw_data is not None and not sequencer.nodes:
+                print("The file had no tasks. No runway was scored.")
+            elif raw_data is not None and sequencer.nodes:
+                _, telemetry = sequencer.sequence()
+                if args.json:
+                    print(json.dumps({
+                        "formula": True,
+                        "measured": False,
+                        "file": args.canvas,
+                        "tasks": telemetry.total_nodes,
+                        "dependencies": telemetry.total_dependencies,
+                        "critical_path_tasks_figure": telemetry.critical_path_node_count,
+                        "critical_path_minutes_figure": telemetry.critical_path_duration_minutes,
+                        "ready_figure": telemetry.immediately_executable_count,
+                        "work_minutes_figure": telemetry.total_estimated_work_minutes,
+                    }, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: sequencer formula] ===")
+                    print(f"Formula on {telemetry.total_nodes} tasks in {args.canvas}.")
+                    print(f"Dependencies counted: {telemetry.total_dependencies}")
+                    print(f"Critical path figure: {telemetry.critical_path_duration_minutes} minutes across {telemetry.critical_path_node_count} tasks")
+                    print(f"Ready now figure: {telemetry.immediately_executable_count} | Work minutes figure: {telemetry.total_estimated_work_minutes}")
+                    print(f"The {args.default_time} minute default is a formula input used only when a task has no estimate.")
+                    print("These figures are a sum of the minutes in the file, not a measured plan. Nothing was scheduled.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as a measured plan.")
     elif args.command in ["cognitive-aperture", "aperture", "scope-bound", "cowan-lens"]:
         import scripts.cognitive_aperture as cap
 
