@@ -4315,43 +4315,66 @@ def main():
             print(f"[DxSkills] Syntactic chunk strip SVG exported to: {args.svg}")
     elif args.command in ["memory-shield", "shield", "saliency-shield"]:
         import scripts.memory_shield as wms
-
+        sample = {
+            "nodes": [
+                {"id": "node-core", "x": 0, "y": 0, "width": 300, "height": 180, "text": "Active Architecture Focus\n\nDeterministic state transitions."},
+                {"id": "node-near-1", "x": 380, "y": 50, "width": 260, "height": 140, "text": "Consensus Engine\n\nRaft-based state machine."},
+                {"id": "node-near-2", "x": -380, "y": -40, "width": 260, "height": 140, "text": "Write-Ahead Log\n\nSequential durability log."},
+                {"id": "node-mid", "x": 800, "y": 400, "width": 280, "height": 150, "text": "Cluster Telemetry Gateway\n\nHTTP metrics exposition."},
+                {"id": "node-far", "x": 1600, "y": -700, "width": 320, "height": 200, "text": "ARCHIVED DEPRECATED MIGRATION NOTES\n\nLEGACY SCHEMAS AND SCRIPTS"},
+            ]
+        }
         shield = wms.WorkingMemoryShield(
             focus_radius_px=args.focus_radius,
             orientation_radius_px=args.orientation_radius,
         )
-
-        canvas_data = {}
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                canvas_data = json.load(f)
-        elif args.demo or not args.canvas:
-            canvas_data = {
-                "nodes": [
-                    {"id": "node-core", "x": 0, "y": 0, "width": 300, "height": 180, "text": "Active Architecture Focus\n\nDeterministic state transitions."},
-                    {"id": "node-near-1", "x": 380, "y": 50, "width": 260, "height": 140, "text": "Consensus Engine\n\nRaft-based state machine."},
-                    {"id": "node-near-2", "x": -380, "y": -40, "width": 260, "height": 140, "text": "Write-Ahead Log\n\nSequential durability log."},
-                    {"id": "node-mid", "x": 800, "y": 400, "width": 280, "height": 150, "text": "Cluster Telemetry Gateway\n\nHTTP metrics exposition."},
-                    {"id": "node-far", "x": 1600, "y": -700, "width": 320, "height": 200, "text": "ARCHIVED DEPRECATED MIGRATION NOTES\n\nLEGACY SCHEMAS AND SCRIPTS"},
-                ]
-            }
-
-        focus_ids = args.focus if args.focus else None
-        shielded_canvas, telemetry = shield.apply_memory_shield(canvas_data, focus_ids=focus_ids)
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+        if args.demo and not args.canvas:
+            _, telemetry = shield.apply_memory_shield(sample, focus_ids=args.focus or None)
+            print("Built-in sample, not your canvas. Nothing was shielded.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + shield.render_ascii_report(telemetry))
+        elif not args.canvas:
+            print("No canvas was given. No shield was scored.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No shield was scored.")
+            sys.exit(1)
         else:
-            print("\n" + shield.render_ascii_report(telemetry))
-
-        if args.output_canvas:
-            with open(args.output_canvas, "w", encoding="utf-8") as f:
-                json.dump(shielded_canvas, f, indent=2)
-            print(f"[DxSkills] Shielded .canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            shield.export_svg_shield(telemetry, args.svg)
-            print(f"[DxSkills] Memory shield radar SVG exported to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    canvas_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No shield was scored.")
+                sys.exit(1)
+            _, telemetry = shield.apply_memory_shield(canvas_data, focus_ids=args.focus or None)
+            payload = {
+                "formula": True,
+                "measured": False,
+                "file": args.canvas,
+                "nodes": telemetry.total_nodes,
+                "focus_count": telemetry.focus_count,
+                "orientation_count": telemetry.orientation_count,
+                "dampened_count": telemetry.dampened_count,
+                "mitigation_figure_pct": telemetry.avg_intrusion_mitigation_pct,
+                "bandwidth_figure_pct": telemetry.cognitive_bandwidth_reclaimed_pct,
+                "focus_radius_input": args.focus_radius,
+                "orientation_radius_input": args.orientation_radius,
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("")
+                print("=== [DxSkills: shield formula] ===")
+                print(f"Formula on {telemetry.total_nodes} nodes in {args.canvas}.")
+                print(f"Focus: {telemetry.focus_count} | Orientation: {telemetry.orientation_count} | Dampened: {telemetry.dampened_count}")
+                print(f"Mitigation figure: {telemetry.avg_intrusion_mitigation_pct:.1f}% | Bandwidth figure: {telemetry.cognitive_bandwidth_reclaimed_pct:.1f}%")
+                print(f"The {args.focus_radius} px focus radius and {args.orientation_radius} px orientation radius are formula inputs, not a measurement.")
+                print("These figures are a formula on node positions in the file, not a measurement of memory or attention.")
+                print("No shielded canvas was written.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as measured attention.")
     elif args.command in ["dual-code", "dual-coder", "dual-track"]:
         import scripts.dual_code_interleaver as dci
 
