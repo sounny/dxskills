@@ -1541,12 +1541,12 @@ def main():
     p_damp.add_argument("--json", "-j", action="store_true", help="Print the formula as JSON")
     
     # examine / grill / cross-examine
-    p_examine = subparsers.add_parser("examine", aliases=["grill", "cross-examine"], help="Autonomous cognitive multi-perspective architectural Socratic cross-examiner")
-    p_examine.add_argument("title", nargs="?", default="Core System Architecture", help="System or proposal title")
-    p_examine.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_examine.add_argument("--svg", "-s", default="", help="Output 5-axis rigor radar SVG filepath")
-    p_examine.add_argument("--json", "-j", action="store_true", help="Output raw JSON examination scorecard")
-    p_examine.add_argument("--demo", action="store_true", help="Run with demonstration architecture components")
+    p_examine = subparsers.add_parser("examine", aliases=["grill", "cross-examine"], help="Repeat a title you pass. Does not score a system you did not describe.")
+    p_examine.add_argument("title", nargs="?", default="", help="System title you pass. No default system.")
+    p_examine.add_argument("--canvas", "-c", default="", help="Ignored. No canvas is written.")
+    p_examine.add_argument("--svg", "-s", default="", help="Ignored. No svg is written.")
+    p_examine.add_argument("--json", "-j", action="store_true", help="Print the built-in sample as JSON when --demo is set.")
+    p_examine.add_argument("--demo", action="store_true", help="Print a built-in sample system. Not your system.")
 
     # audio-pacer / pacer / soundstage
     p_pacer = subparsers.add_parser("audio-pacer", aliases=["pacer", "soundstage"], help="Autonomous cognitive spatial saliency decoupler and multi-track audio pacer")
@@ -3903,29 +3903,28 @@ def main():
             print("No canvas or svg was written. Those files used to draw the result as measured residue.")
     elif args.command in ["examine", "grill", "cross-examine"]:
         import scripts.socratic_cross_examiner as sce
-        examiner = sce.SocraticCrossExaminer()
-        comps = [
-            {"name": "Ingress API Gateway", "has_tests": True, "has_failover": True, "is_stateless": True},
-            {"name": "Raft State Machine", "has_tests": True, "has_failover": True, "is_stateless": False},
-            {"name": "Async Task Dispatcher", "has_tests": True, "has_failover": False, "is_stateless": True},
-            {"name": "Memory Buffer Ring", "has_tests": False, "has_failover": False, "is_stateless": False},
-        ]
-        scorecard = examiner.cross_examine_architecture(args.title, comps)
-
-        if args.json:
-            print(json.dumps(scorecard.to_dict(), indent=2))
+        title = (args.title or "").strip()
+        if args.demo:
+            examiner = sce.SocraticCrossExaminer()
+            comps = [
+                {"name": "Ingress API Gateway", "has_tests": True, "has_failover": True, "is_stateless": True},
+                {"name": "Raft State Machine", "has_tests": True, "has_failover": True, "is_stateless": False},
+                {"name": "Async Task Dispatcher", "has_tests": True, "has_failover": False, "is_stateless": True},
+                {"name": "Memory Buffer Ring", "has_tests": False, "has_failover": False, "is_stateless": False},
+            ]
+            scorecard = examiner.cross_examine_architecture("Built-in sample", comps)
+            print("Built-in sample, not your system. No score was computed for a system you described.")
+            if args.json:
+                print(json.dumps(scorecard.to_dict(), indent=2))
+            else:
+                print(examiner.export_summary_markdown(scorecard))
+        elif not title:
+            print("No system was given. No score was computed.")
         else:
-            print("\n" + examiner.export_summary_markdown(scorecard))
-
-        if args.canvas:
-            examiner.export_canvas(scorecard, output_path=args.canvas)
-            print(f"\n[DxSkills] Socratic Examination .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = examiner.export_svg_radar(scorecard)
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(svg_code)
-            print(f"[DxSkills] Socratic Rigor Radar SVG exported to: {args.svg}")
+            print(f"Title you passed: {title}")
+            print("No components were given. No score was computed.")
+        if args.canvas or args.svg:
+            print("No canvas or svg was written. Those files used to draw an invented rigor score.")
     elif args.command in ["audio-pacer", "pacer", "soundstage"]:
         import scripts.audio_pacer as ap
         pacer = ap.SpatialAudioPacer()
