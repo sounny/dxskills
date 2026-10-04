@@ -1794,14 +1794,14 @@ def main():
     p_lpacer.add_argument("--demo", action="store_true", help="Run with demonstration technical paragraph")
 
     # fatigue-meter / saccadic-fatigue / contrast-damper / ocular-fatigue
-    p_fatigue = subparsers.add_parser("fatigue-meter", aliases=["saccadic-fatigue", "contrast-damper", "ocular-fatigue"], help="Autonomous cognitive spatial working memory saccadic fatigue meter and dynamic contrast damper")
-    p_fatigue.add_argument("input", nargs="?", default="", help="Input gaze session JSON filepath")
-    p_fatigue.add_argument("--baseline", "-b", type=float, default=420.0, help="Baseline saccadic peak velocity in deg/s (default: 420.0)")
-    p_fatigue.add_argument("--session-max", type=float, default=45.0, help="Maximum recommended continuous session duration in minutes (default: 45.0)")
-    p_fatigue.add_argument("--css", default="", help="Output restorative CSS tokens filepath")
-    p_fatigue.add_argument("--svg", default="", help="Output fatigue main sequence SVG diagram filepath")
-    p_fatigue.add_argument("--json", "-j", action="store_true", help="Output raw JSON fatigue telemetry")
-    p_fatigue.add_argument("--demo", action="store_true", help="Run with demonstration 20-sample decaying gaze session")
+    p_fatigue = subparsers.add_parser("fatigue-meter", aliases=["saccadic-fatigue", "contrast-damper", "ocular-fatigue"], help="Run a formula on gaze samples you pass. Does not track eyes.")
+    p_fatigue.add_argument("input", nargs="?", default="", help="JSON file of gaze samples. No default session.")
+    p_fatigue.add_argument("--baseline", "-b", type=float, default=420.0, help="Baseline deg/s used by the formula. Not a measured baseline.")
+    p_fatigue.add_argument("--session-max", type=float, default=45.0, help="Session-max minutes used by the formula. Not a measured session.")
+    p_fatigue.add_argument("--css", default="", help="Write formula CSS for a real sample file. Not written for the built-in sample.")
+    p_fatigue.add_argument("--svg", default="", help="Write formula SVG for a real sample file. Not written for the built-in sample.")
+    p_fatigue.add_argument("--json", "-j", action="store_true", help="Print the formula result as JSON")
+    p_fatigue.add_argument("--demo", action="store_true", help="Print a built-in 20-point sample. Not your eyes.")
 
     # stress-tester / lexical-stress / syntax-friction / stepping-stones
     p_stress = subparsers.add_parser("stress-tester", aliases=["lexical-stress", "syntax-friction", "stepping-stones"], help="Autonomous cognitive spatial dynamic lexical stress-testing and gaze anchor synthesizer")
@@ -5013,19 +5013,12 @@ def main():
     elif args.command in ["fatigue-meter", "saccadic-fatigue", "contrast-damper", "ocular-fatigue"]:
         import scripts.saccadic_fatigue_meter as sfatigue
 
-        meter = sfatigue.SaccadicFatigueMeter(
-            baseline_velocity_deg_s=args.baseline,
-            max_session_minutes=args.session_max,
-        )
-
         samples_input = []
-        if args.input and os.path.isfile(args.input):
-            with open(args.input, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            samples_input = raw_data if isinstance(raw_data, list) else raw_data.get("samples", [])
-        elif args.demo or not args.input:
+        source = ""
+        if args.demo:
+            source = "sample"
             for i in range(20):
-                t_ms = i * 105000.0  # ~35 mins
+                t_ms = i * 105000.0
                 vel = 440.0 - (i * 6.5)
                 blink = 5.0 if i < 10 else 1.8
                 samples_input.append({
@@ -5037,22 +5030,44 @@ def main():
                     "blink_interval_sec": blink,
                     "target_card_id": f"card_{(i % 4) + 1}",
                 })
+        elif args.input and os.path.isfile(args.input):
+            source = "file"
+            with open(args.input, "r", encoding="utf-8") as handle:
+                raw_data = json.load(handle)
+            samples_input = raw_data if isinstance(raw_data, list) else raw_data.get("samples", [])
+        elif args.input:
+            print(f"File not found: {args.input}")
+            print("No eyes were tracked.")
+            sys.exit(1)
+        else:
+            print("No gaze samples were given. No eyes were tracked.")
+            print("Pass a JSON file of samples, or --demo for a built-in sample.")
+            sys.exit(0)
 
+        meter = sfatigue.SaccadicFatigueMeter(
+            baseline_velocity_deg_s=args.baseline,
+            max_session_minutes=args.session_max,
+        )
         result = meter.evaluate_gaze_samples(samples_input)
-
+        if source == "sample":
+            print("Built-in sample of 20 made-up gaze points. Not your eyes.")
+        else:
+            print(f"Formula on the samples in {args.input}. Not a measurement of your eyes.")
+            print(f"The formula used baseline {args.baseline} deg/s and session max {args.session_max} minutes. Those are inputs, not measured values.")
         if args.json:
             print(json.dumps(result.to_dict(), indent=2))
         else:
             print("\n" + meter.generate_ascii_report(result))
-
-        if args.css:
-            with open(args.css, "w", encoding="utf-8") as f:
-                f.write(result.restorative_css_tokens)
-            print(f"[DxSkills] Restorative CSS tokens written to: {args.css}")
-
-        if args.svg:
-            meter.export_svg(result, args.svg)
-            print(f"[DxSkills] Saccadic fatigue SVG diagram written to: {args.svg}")
+        if source == "sample" and (args.css or args.svg):
+            print("No css or svg was written. Those files used to present the sample as measured gaze.")
+        else:
+            if args.css:
+                with open(args.css, "w", encoding="utf-8") as handle:
+                    handle.write(result.restorative_css_tokens)
+                print(f"Wrote formula CSS to {args.css}. Not measured eyes.")
+            if args.svg:
+                meter.export_svg(result, args.svg)
+                print(f"Wrote formula SVG to {args.svg}. Not measured eyes.")
     elif args.command in ["stress-tester", "lexical-stress", "syntax-friction", "stepping-stones"]:
         import scripts.lexical_stress_tester as lst_mod
 
