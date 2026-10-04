@@ -1342,13 +1342,13 @@ def main():
     p_buf.add_argument("--json", "-j", action="store_true", help="Output raw JSON buffer telemetry")
     
     # dataset
-    p_data = subparsers.add_parser("dataset", help="Autonomous spatial cognitive model fine-tuning dataset synthesizer")
-    p_data.add_argument("input", nargs="?", default="", help="Input text note, markdown file, or directory")
-    p_data.add_argument("--format", "-f", choices=["alpaca", "sharegpt", "openai"], default="alpaca", help="Dataset format (default: alpaca)")
-    p_data.add_argument("--output", "-o", default="", help="Output JSONL filepath")
-    p_data.add_argument("--title", "-t", default="", help="Document title for single input")
-    p_data.add_argument("--validate", "-v", action="store_true", help="Validate and report dataset quality score")
-    p_data.add_argument("--json", "-j", action="store_true", help="Output raw JSON preview")
+    p_data = subparsers.add_parser("dataset", help="Repeat notes you pass. Does not compile a training set or score quality.")
+    p_data.add_argument("input", nargs="?", default="", help="Note text, a markdown or text file, or a directory of those files. No default note.")
+    p_data.add_argument("--format", "-f", choices=["alpaca", "sharegpt", "openai"], default="alpaca", help="Format name to print. No instruction is added.")
+    p_data.add_argument("--output", "-o", default="", help="Write the notes you passed as JSONL. No generated pair.")
+    p_data.add_argument("--title", "-t", default="", help="Title to print with a single note")
+    p_data.add_argument("--validate", "-v", action="store_true", help="Ignored. Quality is not scored.")
+    p_data.add_argument("--json", "-j", action="store_true", help="Print the notes as JSON")
     
     # palace
     p_palace = subparsers.add_parser("palace", help="Autonomous cognitive spatial mind palace virtual tour and spatial audio navigator")
@@ -2602,49 +2602,53 @@ def main():
             if args.canvas or args.svg:
                 print("No canvas or svg was written. Those files used to draw the result as measured telemetry.")
     elif args.command == "dataset":
-        import scripts.dataset_synthesizer as dsync
         corpus = []
-        if args.input:
-            if os.path.isdir(args.input):
-                for root, _, files in os.walk(args.input):
-                    for file in files:
-                        if file.endswith((".md", ".txt")):
-                            p = os.path.join(root, file)
-                            with open(p, "r", encoding="utf-8", errors="ignore") as f:
-                                corpus.append((os.path.splitext(file)[0], f.read()))
-            elif os.path.isfile(args.input):
-                with open(args.input, "r", encoding="utf-8", errors="ignore") as f:
-                    corpus.append((args.title or os.path.basename(args.input), f.read()))
+        if args.input and os.path.isdir(args.input):
+            for root, _, files in os.walk(args.input):
+                for file in files:
+                    if file.endswith((".md", ".txt")):
+                        path = os.path.join(root, file)
+                        with open(path, "r", encoding="utf-8", errors="ignore") as handle:
+                            corpus.append((os.path.splitext(file)[0], handle.read()))
+        else:
+            note = optional_text(getattr(args, "input", ""))
+            if note.strip():
+                corpus.append((args.title or "Note", note))
+        if not corpus or not any(body.strip() for _, body in corpus):
+            print("No notes were given. No pairs were compiled.")
+            print("Nothing was scored.")
+        else:
+            notes = [{"title": title, "text": body} for title, body in corpus if body.strip()]
+            payload = {
+                "notes": notes,
+                "format_name": args.format,
+                "pairs_compiled": 0,
+                "scored": False,
+                "training_corpus": False,
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
             else:
-                corpus.append((args.title or "Interactive CLI Sample", args.input))
-        else:
-            corpus.append((
-                "Core Spatial Scaffolding",
-                "# Cognitive Spatial Architecture\n"
-                "> **BLUF:** Decouple phonological memory from spatial reasoning models.\n\n"
-                "- Spatial Vector 1: 2D radial coordinate positioning.\n"
-                "- Spatial Vector 2: Multi-vault topology federation without orphan links.\n"
-                "- Spatial Vector 3: Working memory dual-channel stamina balance."
-            ))
-        dataset, meta = dsync.compile_dataset(corpus, output_filepath=args.output or None, fmt=args.format)
-        if args.json:
-            print(json.dumps({"meta": meta, "sample": dataset[0] if dataset else None}, indent=2))
-        elif not args.output:
-            print(f"\n=== [DxSkills: Spatial Model Dataset Synthesizer] ===")
-            print(f"Compiled {meta['total_pairs']} pairs ({meta['valid_pairs']} valid) in `{meta['format']}` format.")
-            print(f"Average Quality Score: {meta['average_quality_score']}/100")
-            if dataset:
-                print(f"\n--- Preview Sample ---")
-                sample = dataset[0]
-                if "instruction" in sample:
-                    print(f"Instruction: {sample['instruction']}")
-                    print(f"Input: {sample['input'][:100]}...")
-                elif "conversations" in sample:
-                    print(f"Human: {sample['conversations'][1]['value'][:100]}...")
-        else:
-            print(f"\n[DxSkills] Compiled {meta['total_pairs']} fine-tuning pairs to: {args.output}")
-            print(f"  - Format: {meta['format']}")
-            print(f"  - Quality Score: {meta['average_quality_score']}/100")
+                print("")
+                print("=== [DxSkills: dataset] ===")
+                print(f"Notes given: {len(notes)}")
+                print(f"Format name you asked for: {args.format}. No instruction was added.")
+                print("Quality: not scored.")
+                print("This is your text, not a training corpus. No pairs were compiled.")
+                for item in notes:
+                    preview = " ".join(item["text"].split())
+                    if len(preview) > 160:
+                        preview = preview[:160] + "..."
+                    print(f"- {item['title']}: {preview}")
+            if args.output:
+                parent = os.path.dirname(os.path.abspath(args.output))
+                if parent and not os.path.isdir(parent):
+                    print(f"[DxSkills] Output directory not found: {parent}")
+                    sys.exit(1)
+                with open(args.output, "w", encoding="utf-8") as handle:
+                    for item in notes:
+                        handle.write(json.dumps({"title": item["title"], "text": item["text"]}, ensure_ascii=False) + "\n")
+                print(f"Wrote your words to {args.output}. Not a training corpus.")
     elif args.command == "palace":
         import scripts.mind_palace as mp_tour
         text = read_input(args.input) if args.input else (
