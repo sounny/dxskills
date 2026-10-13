@@ -12,6 +12,7 @@ import re
 import json
 import argparse
 import subprocess
+import select
 import urllib.request
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -26,6 +27,13 @@ if SKILL_DIR not in sys.path:
 VERSION_FILE = os.path.join(SKILL_DIR, "VERSION")
 REMOTE_VERSION_URL = "https://raw.githubusercontent.com/sounny/dxskills/main/VERSION"
 
+PATH_SUFFIXES = (".pdf", ".txt", ".md", ".markdown")
+
+def looks_like_file_path(input_arg):
+    if "/" in input_arg or "\\" in input_arg:
+        return True
+    return input_arg.lower().endswith(PATH_SUFFIXES)
+
 def read_input(input_arg):
     if not input_arg:
         if not sys.stdin.isatty():
@@ -33,62 +41,434 @@ def read_input(input_arg):
         print("[DxSkills] Error: No input provided. Provide text or pipe via stdin.")
         sys.exit(1)
     if os.path.isfile(input_arg):
+        if input_arg.lower().endswith(".pdf"):
+            print("[DxSkills] This command does not extract PDF text. The file was not read.")
+            sys.exit(1)
         with open(input_arg, "r", encoding="utf-8") as f:
             return f.read().strip()
+    if looks_like_file_path(input_arg):
+        print(f"[DxSkills] File not found: {input_arg}")
+        sys.exit(1)
     return input_arg.strip()
+
+def piped_text():
+    """Read piped stdin only when data is already waiting. Never block."""
+    if sys.stdin.isatty():
+        return ""
+    try:
+        readable, _, _ = select.select([sys.stdin], [], [], 0)
+    except (ValueError, OSError):
+        return ""
+    if not readable:
+        return ""
+    return sys.stdin.read().strip()
+
+def optional_text(input_arg):
+    """Read text, a real file, or piped stdin. Empty string if nothing was given."""
+    if input_arg:
+        return read_input(input_arg)
+    return piped_text()
+
+def emit_rendered(rendered, payload, json_mode, out_path):
+    body = json.dumps(payload, indent=2, ensure_ascii=False) if json_mode else rendered
+    print(body)
+    if out_path:
+        parent = os.path.dirname(os.path.abspath(out_path))
+        if parent and not os.path.isdir(parent):
+            print(f"[DxSkills] Output directory not found: {parent}")
+            sys.exit(1)
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(body)
+            if not body.endswith("\n"):
+                f.write("\n")
+        print(f"[DxSkills] Wrote the same output to {out_path}")
 
 def cmd_dump(args):
     text = read_input(args.input)
-    print("\n=== [DxSkills: dx-dump / Brain Dump to Architecture] ===")
     lines = [line.strip() for line in text.splitlines() if line.strip()]
-    
-    print("\n> **Bottom Line Up Front (BLUF):**")
-    print(f"> Accelerated synthesis compiled from {len(lines)} raw thoughts / fragments.")
-    
-    print("\n### 1. Extracted Focus Areas")
+    if not lines and text.strip():
+        lines = [text.strip()]
+
+    out = []
+    out.append("\n=== [DxSkills: dx-dump / Brain Dump to Architecture] ===")
+    out.append("\n> **Bottom Line Up Front (BLUF):**")
+    if lines:
+        bluf = lines[0].lstrip("*-#0123456789. ")
+        out.append(f"> {bluf}")
+    else:
+        bluf = ""
+        out.append("> (empty)")
+    out.append(f"> {len(lines)} line(s). Wording unchanged. No task was added.")
+    out.append("\n### 1. Your lines")
+    items = []
     for i, line in enumerate(lines, 1):
         clean_line = line.lstrip("*-#0123456789. ")
-        print(f"- **Focus {i}:** {clean_line}")
-        
-    print("\n### 2. Operational Action Matrix")
-    print("| Item | Priority | Assigned Scope | Next Checkpoint |")
-    print("| :--- | :--- | :--- | :--- |")
-    for i, line in enumerate(lines, 1):
-        snippet = line[:40] + ("..." if len(line) > 40 else "")
-        print(f"| Task {i} | High | {snippet} | Review & Validate |")
+        out.append(f"- **Line {i}:** {clean_line}")
+        items.append({"line": i, "words": len(clean_line.split()), "text": clean_line})
+    out.append("\n### 2. What is actually in the note")
+    out.append("| Line | Words | Text |")
+    out.append("| :--- | :--- | :--- |")
+    for item in items:
+        out.append(f"| {item['line']} | {item['words']} | {item['text']} |")
+    verbose = bool(getattr(args, "verbose", False))
+    if verbose:
+        out.append(f"\nInput length: {len(text)} characters.")
+    payload = {
+        "command": "dump",
+        "wording_unchanged": True,
+        "task_added": False,
+        "line_count": len(lines),
+        "bluf": bluf,
+        "lines": items,
+    }
+    if verbose:
+        payload["input_length"] = len(text)
+    emit_rendered("\n".join(out), payload, bool(getattr(args, "json", False)), getattr(args, "out", "") or "")
 
 def cmd_read(args):
     text = read_input(args.input)
-    print("\n=== [DxSkills: dx-read / Anti-Wall-of-Text Filter] ===")
     words = text.split()
-    print("\n> **Bottom Line Up Front (BLUF):**")
-    print(f"> Document condensed from {len(words)} words to high-contrast visual anchors.")
-    
-    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
-    print("\n### 1. Key Thematic Anchors")
-    for i, p in enumerate(paragraphs[:4], 1):
-        lead = " ".join(p.split()[:5])
-        print(f"- **Point {i} ({lead}...):** {p[:120]}...")
-        
-    print("\n### 2. Strategic Takeaway Matrix")
-    print("| Section | Primary Takeaway | Action Required |")
-    print("| :--- | :--- | :--- |")
-    for i, p in enumerate(paragraphs[:3], 1):
-        print(f"| Part {i} | Core insight extracted from narrative | Review and adopt |")
+    paragraphs = [para.strip() for para in text.split("\n\n") if para.strip()]
+    if not paragraphs and text.strip():
+        paragraphs = [text.strip()]
+    sentences = [s.strip() for s in re.split(r"(?<=[.?!])\s+", text.strip()) if s.strip()] if text.strip() else []
+
+    out = []
+    out.append("\n=== [DxSkills: dx-read / Anti-Wall-of-Text Filter] ===")
+    out.append("\n> **Bottom Line Up Front (BLUF):**")
+    if sentences:
+        bluf = sentences[0]
+        out.append(f"> {bluf}")
+    elif paragraphs:
+        bluf = paragraphs[0]
+        out.append(f"> {bluf}")
+    else:
+        bluf = ""
+        out.append("> (empty)")
+    out.append(f"> {len(words)} words, {len(sentences)} sentence(s). Wording unchanged.")
+    out.append("\n### 1. Sentences")
+    shown = sentences[:12]
+    if not shown:
+        out.append("- (none)")
+    for i, sentence in enumerate(shown, 1):
+        out.append(f"- **{i}.** {sentence}")
+    if len(sentences) > 12:
+        out.append(f"- {len(sentences) - 12} more sentence(s) not shown.")
+    out.append("\n### 2. Paragraphs")
+    out.append("| Part | Words | First sentence |")
+    out.append("| :--- | :--- | :--- |")
+    para_items = []
+    for i, para in enumerate(paragraphs, 1):
+        lead = re.split(r"(?<=[.?!])\s+", para)[0]
+        out.append(f"| {i} | {len(para.split())} | {lead} |")
+        para_items.append({"part": i, "words": len(para.split()), "first_sentence": lead})
+    payload = {
+        "command": "read",
+        "wording_unchanged": True,
+        "task_added": False,
+        "word_count": len(words),
+        "sentence_count": len(sentences),
+        "bluf": bluf,
+        "sentences": shown,
+        "paragraphs": para_items,
+    }
+    emit_rendered("\n".join(out), payload, bool(getattr(args, "json", False)), "")
+
+def phrases_from_notes(text):
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    if not lines and text.strip():
+        lines = [text.strip()]
+    if len(lines) == 1 and "," in lines[0]:
+        parts = [part.strip() for part in lines[0].split(",") if part.strip()]
+        if len(parts) > 1:
+            return parts
+    return lines
+
+def cmd_map(args):
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
+    diagram_type = args.type
+    if not phrases:
+        print("[DxSkills] No notes were given. Pass your own lines or a quoted string.")
+        print('Example: python3 scripts/dx_cli.py map --type arch "notes here"')
+        print("No diagram was invented.")
+        return
+    safe = [phrase.replace('"', "'") for phrase in phrases]
+    out = []
+    out.append(f"\n=== [DxSkills: dx-map / {diagram_type}] ===")
+    out.append("This diagram is your lines, not a generated architecture.")
+    out.append("No node was added beyond the phrases you wrote.")
+    out.append("")
+    out.append("```mermaid")
+    if diagram_type == "mindmap":
+        out.append("mindmap")
+        out.append(f"  {safe[0]}")
+        for phrase in safe[1:]:
+            out.append(f"    {phrase}")
+    else:
+        direction = "LR" if diagram_type == "flywheel" else "TD"
+        out.append(f"flowchart {direction}")
+        ids = []
+        for i, phrase in enumerate(safe, 1):
+            nid = f"n{i}"
+            ids.append(nid)
+            out.append(f'  {nid}["{phrase}"]')
+        for left, right in zip(ids, ids[1:]):
+            out.append(f"  {left} --> {right}")
+    out.append("```")
+    print("\n".join(out))
+
+INTERVIEW_TRACKS = {
+    "grant": os.path.join(SKILL_DIR, "skills", "dx-interview", "templates", "grant_proposal_interview.md"),
+    "system": os.path.join(SKILL_DIR, "skills", "dx-interview", "templates", "technical_design_interview.md"),
+    "syllabus": os.path.join(SKILL_DIR, "skills", "dx-interview", "templates", "course_syllabus_interview.md"),
+}
+
+def phase1_questions(path):
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+    questions = []
+    in_phase = False
+    for line in content.splitlines():
+        if line.startswith("## Phase 1"):
+            in_phase = True
+            continue
+        if in_phase and (line.startswith("## ") or line.strip() == "---"):
+            break
+        match = re.match(r"^\d+\.\s+(.*\S)\s*$", line)
+        if in_phase and match:
+            questions.append(match.group(1).strip())
+    return questions
+
+def cmd_interview(args):
+    path = INTERVIEW_TRACKS[args.track]
+    questions = phase1_questions(path)
+    rel = os.path.relpath(path, SKILL_DIR)
+    print(f"\n=== [DxSkills: dx-interview / {args.track}] ===")
+    print(f"Questions from {rel}")
+    print("These are the template questions. No proposal was filled in.")
+    print("")
+    if not questions:
+        print("[DxSkills] No questions were found in the template.")
+        print("Answers were not collected. Phase 2 was not compiled.")
+        return
+    for i, question in enumerate(questions, 1):
+        print(f"{i}. {question}")
+    print("")
+    if not sys.stdin.isatty():
+        print("Answers were not collected. Phase 2 was not compiled.")
+        return
+    print("Type one line per question. This records your words only and does not invent work packages.")
+    answers = []
+    for i, _question in enumerate(questions, 1):
+        try:
+            answers.append(input(f"Answer {i}: ").strip())
+        except EOFError:
+            print("")
+            print("Answers were not collected. Phase 2 was not compiled.")
+            return
+    print("")
+    print("Your answers, wording unchanged:")
+    for i, answer in enumerate(answers, 1):
+        print(f"{i}. {answer if answer else '(blank)'}")
+    print("Phase 2 was not compiled. No work package was added.")
+
+def cmd_voice(args):
+    from scripts.voice_streamer import BUILTIN_SAMPLE_CHUNKS, clean_speech_chunk
+    print("Microphone is not open.")
+    if getattr(args, "simulate", False):
+        print("Built-in sample, not your speech.")
+        for i, chunk in enumerate(BUILTIN_SAMPLE_CHUNKS, 1):
+            print(f"[sample {i}] {clean_speech_chunk(chunk)}")
+        print("No canvas, svg, or markdown file was written.")
+        return
+    text = optional_text(getattr(args, "input", ""))
+    if not text:
+        print('Pass a transcript string. Example: python3 scripts/dx_cli.py voice "Um, ship the notes on Friday."')
+        print("Or run: python3 scripts/dx_cli.py voice --simulate")
+        print("No transcript was invented.")
+        return
+    print("Transcript you supplied. The microphone was not used.")
+    print(clean_speech_chunk(text))
+    print("No canvas, svg, or markdown file was written.")
+
+
+def dictation_file_body(cleaned, kind):
+    if kind == "markdown":
+        return cleaned
+    if kind == "canvas":
+        payload = {
+            "nodes": [{
+                "id": "node-1",
+                "type": "text",
+                "text": cleaned,
+                "x": 0,
+                "y": 0,
+                "width": 420,
+                "height": 180,
+            }],
+            "edges": [],
+        }
+        return json.dumps(payload, indent=2, ensure_ascii=False)
+    safe = cleaned.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    tspans = []
+    lines = safe.splitlines() or [""]
+    for index, line in enumerate(lines):
+        dy = "0" if index == 0 else "22"
+        tspans.append('<tspan x="24" dy="%s">%s</tspan>' % (dy, line))
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="720" height="240">'
+        '<rect width="720" height="240" fill="#ffffff"/>'
+        '<text x="24" y="40" font-family="sans-serif" font-size="16">'
+        + "".join(tspans)
+        + "</text></svg>"
+    )
+
+
+def cmd_debate(args):
+    supplied = optional_text(getattr(args, "input", ""))
+    if not supplied or not supplied.strip():
+        print("No claim was given.")
+        print("No score was computed.")
+        return
+
+    claim = supplied.strip()
+    topic = (getattr(args, "topic", "") or "").strip()
+    cell = claim.replace("|", "\\|").replace("\n", " ")
+    lines = ["# Socratic Debate", ""]
+    if topic:
+        lines.append("Topic you supplied: %s" % topic)
+        lines.append("")
+    lines.append("Claim:")
+    lines.append(claim)
+    lines.append("")
+    lines.append("No score was computed.")
+    lines.append("")
+    lines.append("## Adversarial Cross-Examination Matrix")
+    lines.append("")
+    lines.append("| ID | Proposition / Claim | Skeptic Attack (Reductionist) | Pragmatist Challenge (Operational) | Steel-Manned Defense | Verification Artifact |")
+    lines.append("|:---|:---------------------|:------------------------------|:------------------------------------|:---------------------|:----------------------|")
+    lines.append("| **claim-1** | %s | not given | not given | not given | not given |" % cell)
+    lines.append("")
+    lines.append("## Dialectical Synthesis")
+    lines.append("")
+    lines.append("Synthesis was not in the note.")
+    lines.append("")
+    body = "\n".join(lines)
+    print(body)
+
+    out_path = getattr(args, "output", "") or ""
+    if not out_path:
+        return
+    parent = os.path.dirname(os.path.abspath(out_path))
+    if parent and not os.path.isdir(parent):
+        print("[DxSkills] Output directory not found: %s" % parent)
+        sys.exit(1)
+    with open(out_path, "w", encoding="utf-8") as handle:
+        handle.write(body)
+        if not body.endswith("\n"):
+            handle.write("\n")
+    print("[DxSkills] Wrote the same output to %s" % out_path)
+
+
+def cmd_dictation(args):
+    from scripts.voice_streamer import clean_speech_chunk
+    supplied = optional_text(getattr(args, "input", ""))
+    if not supplied:
+        print("Microphone is not open. No transcript was invented.")
+        print("No live stream is running.")
+        return
+    cleaned = clean_speech_chunk(supplied)
+    print("Microphone is not open.")
+    print("Transcript you supplied. The microphone was not used.")
+    print(cleaned if cleaned else "(empty after filler cleanup)")
+    print("No action items were added.")
+
+    jobs = []
+    canvas_path = getattr(args, "canvas", "") or ""
+    svg_path = getattr(args, "svg", "") or ""
+    export_prefix = getattr(args, "export", "") or ""
+    if canvas_path:
+        jobs.append((canvas_path, "canvas"))
+    if svg_path:
+        jobs.append((svg_path, "svg"))
+    if export_prefix:
+        jobs.append((export_prefix + ".canvas", "canvas"))
+        jobs.append((export_prefix + ".svg", "svg"))
+        jobs.append((export_prefix + ".md", "markdown"))
+    if not jobs:
+        print("No canvas, svg, or markdown file was written.")
+        return
+
+    for path, _kind in jobs:
+        parent = os.path.dirname(os.path.abspath(path))
+        if parent and not os.path.isdir(parent):
+            print("[DxSkills] Output directory not found: %s" % parent)
+            sys.exit(1)
+
+    for path, kind in jobs:
+        body = dictation_file_body(cleaned, kind)
+        with open(path, "w", encoding="utf-8") as handle:
+            handle.write(body)
+            if not body.endswith("\n"):
+                handle.write("\n")
+        print("[DxSkills] Wrote your text to %s" % path)
+
+
+def mermaid_label(text):
+    clean = str(text).replace("\\", " ").replace('"', "'").replace("[", "(").replace("]", ")")
+    clean = clean.replace("\n", " ").replace("\r", " ").strip()
+    if len(clean) > 72:
+        clean = clean[:69] + "..."
+    return clean or "not given"
+
+def phrase_at(phrases, index):
+    if 0 <= index < len(phrases) and phrases[index].strip():
+        return phrases[index].strip()
+    return "not given"
+
+def show_gap(value):
+    if value == "not given":
+        return "not given. This was not in the note."
+    return value
+
+def numbers_written(text):
+    found = []
+    pattern = r"(?<![\w.])\$?\d{1,3}(?:,\d{3})+(?:\.\d+)?%?|(?<![\w.])\$?\d+(?:\.\d+)?%?"
+    for match in re.finditer(pattern, text or ""):
+        raw = match.group(0)
+        numeric = raw.replace("$", "").replace("%", "").replace(",", "")
+        found.append((raw, float(numeric)))
+    return found
+
+def format_amount(value):
+    if abs(value - round(value)) < 1e-9:
+        return str(int(round(value)))
+    return f"{value:.4f}".rstrip("0").rstrip(".")
+
+def arithmetic_lines(text):
+    found = numbers_written(text)
+    if not found:
+        return ["No numbers were in the note. No price, margin, or revenue was added."], found, None
+    listed = ", ".join(raw for raw, _value in found)
+    total = sum(value for _raw, value in found)
+    parts = " + ".join(format_amount(value) for _raw, value in found)
+    line = (
+        f"Numbers in the note: {listed}. "
+        f"Sum ({parts}) = {format_amount(total)}. "
+        "This is arithmetic on the numbers you wrote, not a new finding."
+    )
+    return [line], found, total
 
 def cmd_storyboard(args):
+    text = optional_text(getattr(args, "input", ""))
     if getattr(args, "canvas", "") or getattr(args, "svg", ""):
+        if not text.strip():
+            print("No notes were given. No canvas or svg was written. No shots were invented.")
+            return
         import scripts.spatial_storyboard as ss
-        input_text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-            "Establish the friction: Linear text walls overload phonological working memory.\n"
-            "Inciting shift: Non-linear thinkers struggle to communicate complex holistic architectures through sequential slides.\n"
-            "Core exploration: The DxSkills cognitive engine decouples spatial mental models from linear output streams.\n"
-            "Technical deep dive: High-dimensional vector similarity clusters ideas into constellation topologies.\n"
-            "Multi-vault bridge: Cross-repository synchronizers identify dangling wikilinks and orphan nodes in real time.\n"
-            "Resolution vista: The user presents a hardened spatial canvas that disarms reductionist critics instantly."
-        )
-        storyboard, canvas_data, svg_code = ss.run_storyboard(
-            input_text,
+        storyboard, _canvas_data, _svg_code = ss.run_storyboard(
+            text,
             title=getattr(args, "title", None) or None,
             output_canvas=getattr(args, "canvas", None) or None,
             output_svg=getattr(args, "svg", None) or None
@@ -97,438 +477,528 @@ def cmd_storyboard(args):
             print(json.dumps(storyboard, indent=2))
         else:
             print(f"\n[DxSkills] Sequenced {storyboard['total_shots']} shots across 3 acts ({storyboard['total_duration_seconds']}s total).")
+            print("Shots come from your notes. No shot was added.")
             if getattr(args, "canvas", None):
                 print(f"  - Canvas: {args.canvas}")
             if getattr(args, "svg", None):
                 print(f"  - SVG: {args.svg}")
         return
 
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "We are addressing the state clean energy transition. Outdated grid transmission lines fail under peak summer demand. "
-        "We must deploy decentralized microgrids, streamline local storage permits, and incentivize commercial battery retrofits. "
-        "Phase 1 begins next month with five pilot counties to prove grid resilience before the statewide rollout."
-    )
-    title = getattr(args, "title", "") or "Executive Visual Spatial Storyboard"
-    
-    raw_sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
-    room1_text = raw_sentences[0] if len(raw_sentences) > 0 else "Baseline facts and core operating context."
-    room2_text = raw_sentences[1] if len(raw_sentences) > 1 else "Critical friction point and stakeholder cost."
-    room3_text = raw_sentences[2] if len(raw_sentences) > 2 else "Strategic solution pillars and active interventions."
-    room4_text = raw_sentences[3] if len(raw_sentences) > 3 else "Immediate next milestone and accountability."
-    
-    mermaid_diag = f"""```mermaid
-graph LR
-    subgraph Room1 ["Room 1: Context Porch"]
-        R1["{room1_text[:36]}..."]
-    end
-    subgraph Room2 ["Room 2: Catalyst Atrium"]
-        R2["{room2_text[:36]}..."]
-    end
-    subgraph Room3 ["Room 3: Engine Hall"]
-        R3["{room3_text[:36]}..."]
-    end
-    subgraph Room4 ["Room 4: Horizon Terrace"]
-        R4["{room4_text[:36]}..."]
-    end
-
-    R1 --> R2
-    R2 --> R3
-    R3 --> R4
-```"""
-
+    phrases = phrases_from_notes(text)
+    title = getattr(args, "title", "") or "4-room storyboard"
+    room_specs = [
+        ("room1", "Context Porch", "Room 1: Context Porch", "R1", "Core tension"),
+        ("room2", "Catalyst Atrium", "Room 2: Catalyst Atrium", "R2", "Friction point"),
+        ("room3", "Engine Hall", "Room 3: Engine Hall", "R3", "Action pillars"),
+        ("room4", "Horizon Terrace", "Room 4: Horizon Terrace", "R4", "Immediate next move"),
+    ]
+    rooms = []
+    for index, spec in enumerate(room_specs):
+        key, name, label, node_id, slot_label = spec
+        rooms.append({
+            "key": key,
+            "name": name,
+            "label": label,
+            "node": node_id,
+            "slot": slot_label,
+            "content": phrase_at(phrases, index),
+        })
+    extra = phrases[4:]
+    mermaid_diag = "\n".join([
+        "```mermaid",
+        "graph LR",
+        *[
+            f'    subgraph Room{i} ["{room["label"]}"]\n        {room["node"]}["{mermaid_label(room["content"])}"]\n    end'
+            for i, room in enumerate(rooms, 1)
+        ],
+        "",
+        "    R1 --> R2",
+        "    R2 --> R3",
+        "    R3 --> R4",
+        "```",
+    ])
+    bluf = phrases[0] if phrases else "not given. This was not in the note."
+    block_heads = [
+        "### Blue Block: Problem and Baseline",
+        "### Amber Block: The Critical Pivot",
+        "### Emerald Block: The Strategic Solution",
+        "### Violet Block: The Horizon Call to Action",
+    ]
     report_lines = [
         f"# {title}",
         "",
-        "> **Cognitive Archetype:** Gavin Newsom (Unscripted Speech & Spatial Memory Briefing)",
-        f"> **Bottom Line Up Front (BLUF):** {room1_text}. Next immediate milestone: {room4_text}.",
+        "> **Cognitive Archetype:** Gavin Newsom (Unscripted Speech and Spatial Memory Briefing)",
+        "> **What this is:** Your words in a 4-room frame. No finding was added.",
+        f"> **Bottom Line Up Front (BLUF):** {bluf}",
         "",
-        "## 🏛️ Spatial Memory Architecture (The Four Rooms)",
+        "## Spatial Memory Architecture (The Four Rooms)",
         mermaid_diag,
         "",
-        "## 🎨 Color-Coded Thematic Concept Blocks",
+        "## Color-Coded Thematic Concept Blocks",
         "",
-        "### 🔵 Blue Block: Problem & Baseline",
-        f"- **Core Tension:** {room1_text}",
-        "- **Anchor:** Visualize the existing system baseline and indisputable ground truths.",
-        "",
-        "### 🟡 Amber Block: The Critical Pivot",
-        f"- **Friction Point:** {room2_text}",
-        "- **Anchor:** Visualize the structural fracture or capacity bottleneck.",
-        "",
-        "### 🟢 Emerald Block: The Strategic Solution",
-        f"- **Action Pillars:** {room3_text}",
-        "- **Anchor:** Visualize the three supporting columns holding up the bridge.",
-        "",
-        "### 🟣 Violet Block: The Horizon Call to Action",
-        f"- **Immediate Next Move:** {room4_text}",
-        "- **Anchor:** Visualize the finish line and immediate 48-hour delivery.",
-        "",
-        "## 🎙️ Executive Speaking Cards (Zero Teleprompter)",
+    ]
+    for head, room in zip(block_heads, rooms):
+        report_lines.append(head)
+        report_lines.append(f"- **{room['slot']}:** {show_gap(room['content'])}")
+        report_lines.append("")
+    if extra:
+        report_lines.append("### Also in the note")
+        for phrase in extra:
+            report_lines.append(f"- {phrase}")
+        report_lines.append("")
+    report_lines.extend([
+        "## Executive Speaking Cards (Zero Teleprompter)",
         "| Sequence | Visual Room | Key Speaking Anchor | Suggested Timing |",
         "| :--- | :--- | :--- | :--- |",
-        f"| **01. Opening** | The Context Porch | State the outcome first: {room1_text[:40]} | 2 min |",
-        f"| **02. Tension** | The Catalyst Atrium | Contrast limitation with opportunity: {room2_text[:40]} | 3 min |",
-        f"| **03. Deep Dive** | The Engine Hall | Walk through action pillars with spatial gestures | 8 min |",
-        f"| **04. Close** | The Horizon Terrace | Close with direct accountability: {room4_text[:40]} | 2 min |",
-    ]
-    
+    ])
+    sequences = ["01. Opening", "02. Tension", "03. Deep Dive", "04. Close"]
+    for seq, room in zip(sequences, rooms):
+        report_lines.append(
+            f"| **{seq}** | {room['name']} | {show_gap(room['content'])} | not given. This was not in the note. |"
+        )
+    report_lines.append("")
+    if phrases:
+        report_lines.append("Rooms marked not given were not in the note.")
+    else:
+        report_lines.append("No note was given. Empty rooms stay not given.")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": bluf,
+        "added_findings": False,
+        "rooms": {
+            room["key"]: {"name": room["name"], "content": room["content"]}
+            for room in rooms
+        },
+        "also_in_the_note": extra,
+        "mermaid": mermaid_diag,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": f"{room1_text}. Next immediate milestone: {room4_text}.",
-            "rooms": {
-                "room1": {"name": "Context Porch", "content": room1_text},
-                "room2": {"name": "Catalyst Atrium", "content": room2_text},
-                "room3": {"name": "Engine Hall", "content": room3_text},
-                "room4": {"name": "Horizon Terrace", "content": room4_text}
-            },
-            "mermaid": mermaid_diag
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
         print(f"\n[DxSkills] Visual storyboard written to: {args.output}")
 
 def cmd_napkin(args):
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "We are building a lightweight form backend for frontend developers. Most developers pay $30 per month "
-        "to third-party form services that inject heavy scripts. We provide a 2.5KB script with zero API keys and "
-        "sub-15ms edge processing for $4 per month, retaining an 85% gross margin."
-    )
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
     title = getattr(args, "title", "") or "The Back-of-a-Beer-Mat / Napkin Test"
-    price = getattr(args, "price", 4.0) or 4.0
-    cost = getattr(args, "cost", 0.60) or 0.60
-    margin = price - cost
-    margin_pct = int((margin / price) * 100) if price > 0 else 0
-    
-    sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
-    value_exchange = sentences[0] if sentences else "Customer pays for direct operational relief."
-    friction = sentences[1] if len(sentences) > 1 else "Existing market solutions are overpriced and bloated."
-    solution = sentences[2] if len(sentences) > 2 else "Featherweight local architecture delivering instant speed."
-    
-    mermaid_diag = """```mermaid
-graph LR
-    A["Customer Friction"] -->|"Pays $"| B["Our Simple Engine"]
-    B -->|"Delivers Instant Relief"| C["Delighted Customer"]
-    B -->|"Retains 80%+ Margin"| D["Reinvested in Flywheel"]
-```"""
-
+    price = getattr(args, "price", None)
+    cost = getattr(args, "cost", None)
+    slots = [phrase_at(phrases, i) for i in range(4)]
+    extra = phrases[4:]
+    value_exchange, lever1, lever2, lever3 = slots
+    math_lines = []
+    margin = None
+    margin_pct = None
+    if price is not None and cost is not None:
+        margin = price - cost
+        math_lines.append(f"Unit price you passed: {format_amount(price)}")
+        math_lines.append(f"Unit cost you passed: {format_amount(cost)}")
+        math_lines.append(
+            f"Price minus cost: {format_amount(margin)}. "
+            "This is arithmetic on the price and cost you passed, not a finding from the note."
+        )
+        if price != 0:
+            pct = (margin / price) * 100
+            margin_pct = int(round(pct)) if abs(pct - round(pct)) < 1e-9 else pct
+            math_lines.append(f"Margin percent from that arithmetic: {format_amount(pct)}%.")
+        else:
+            math_lines.append("Margin percent was not calculated because the price you passed is 0.")
+    elif price is not None or cost is not None:
+        math_lines.append("Only one of price or cost was passed. No margin was calculated.")
+        if price is not None:
+            math_lines.append(f"Unit price you passed: {format_amount(price)}")
+        if cost is not None:
+            math_lines.append(f"Unit cost you passed: {format_amount(cost)}")
+    else:
+        note_lines, _found, _total = arithmetic_lines(text)
+        if numbers_written(text):
+            math_lines.extend(note_lines)
+            math_lines.append("Those numbers were not labeled as a price or a margin, so none was added.")
+        else:
+            math_lines.append("not given. No price, cost, or margin was in the note.")
+    mermaid_diag = "\n".join([
+        "```mermaid",
+        "graph LR",
+        f'    A["{mermaid_label(value_exchange)}"] --> B["{mermaid_label(lever1)}"]',
+        f'    B --> C["{mermaid_label(lever2)}"]',
+        f'    C --> D["{mermaid_label(lever3)}"]',
+        "```",
+    ])
     report_lines = [
         f"# {title}",
         "",
-        "> **Cognitive Archetype:** Richard Branson (Radical Simplification & Core Value Exchange)",
-        f"> **Bottom Line Up Front (BLUF):** {value_exchange}",
+        "> **Cognitive Archetype:** Richard Branson (Radical Simplification and Core Value Exchange)",
+        "> **What this is:** Your words in a beer-mat frame. No finding or number was added.",
+        f"> **Bottom Line Up Front (BLUF):** {show_gap(value_exchange)}",
         "",
-        "## 🍺 The Beer-Mat Canvas",
+        "## The Beer-Mat Canvas",
         "```text",
         "+-------------------------------------------------------------+",
         "|                     THE BEER MAT TEST                       |",
         "|                                                             |",
-        f"| 1. CORE VALUE EXCHANGE:                                     |",
-        f"|    {value_exchange[:56]:<56} |",
+        "| 1. CORE VALUE EXCHANGE:                                     |",
+        f"|    {value_exchange}",
         "|                                                             |",
         "| 2. THE THREE ESSENTIAL LEVERS:                              |",
-        f"|    - Lever 1 (Acquisition): {friction[:40]:<40} |",
-        f"|    - Lever 2 (Advantage):   {solution[:40]:<40} |",
-        f"|    - Lever 3 (Economics):   Retain {margin_pct}% gross margin on every unit  |",
+        f"|    - Lever 1: {show_gap(lever1)}",
+        f"|    - Lever 2: {show_gap(lever2)}",
+        f"|    - Lever 3: {show_gap(lever3)}",
         "|                                                             |",
         "| 3. BACK-OF-THE-ENVELOPE MATH:                               |",
-        f"|    Unit price:         $ {price:<6.2f}                             |",
-        f"|    Cost to deliver:    $ {cost:<6.2f}                             |",
-        f"|    Gross cash profit:  $ {margin:<6.2f} ({margin_pct}%)                     |",
+    ]
+    for line in math_lines:
+        report_lines.append(f"|    {line}")
+    report_lines.extend([
         "|                                                             |",
         "| 4. THE ACID TEST:                                           |",
         "|    Can a 10-year-old explain this business to their friend? |",
         "+-------------------------------------------------------------+",
         "```",
         "",
-        "## 🔄 Core Value Exchange Flow",
+        "## Core Value Exchange Flow",
         mermaid_diag,
         "",
-        "## ⚡ Radical Simplification Matrix",
+        "## Radical Simplification Matrix",
         "| Dimension | Complicated Corporate Version | The Beer-Mat Truth |",
         "| :--- | :--- | :--- |",
-        f"| **The Value** | Multi-stakeholder transformation platform | {value_exchange[:60]} |",
-        f"| **The Problem** | Structural legacy friction across verticals | {friction[:60]} |",
-        f"| **The Engine** | Proprietary algorithmically enabled stack | {solution[:60]} |",
-        f"| **The Math** | Multi-year recurring cashflow model | Keeps ${margin:.2f} profit out of every ${price:.2f} billed |",
-    ]
-    
+        f"| **The Value** | not given. This was not in the note. | {show_gap(value_exchange)} |",
+        f"| **The Problem** | not given. This was not in the note. | {show_gap(lever1)} |",
+        f"| **The Engine** | not given. This was not in the note. | {show_gap(lever2)} |",
+        f"| **The Math** | not given. This was not in the note. | {math_lines[0]} |",
+    ])
+    if extra:
+        report_lines.append("")
+        report_lines.append("## Also in the note")
+        for phrase in extra:
+            report_lines.append(f"- {phrase}")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": value_exchange if value_exchange != "not given" else "not given. This was not in the note.",
+        "added_findings": False,
+        "value_exchange": value_exchange,
+        "levers": [lever1, lever2, lever3],
+        "unit_economics": {
+            "price": price,
+            "cost": cost,
+            "margin": margin,
+            "margin_pct": margin_pct,
+        },
+        "mermaid": mermaid_diag,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": value_exchange,
-            "value_exchange": value_exchange,
-            "unit_economics": {
-                "price": price,
-                "cost": cost,
-                "margin": margin,
-                "margin_pct": margin_pct
-            },
-            "mermaid": mermaid_diag
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
         print(f"\n[DxSkills] Beer-mat test written to: {args.output}")
 
 def cmd_spec(args):
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "We need to build an executive cognitive compiler. The front gate validates raw voice or text payloads. "
-        "The processing engine extracts intent and compiles spatial relationships into Mermaid diagrams. "
-        "The persistent vault writes clean markdown and canvas files locally with zero cloud dependencies. "
-        "The executive terrace renders high-signal BLUF dashboards with zero em dashes."
-    )
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
     title = getattr(args, "title", "") or "Executive Markdown Specification"
-    
-    sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
-    bluf = sentences[0] if sentences else "Whole-system architecture compiled from engineering notes."
-    
-    mermaid_diag = """```mermaid
-graph TD
-    subgraph IngressGate ["The Front Gate: Ingress & Validation"]
-        A["Raw User Input / Audio Stream"] --> B["Payload Sanity Check"]
-    end
-
-    subgraph CoreEngine ["The Workshop: Processing Engine"]
-        B --> C["Intent Extraction (Pass 1)"]
-        C --> D["Spatial Topology Engine (Pass 2)"]
-    end
-
-    subgraph VaultStorage ["The Archive: Persistent Vault"]
-        D --> E["Local Markdown Artifact"]
-        D --> F["Vector Graph / Canvas Node"]
-    end
-
-    subgraph OutputTerrace ["The Display: Executive Surface"]
-        E --> G["Clean BLUF Dashboard"]
-        F --> H["Live Mermaid Visualization"]
-    end
-```"""
-
+    bluf = phrases[0] if phrases else "not given. This was not in the note."
+    tradeoff_phrases = phrases[1:4]
+    action_phrases = phrases[4:]
+    diagram_phrases = phrases or ["not given"]
+    mermaid_lines = ["```mermaid", "graph TD"]
+    ids = []
+    for i, phrase in enumerate(diagram_phrases, 1):
+        node_id = f"n{i}"
+        ids.append(node_id)
+        mermaid_lines.append(f'    {node_id}["{mermaid_label(phrase)}"]')
+    for left, right in zip(ids, ids[1:]):
+        mermaid_lines.append(f"    {left} --> {right}")
+    mermaid_lines.append("```")
+    mermaid_diag = "\n".join(mermaid_lines)
     report_lines = [
         f"# {title}",
         "",
-        "> **Cognitive Archetype:** Steve Jobs (Whole-System Spatial Metaphors & Direct Technical Clarity)",
+        "> **Cognitive Archetype:** Steve Jobs (Whole-System Spatial Metaphors and Direct Technical Clarity)",
+        "> **What this is:** Your words in a spec frame. No finding was added.",
         f"> **Bottom Line Up Front (BLUF):** {bluf}",
         "",
-        "## 🏛️ Whole-System Spatial Metaphor",
+        "## Whole-System Spatial Metaphor",
         mermaid_diag,
         "",
-        "## ⚖️ Technical Tradeoff & Decision Matrix",
+        "## Technical Tradeoff & Decision Matrix",
         "| Architectural Dilemma | Chosen Direction | Rejected Alternative | Decisive Rationale |",
         "| :--- | :--- | :--- | :--- |",
-        "| **State Persistence** | Pure Client-Side Local State | Heavy Cloud Database | Zero login friction; instant launch; complete user privacy. |",
-        "| **Diagram Engine** | Browser-Native Mermaid.js | Heavy WebGL Bundle | Lightweight footprint; plain-text exportable; renders everywhere. |",
-        "| **API Protocol** | Model Context Protocol (MCP) | Custom REST Endpoints | Universal native compatibility across Claude, Cursor, and Antigravity. |",
-        "| **Prose Scaffolding** | Direct Grounded Markdown | Long Narrative Outlines | Eliminates reading drag and cognitive fatigue. |",
+    ]
+    tradeoffs = []
+    if tradeoff_phrases:
+        for phrase in tradeoff_phrases:
+            report_lines.append(f"| {phrase} | not given. This was not in the note. | not given. This was not in the note. | not given. This was not in the note. |")
+            tradeoffs.append({
+                "dilemma": phrase,
+                "chosen": "not given",
+                "rejected": "not given",
+                "rationale": "not given. This was not in the note.",
+            })
+    else:
+        report_lines.append("| not given. This was not in the note. | not given. This was not in the note. | not given. This was not in the note. | not given. This was not in the note. |")
+    report_lines.extend([
         "",
-        "## ⚡ Executive Specification Breakdown",
+        "## Executive Specification Breakdown",
         "### 1. User Experience Guarantee",
-        "- **Comprehension Window:** Grasp the entire system topology in under 5 seconds.",
-        "- **Input Tolerance:** Zero formatting tax on input. Accept messy shorthand without complaint.",
-        "- **Latency Target:** Sub-50ms local compilation for text and diagrams.",
+        "- not given. This was not in the note.",
         "",
         "### 2. Core Technical Constraints",
-        "- **Zero External Dependency:** All essential compilation runs locally or in-browser.",
-        "- **Zero AI Fluff:** No synthetic filler, no conversational preambles, strictly zero em dashes.",
-        "- **Deterministic Format:** Always lead with BLUF, followed by Mermaid diagram and decisions.",
+        "- not given. This was not in the note.",
         "",
         "### 3. Concrete Action Sequence",
-        "1. [ ] Wire up input stream directly to intent parser.",
-        "2. [ ] Render visual Mermaid state graph before generating prose.",
-        "3. [ ] Run automated lint gate to enforce zero em dashes.",
-        "4. [ ] Export single self-contained deliverable.",
-    ]
-    
+    ])
+    if action_phrases:
+        for phrase in action_phrases:
+            report_lines.append(f"- {phrase}")
+    else:
+        report_lines.append("- not given. This was not in the note.")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": bluf,
+        "added_findings": False,
+        "phrases": phrases,
+        "mermaid": mermaid_diag,
+        "tradeoffs": tradeoffs,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": bluf,
-            "mermaid": mermaid_diag,
-            "tradeoffs": [
-                {"dilemma": "State Persistence", "chosen": "Pure Client-Side Local State", "rationale": "Zero login friction and privacy."},
-                {"dilemma": "Diagram Engine", "chosen": "Browser-Native Mermaid.js", "rationale": "Lightweight plain-text rendering."},
-                {"dilemma": "API Protocol", "chosen": "Model Context Protocol (MCP)", "rationale": "Universal IDE compatibility."}
-            ]
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
         print(f"\n[DxSkills] Executive specification written to: {args.output}")
 
 def cmd_taxonomy(args):
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "We are managing complex systems. Instead of SKU-9842 and SKU-9843, we name the base API router River Delta, "
-        "the caching cluster The Workbench, and the persistent storage The Archive Vault. For assembly, unpack components, "
-        "align rails, turn cam locks 90 degrees, and anchor safety bracket to wall."
-    )
-    title = getattr(args, "title", "") or "Visual Mnemonic Taxonomy & Procedural Schema"
-    
-    mermaid_diag = """```mermaid
-graph TD
-    subgraph Step1 ["Step 1: Unpack & Inspect"]
-        A["Verify Components: Rails, Screws, Brackets"]
-    end
-    subgraph Step2 ["Step 2: Base Alignment"]
-        B["Lay Side Rail Flat on Floor"]
-        C["Slot Base Board into Bottom Groove"]
-    end
-    subgraph Step3 ["Step 3: Mechanical Fastening"]
-        D["Turn Cam Locks 90 Degrees Clockwise"]
-    end
-    subgraph Step4 ["Step 4: Upright Position"]
-        E["Rotate Unit 90 Degrees Upright"]
-        F["Anchor Safety Bracket to Wall"]
-    end
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-```"""
-
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
+    title = getattr(args, "title", "") or "Visual Mnemonic Taxonomy and Procedural Schema"
+    bluf = phrases[0] if phrases else "not given. This was not in the note."
+    rows = phrases or ["not given"]
+    mermaid_lines = ["```mermaid", "graph TD"]
+    ids = []
+    for i, phrase in enumerate(rows, 1):
+        node_id = f"s{i}"
+        ids.append(node_id)
+        mermaid_lines.append(f'    {node_id}["{mermaid_label(phrase)}"]')
+    for left, right in zip(ids, ids[1:]):
+        mermaid_lines.append(f"    {left} --> {right}")
+    mermaid_lines.append("```")
+    mermaid_diag = "\n".join(mermaid_lines)
     report_lines = [
         f"# {title}",
         "",
-        "> **Cognitive Archetype:** Ingvar Kamprad (Visual Mnemonic Taxonomy & Wordless Assembly)",
-        "> **Bottom Line Up Front (BLUF):** Replace abstract alphanumeric codes and dense procedural text with memorable physical categories and step-by-step visual flows.",
+        "> **Cognitive Archetype:** Ingvar Kamprad (Visual Mnemonic Taxonomy and Wordless Assembly)",
+        "> **What this is:** Your words in a taxonomy frame. No mnemonic was added.",
+        f"> **Bottom Line Up Front (BLUF):** {bluf}",
         "",
-        "## 🧭 Visual Mnemonic Taxonomy",
-        "| Abstract Code / Term | Mnemonic Category | Physical Analogy | Cognitive Anchor |",
+        "## Visual Mnemonic Taxonomy",
+        "| Phrase from the note | Mnemonic you wrote | Physical analogy you wrote | Cognitive anchor you wrote |",
         "| :--- | :--- | :--- | :--- |",
-        "| **API Gateway Routing** | River Delta | Water distributing to branches | Fast routing, split flows |",
-        "| **In-Memory Cache (Redis)** | The Workbench | Tools laid out right in front | Zero-reach instant retrieval |",
-        "| **Database Storage (SQL)** | The Archive Vault | Heavy stone walls with locks | Permanent durability |",
-        "| **Edge CDN Delivery** | Local Outposts | Stashes placed across terrain | Low latency, nearby stock |",
+    ]
+    taxonomy = []
+    for phrase in rows:
+        mnemonic = "not given"
+        analogy = "not given"
+        report_lines.append(f"| {phrase} | {mnemonic}. This was not in the note. | {analogy}. This was not in the note. | not given. This was not in the note. |")
+        taxonomy.append({"code": phrase, "mnemonic": mnemonic, "analogy": analogy})
+    report_lines.extend([
         "",
-        "## 📐 Pictorial Assembly Schema (Step-by-Step Flow)",
+        "## Pictorial Assembly Schema (Step-by-Step Flow)",
         mermaid_diag,
         "",
-        "## 📦 Spatial Volume & Geometric Verification",
+        "## Spatial Volume & Geometric Verification",
         "| Step | Component | Spatial Action | Verification Rule |",
         "| :--- | :--- | :--- | :--- |",
-        "| **01** | Base & Rail | Align grooved edges inward. | Both grooves form continuous track. |",
-        "| **02** | Shelves | Insert wooden dowels by hand. | Zero tools needed; flush with face. |",
-        "| **03** | Fasteners | Tighten locking screws. | Rotate 1/4 turn until firm stop. |",
-        "| **04** | Anchoring | Fix bracket directly into wall stud. | Unit cannot tilt forward under load. |",
-    ]
-    
+    ])
+    for i, phrase in enumerate(rows, 1):
+        report_lines.append(f"| {i:02d} | {phrase} | not given. This was not in the note. | not given. This was not in the note. |")
+    if not phrases:
+        report_lines.append("")
+        report_lines.append("No note was given. No category or assembly step was invented.")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": bluf,
+        "added_findings": False,
+        "taxonomy": taxonomy if phrases else [],
+        "mermaid": mermaid_diag,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": "Replace abstract codes with memorable physical categories and pictorial node flows.",
-            "taxonomy": [
-                {"code": "API Gateway", "mnemonic": "River Delta", "analogy": "Water distributing to branches"},
-                {"code": "Redis Cache", "mnemonic": "The Workbench", "analogy": "Tools laid out right in front"},
-                {"code": "SQL Database", "mnemonic": "The Archive Vault", "analogy": "Heavy stone walls with locks"}
-            ],
-            "mermaid": mermaid_diag
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
         print(f"\n[DxSkills] Mnemonic taxonomy written to: {args.output}")
 
 def cmd_finance(args):
-    text = read_input(args.input) if (hasattr(args, "input") and args.input) else (
-        "Gross Revenue: $120,450. Delivery Costs / COGS: $35,120. Operational Overhead: $45,300. "
-        "Net Profit Retained: $30,030. Bank Cash Balance: $360,000. Runway is over 12 months with positive cash flow."
-    )
-    title = getattr(args, "title", "") or "Financial & Metric Conversational Digest"
-    
-    mermaid_diag = """```mermaid
-graph TD
-    A["Gross Inflows: $120,000"] --> B["The Operating Funnel"]
-    B -->|Direct Delivery: $35,000| C["Gross Profit: $85,000 - 71%"]
-    C -->|Overhead and Payroll: $45,000| D["Operating Cash Flow: $40,000"]
-    D -->|Taxes and Reserves: $10,000| E["Net Cash Retained: $30,000"]
-
-    subgraph Runway ["Cash Runway Status"]
-        F["Total Bank Cash: $360,000"]
-        G["Net Monthly Burn: $0 - Cash-Flow Positive"]
-        H["Runway: Infinite - Self-Sustaining"]
-    end
-```"""
-
+    text = optional_text(getattr(args, "input", ""))
+    phrases = phrases_from_notes(text)
+    title = getattr(args, "title", "") or "Financial and Metric Conversational Digest"
+    answers = [phrase_at(phrases, i) for i in range(4)]
+    extra = phrases[4:]
+    number_lines, found, total = arithmetic_lines(text)
+    bluf = phrases[0] if phrases else "not given. This was not in the note."
+    mermaid_nodes = [
+        ("A", answers[0]),
+        ("B", "The Operating Funnel"),
+        ("C", answers[1]),
+        ("D", answers[2]),
+        ("E", answers[3]),
+    ]
+    mermaid_lines = [
+        "```mermaid",
+        "graph TD",
+        *[f'    {node_id}["{mermaid_label(label)}"]' for node_id, label in mermaid_nodes],
+        "    A --> B",
+        "    B --> C",
+        "    C --> D",
+        "    D --> E",
+    ]
+    if found:
+        mermaid_lines.append(f'    S["Sum of numbers you wrote: {format_amount(total)}"]')
+    mermaid_lines.append("```")
+    mermaid_diag = "\n".join(mermaid_lines)
+    answer_labels = [
+        "Cash through the front door",
+        "Cash out the back door",
+        "Cash in the register right now",
+        "Where the margin lives",
+    ]
     report_lines = [
         f"# {title}",
         "",
         "> **Cognitive Archetype:** Richard Branson (Boardroom Financial Scaffolding)",
-        "> **Bottom Line Up Front (BLUF):** Business generated $120k revenue, kept 71% gross margin, and banked $30k net cash with 12 months cash runway.",
+        "> **What this is:** Your words in a finance frame. No figure was added.",
+        f"> **Bottom Line Up Front (BLUF):** {bluf}",
         "",
-        "## 💬 The Four Boardroom Answers",
-        "1. **Cash through the front door:** $120k gross revenue across active accounts.",
-        "2. **Cash out the back door:** $35k direct delivery costs and $45k fixed operational overhead.",
-        "3. **Cash in the register right now:** $360k in bank reserves (12+ months operating expenses).",
-        "4. **Where the margin lives:** Gross margin remains high at 71%, retaining 71 cents per dollar.",
+        "## The Four Boardroom Answers",
+    ]
+    for index, (label, answer) in enumerate(zip(answer_labels, answers), 1):
+        report_lines.append(f"{index}. **{label}:** {show_gap(answer)}")
+    report_lines.extend([
         "",
-        "## 📊 Visual Cash-Flow Topology",
+        "## Numbers in the note",
+        *number_lines,
+        "",
+        "## Visual Cash-Flow Topology",
         mermaid_diag,
         "",
-        "## 📋 Conversational Financial Matrix",
-        "| Financial Metric | Spreadsheet Value | Conversational Translation | Health Status |",
+        "## Conversational Financial Matrix",
+        "| Financial Metric | What you wrote | Conversational Translation | Health Status |",
         "| :--- | :--- | :--- | :--- |",
-        "| **Gross Revenue** | $120,450.00 | Brought in $120k across core contracts | Healthy (+12% MoM) |",
-        "| **Cost of Goods** | $35,120.00 | Direct delivery costs (compute, hosting) | Expected (29% of rev) |",
-        "| **Overhead** | $45,300.00 | Fixed operational overhead sits steady | Controlled |",
-        "| **Net Cash Retained** | $30,030.00 | Clean profit banked into reserve fund | Strong |",
-        "| **Cash Runway** | $360,000.00 | Over 12 months total expenses in reserve | Safe |",
+    ])
+    metric_names = ["Gross Revenue", "Cost of Goods", "Overhead", "Net Cash Retained"]
+    for name, answer in zip(metric_names, answers):
+        report_lines.append(
+            f"| **{name}** | {show_gap(answer)} | not given. This was not in the note. | not given. This was not in the note. |"
+        )
+    report_lines.extend([
         "",
-        "## 🎯 The Three Boardroom Takeaways",
-        "- **The Good News:** Gross margins remain robust at 71%, demonstrating strong pricing power.",
-        "- **The Watch Item:** Compute and delivery costs increased slightly with new user volume.",
-        "- **The Next Move:** Lock in annual committed server pricing to save $1,200 per month.",
-    ]
-    
+        "## The Three Boardroom Takeaways",
+    ])
+    if extra:
+        for phrase in extra:
+            report_lines.append(f"- {phrase}")
+    else:
+        report_lines.append("- not given. This was not in the note.")
     out_text = "\n".join(report_lines)
-    
+    payload = {
+        "title": title,
+        "bluf": bluf,
+        "added_findings": False,
+        "answers": answers,
+        "metrics": {
+            "numbers_written": [value for _raw, value in found],
+            "sum": total,
+            "sum_label": "arithmetic on the numbers you wrote" if found else "no numbers were in the note",
+            "revenue": None,
+            "net_profit": None,
+            "cash_balance": None,
+        },
+        "mermaid": mermaid_diag,
+    }
     if getattr(args, "json", False):
-        payload = {
-            "title": title,
-            "bluf": "Generated $120k revenue with 71% gross margin and $30k net retained profit.",
-            "metrics": {
-                "revenue": 120450.0,
-                "cogs": 35120.0,
-                "overhead": 45300.0,
-                "net_profit": 30030.0,
-                "cash_balance": 360000.0
-            },
-            "mermaid": mermaid_diag
-        }
         print(json.dumps(payload, indent=2))
     else:
         print(out_text)
-        
     if getattr(args, "output", ""):
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(out_text)
         print(f"\n[DxSkills] Financial digest written to: {args.output}")
+
+def cmd_parity(args):
+    """Check only the note the user passed. Never invent an audit."""
+    note = optional_text(getattr(args, "input", ""))
+    if not note.strip():
+        print("Nothing was checked because no note was given.")
+        print("Pass a note to check that text only.")
+        print('Example: python3 scripts/dx_cli.py parity "Ship the notes Friday."')
+        sys.exit(1)
+    lines = note.splitlines() or [note]
+    word_count = len(note.split())
+    contains_em_dash = "\u2014" in note
+    payload = {
+        "checked": True,
+        "input_only": True,
+        "word_count": word_count,
+        "contains_em_dash": contains_em_dash,
+        "lines": lines,
+    }
+    if getattr(args, "json", False):
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return
+    em_label = "yes" if contains_em_dash else "no"
+    report = [
+        "Checked only the note you passed.",
+        "Words: %d" % word_count,
+        "Em dash: %s" % em_label,
+        "Lines you wrote:",
+    ]
+    report.extend(lines)
+    print("\n".join(report))
+
+
+def cmd_audit(args):
+    """Report formulas on the note. Do not invent a metacognitive score."""
+    import scripts.metacognition_audit as ma
+    text = optional_text(getattr(args, "input", ""))
+    if not text.strip():
+        print("No note was given.")
+        print("No score was printed.")
+        return
+    canvas = getattr(args, "canvas", "") or ""
+    svg = getattr(args, "svg", "") or ""
+    title = getattr(args, "title", "") or None
+    if canvas or svg:
+        ma.run_audit(
+            text,
+            title=title,
+            output_canvas=canvas or None,
+            output_svg=svg or None,
+        )
+    if getattr(args, "json", False):
+        print(json.dumps(ma.honest_audit_payload(text, title=title), indent=2))
+    else:
+        print(ma.format_terminal_audit(text))
+    if canvas or svg:
+        print("[DxSkills] Completed audit. No metacognitive score was measured.")
+        if canvas:
+            print("  - Scorecard Canvas: %s" % canvas)
+        if svg:
+            print("  - SVG Dashboard: %s" % svg)
+
 
 def cmd_export(args):
     text = read_input(args.input)
@@ -644,15 +1114,33 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
     
     # dump
-    p_dump = subparsers.add_parser("dump", help="Compile messy notes into structured architecture")
+    p_dump = subparsers.add_parser("dump", help="Repeat your lines and count words. Does not add tasks.")
     p_dump.add_argument("input", nargs="?", default="", help="Raw text or path to text file")
+    p_dump.add_argument("--json", action="store_true", help="Print the same counts and text as JSON")
+    p_dump.add_argument("--out", default="", help="Write the same output to this file")
+    p_dump.add_argument("--verbose", action="store_true", help="Print the input length in characters")
     
     # read
-    p_read = subparsers.add_parser("read", help="Decompose dense walls of text into visual signposts")
-    p_read.add_argument("input", nargs="?", default="", help="Dense text or path to text file")
+    p_read = subparsers.add_parser("read", help="Count words and sentences. Does not extract PDF text.")
+    p_read.add_argument("input", nargs="?", default="", help="Dense text or path to a text file")
+    p_read.add_argument("--json", action="store_true", help="Print the same counts and text as JSON")
+
+    # map
+    p_map = subparsers.add_parser("map", help="Quote your own lines as Mermaid nodes. Does not invent an architecture.")
+    p_map.add_argument("--type", required=True, choices=["arch", "flywheel", "curriculum", "decision", "mindmap"], help="Layout name. Nodes still come from your notes.")
+    p_map.add_argument("input", nargs="?", default="", help="Your lines, a comma-separated list, or a text file")
+
+    # interview
+    p_interview = subparsers.add_parser("interview", help="Print template questions. Does not fill in answers.")
+    p_interview.add_argument("--track", required=True, choices=["grant", "system", "syllabus"], help="Question template: grant, system, or syllabus")
+
+    # voice
+    p_voice = subparsers.add_parser("voice", help="Clean a transcript string. Does not open a microphone.")
+    p_voice.add_argument("input", nargs="?", default="", help="Transcript text to clean. Not audio.")
+    p_voice.add_argument("--simulate", action="store_true", help="Clean the built-in sample and label it as a sample")
 
     # storyboard (Gavin Newsom)
-    p_story = subparsers.add_parser("storyboard", aliases=["visual-storyboard", "speech-scaffold"], help="Compile unscripted speeches and policy briefs into 4-room spatial memory storyboards")
+    p_story = subparsers.add_parser("storyboard", aliases=["visual-storyboard", "speech-scaffold"], help="Lay your words into a 4-room frame. Does not add findings you did not write.")
     p_story.add_argument("input", nargs="?", default="", help="Raw speech notes, policy brief, or text file")
     p_story.add_argument("--title", "-t", default="", help="Storyboard presentation title")
     p_story.add_argument("--output", "-o", default="", help="Output markdown filepath")
@@ -661,30 +1149,30 @@ def main():
     p_story.add_argument("--json", "-j", action="store_true", help="Output raw JSON storyboard payload")
 
     # napkin (Richard Branson)
-    p_napkin = subparsers.add_parser("napkin", aliases=["beer-mat", "radical-simplify"], help="Radically simplify business pitches into a single-card Back-of-the-Beer-Mat test")
+    p_napkin = subparsers.add_parser("napkin", aliases=["beer-mat", "radical-simplify"], help="Lay your words into a beer-mat frame. Does not add numbers you did not write.")
     p_napkin.add_argument("input", nargs="?", default="", help="Raw pitch text, business plan, or text file")
     p_napkin.add_argument("--title", "-t", default="", help="Pitch or venture title")
-    p_napkin.add_argument("--price", "-p", type=float, default=4.0, help="Unit price or revenue per customer (default: 4.0)")
-    p_napkin.add_argument("--cost", "-c", type=float, default=0.60, help="Unit cost or delivery COGS (default: 0.60)")
+    p_napkin.add_argument("--price", "-p", type=float, default=None, help="Unit price only if you pass one. No default price is assumed.")
+    p_napkin.add_argument("--cost", "-c", type=float, default=None, help="Unit cost only if you pass one. No default cost is assumed.")
     p_napkin.add_argument("--output", "-o", default="", help="Output markdown filepath")
     p_napkin.add_argument("--json", "-j", action="store_true", help="Output raw JSON napkin payload")
 
     # spec (Steve Jobs)
-    p_spec = subparsers.add_parser("spec", aliases=["executive-spec", "jobs-spec"], help="Compile disordered engineering notes into an Executive Markdown Spec and whole-system architecture")
+    p_spec = subparsers.add_parser("spec", aliases=["executive-spec", "jobs-spec"], help="Lay your words into a spec frame. Does not add findings you did not write.")
     p_spec.add_argument("input", nargs="?", default="", help="Engineering notes, whiteboard fragments, or text file")
     p_spec.add_argument("--title", "-t", default="", help="System or product title")
     p_spec.add_argument("--output", "-o", default="", help="Output markdown filepath")
     p_spec.add_argument("--json", "-j", action="store_true", help="Output raw JSON spec payload")
 
     # taxonomy (Ingvar Kamprad)
-    p_tax = subparsers.add_parser("taxonomy", aliases=["mnemonic-taxonomy", "kamprad-schema"], help="Convert abstract alphanumeric codes and dense procedures into visual mnemonic categories and pictorial flows")
+    p_tax = subparsers.add_parser("taxonomy", aliases=["mnemonic-taxonomy", "kamprad-schema"], help="Lay your words into a taxonomy frame. Does not add mnemonics you did not write.")
     p_tax.add_argument("input", nargs="?", default="", help="Technical codes, manual text, or text file")
     p_tax.add_argument("--title", "-t", default="", help="Taxonomy title")
     p_tax.add_argument("--output", "-o", default="", help="Output markdown filepath")
     p_tax.add_argument("--json", "-j", action="store_true", help="Output raw JSON taxonomy payload")
 
     # finance (Richard Branson)
-    p_fin = subparsers.add_parser("finance", aliases=["financial-digest", "balance-sheet"], help="Translate financial balance sheets and spreadsheets into conversational executive digests and cash-flow diagrams")
+    p_fin = subparsers.add_parser("finance", aliases=["financial-digest", "balance-sheet"], help="Lay your words into a finance frame. Does not add numbers you did not write.")
     p_fin.add_argument("input", nargs="?", default="", help="Spreadsheet dump, financial notes, or text file")
     p_fin.add_argument("--title", "-t", default="", help="Financial report title")
     p_fin.add_argument("--output", "-o", default="", help="Output markdown filepath")
@@ -704,9 +1192,18 @@ def main():
     p_tui = subparsers.add_parser("tui", help="Launch interactive terminal scaffolding interface")
 
     # stamina
-    p_stamina = subparsers.add_parser("stamina", help="Estimate working memory fatigue and phonological load")
-    p_stamina.add_argument("--minutes", "-m", type=int, default=30, help="Minutes of active drafting (default: 30)")
-    p_stamina.add_argument("--words", "-w", type=int, default=500, help="Words drafted or processed (default: 500)")
+    p_stamina = subparsers.add_parser(
+        "stamina",
+        help="Apply a stamina formula to minutes and words you pass. Does not measure a session.",
+    )
+    p_stamina.add_argument(
+        "--minutes", "-m", type=int, default=None,
+        help="Minutes to plug into the formula. Omit to skip. There is no default session.",
+    )
+    p_stamina.add_argument(
+        "--words", "-w", type=int, default=None,
+        help="Word count to plug into the formula. Omit to skip. There is no default word count.",
+    )
 
     # reset
     p_reset = subparsers.add_parser("reset", help="Launch 60-second terminal box breathing spatial reset")
@@ -743,11 +1240,11 @@ def main():
     p_canvas.add_argument("--output", "-o", default="", help="Output filepath")
     
     # parity
-    p_parity = subparsers.add_parser("parity", help="Verify lossless multi-modal synchronization across visual, audio, and text")
-    p_parity.add_argument("input", nargs="?", default="", help="Raw text or path to file (defaults to benchmark sample)")
-    p_parity.add_argument("--title", "-t", default="", help="Specification title")
-    p_parity.add_argument("--lang", "-l", default="en", choices=["en", "fr"], help="Audio language ('en' or 'fr')")
-    p_parity.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
+    p_parity = subparsers.add_parser("parity", help="Count words, flag an em dash, and list lines in the note you pass")
+    p_parity.add_argument("input", nargs="?", default="", help="Raw text, a file path, or piped stdin. Nothing is checked if empty.")
+    p_parity.add_argument("--title", "-t", default="", help="Unused. Kept so older calls still parse. Not applied to the check.")
+    p_parity.add_argument("--lang", "-l", default="en", choices=["en", "fr"], help="Unused. Kept so older calls still parse. Not applied to the check.")
+    p_parity.add_argument("--json", "-j", action="store_true", help="Output the same checks as JSON")
     
     # companion
     p_comp = subparsers.add_parser("companion", help="Launch desktop menubar companion floating HUD or background daemon")
@@ -756,9 +1253,9 @@ def main():
     p_comp.add_argument("--compile", "-c", nargs="?", default="", help="Compile input directly")
     
     # dictation / voice-stream
-    p_stream = subparsers.add_parser("dictation", help="Stream voice dictation in real time into Obsidian Canvas (.canvas) and SVG")
-    p_stream.add_argument("input", nargs="?", default="", help="Input text, audio transcript, or file path")
-    p_stream.add_argument("--title", "-t", default="Voice Dictation Session", help="Session title")
+    p_stream = subparsers.add_parser("dictation", help="Clean a transcript string. Does not open a microphone.")
+    p_stream.add_argument("input", nargs="?", default="", help="Transcript text, a file path, or piped stdin. Not audio.")
+    p_stream.add_argument("--title", "-t", default="", help="Unused. Kept so older calls still parse. Not applied to the transcript.")
     p_stream.add_argument("--canvas", "-c", default="", help="Output .canvas file path")
     p_stream.add_argument("--svg", "-s", default="", help="Output vector .svg file path")
     p_stream.add_argument("--export", "-e", default="", help="Base filepath prefix to export .canvas, .svg, and .md")
@@ -771,11 +1268,11 @@ def main():
     p_cluster.add_argument("--json", "-j", action="store_true", help="Output raw JSON telemetry")
     
     # debate
-    p_debate = subparsers.add_parser("debate", help="Autonomous Socratic debate and adversarial thesis stress-testing simulator")
-    p_debate.add_argument("input", nargs="?", default="", help="Input text, proposal markdown file, or raw claim")
-    p_debate.add_argument("--topic", "-t", default="", help="Explicit topic title for the debate")
-    p_debate.add_argument("--format", "-f", choices=["markdown", "html", "canvas", "json"], default="markdown", help="Output format (default: markdown)")
-    p_debate.add_argument("--output", "-o", default="", help="Output filepath")
+    p_debate = subparsers.add_parser("debate", help="Print the claim you pass. Does not compute a score or fill debate cells.")
+    p_debate.add_argument("input", nargs="?", default="", help="Claim text, a file path, or piped stdin")
+    p_debate.add_argument("--topic", "-t", default="", help="Optional label you supply. Not treated as a claim.")
+    p_debate.add_argument("--format", "-f", choices=["markdown", "html", "canvas", "json"], default="markdown", help="Accepted for older calls. Output stays a plain table and is not generated.")
+    p_debate.add_argument("--output", "-o", default="", help="Write the same plain table to this path")
     
     # sync
     p_sync = subparsers.add_parser("sync", help="Multi-vault spatial bi-directional synchronizer and topology resolver")
@@ -835,31 +1332,31 @@ def main():
     p_audit.add_argument("--json", "-j", action="store_true", help="Output raw JSON audit telemetry")
     
     # buffer
-    p_buf = subparsers.add_parser("buffer", help="Autonomous cognitive spatial working memory buffer monitor")
-    p_buf.add_argument("input", nargs="?", default="", help="Input draft text, transcription, or note file")
-    p_buf.add_argument("--minutes", "-m", type=float, default=15.0, help="Total active session minutes")
-    p_buf.add_argument("--uninterrupted", "-u", type=float, default=15.0, help="Continuous uninterrupted minutes")
+    p_buf = subparsers.add_parser("buffer", help="Run a buffer formula on a note and minutes you pass. Does not measure working memory.")
+    p_buf.add_argument("input", nargs="?", default="", help="Note text. No default note.")
+    p_buf.add_argument("--minutes", "-m", type=float, default=None, help="Minutes you want the formula to use. No default session.")
+    p_buf.add_argument("--uninterrupted", "-u", type=float, default=None, help="Uninterrupted minutes you want the formula to use. No default.")
     p_buf.add_argument("--title", "-t", default="", help="Memory buffer HUD title")
     p_buf.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_buf.add_argument("--svg", "-s", default="", help="Output vector SVG HUD filepath")
     p_buf.add_argument("--json", "-j", action="store_true", help="Output raw JSON buffer telemetry")
     
     # dataset
-    p_data = subparsers.add_parser("dataset", help="Autonomous spatial cognitive model fine-tuning dataset synthesizer")
-    p_data.add_argument("input", nargs="?", default="", help="Input text note, markdown file, or directory")
-    p_data.add_argument("--format", "-f", choices=["alpaca", "sharegpt", "openai"], default="alpaca", help="Dataset format (default: alpaca)")
-    p_data.add_argument("--output", "-o", default="", help="Output JSONL filepath")
-    p_data.add_argument("--title", "-t", default="", help="Document title for single input")
-    p_data.add_argument("--validate", "-v", action="store_true", help="Validate and report dataset quality score")
-    p_data.add_argument("--json", "-j", action="store_true", help="Output raw JSON preview")
+    p_data = subparsers.add_parser("dataset", help="Repeat notes you pass. Does not compile a training set or score quality.")
+    p_data.add_argument("input", nargs="?", default="", help="Note text, a markdown or text file, or a directory of those files. No default note.")
+    p_data.add_argument("--format", "-f", choices=["alpaca", "sharegpt", "openai"], default="alpaca", help="Format name to print. No instruction is added.")
+    p_data.add_argument("--output", "-o", default="", help="Write the notes you passed as JSONL. No generated pair.")
+    p_data.add_argument("--title", "-t", default="", help="Title to print with a single note")
+    p_data.add_argument("--validate", "-v", action="store_true", help="Ignored. Quality is not scored.")
+    p_data.add_argument("--json", "-j", action="store_true", help="Print the notes as JSON")
     
     # palace
-    p_palace = subparsers.add_parser("palace", help="Autonomous cognitive spatial mind palace virtual tour and spatial audio navigator")
-    p_palace.add_argument("input", nargs="?", default="", help="Input markdown note, topic outline, or text file")
-    p_palace.add_argument("--title", "-t", default="", help="Mind Palace title")
-    p_palace.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_palace.add_argument("--svg", "-s", default="", help="Output vector SVG blueprint floorplan filepath")
-    p_palace.add_argument("--json", "-j", action="store_true", help="Output raw JSON palace telemetry")
+    p_palace = subparsers.add_parser("palace", help="List lines you pass. Does not build a mind palace or audio tour.")
+    p_palace.add_argument("input", nargs="?", default="", help="Note text or a text file. No default note.")
+    p_palace.add_argument("--title", "-t", default="", help="Title to print with the lines. No palace is named.")
+    p_palace.add_argument("--canvas", "-c", default="", help="Ignored. No canvas is written.")
+    p_palace.add_argument("--svg", "-s", default="", help="Ignored. No svg is written.")
+    p_palace.add_argument("--json", "-j", action="store_true", help="Print the lines as JSON")
     
     # code-arch
     p_code = subparsers.add_parser("code-arch", help="Autonomous spatial multi-modal code architecture and dependency graph decompiler")
@@ -985,32 +1482,33 @@ def main():
     p_decision.add_argument("--demo", action="store_true", help="Run with demonstration strategic software initiatives")
 
     # shed
-    p_shed = subparsers.add_parser("shed", help="Autonomous cognitive dynamic working memory stress-tester and load shedder")
-    p_shed.add_argument("input", nargs="?", default="", help="Target markdown outline or structured notes")
-    p_shed.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_shed.add_argument("--svg", "-s", default="", help="Output cognitive load stress gauge SVG filepath")
-    p_shed.add_argument("--target-cdi", type=float, default=0.55, help="Target Cognitive Degradation Index threshold (default: 0.55)")
-    p_shed.add_argument("--json", "-j", action="store_true", help="Output raw JSON load shedding telemetry")
+    p_shed = subparsers.add_parser("shed", help="List the notes you pass. It does not invent a tree or a cognitive load score.")
+    p_shed.add_argument("input", nargs="?", default="", help="Notes you pass. Omit them and no nodes are assumed.")
+    p_shed.add_argument("--canvas", "-c", default="", help="Canvas path. Written only for --demo, which is a built-in sample.")
+    p_shed.add_argument("--svg", "-s", default="", help="SVG path. Written only for --demo, which is a built-in sample.")
+    p_shed.add_argument("--target-cdi", type=float, default=0.55, help="Used only by --demo. It does not score your notes.")
+    p_shed.add_argument("--json", "-j", action="store_true", help="Print JSON. Scores appear only for the built-in --demo sample.")
+    p_shed.add_argument("--demo", action="store_true", help="Show a built-in sample. It is not the user's notes.")
     
     # resilience / break
-    p_resilience = subparsers.add_parser("resilience", aliases=["break", "fatigue"], help="Autonomous cognitive spatial dynamic micro-break and fatigue resiliency harness")
-    p_resilience.add_argument("--minutes", "-m", type=float, default=25.0, help="Session duration in minutes (default: 25.0)")
-    p_resilience.add_argument("--fixations", "-k", type=int, default=60, help="Simulated or tracked fixation sample count (default: 60)")
-    p_resilience.add_argument("--regression-rate", "-r", type=float, default=0.20, help="Saccadic regression rate 0.0 to 1.0 (default: 0.20)")
-    p_resilience.add_argument("--mean-dwell", "-d", type=float, default=260.0, help="Mean fixation dwell time in ms (default: 260.0)")
+    p_resilience = subparsers.add_parser("resilience", aliases=["break", "fatigue"], help="Run a fatigue formula on numbers you pass. Does not track eyes.")
+    p_resilience.add_argument("--minutes", "-m", type=float, default=None, help="Minutes you want the formula to use. No default session.")
+    p_resilience.add_argument("--fixations", "-k", type=int, default=None, help="Fixation count you want the formula to use. Not an eye-tracking sample.")
+    p_resilience.add_argument("--regression-rate", "-r", type=float, default=None, help="Regression rate from 0.0 to 1.0 that you pass. Not a measured rate.")
+    p_resilience.add_argument("--mean-dwell", "-d", type=float, default=None, help="Mean dwell in ms that you pass. Not a measured dwell.")
     p_resilience.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
     p_resilience.add_argument("--svg", "-s", default="", help="Output breathing cadence SVG visualizer filepath")
     p_resilience.add_argument("--json", "-j", action="store_true", help="Output raw JSON fatigue telemetry")
     
     # reflector / bias
-    p_reflector = subparsers.add_parser("reflector", aliases=["bias", "blindspot"], help="Autonomous cognitive multi-perspective metacognitive reflector and bias breaker")
-    p_reflector.add_argument("title", nargs="?", default="Strategic Architecture Spec", help="Thesis or architectural proposal title")
-    p_reflector.add_argument("--assumptions", "-a", nargs="*", default=[], help="List of assumptions in format 'Label:validated' or 'Label'")
-    p_reflector.add_argument("--perspectives", "-p", type=int, default=2, help="Number of distinct analytical viewpoints consulted (default: 2)")
-    p_reflector.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_reflector.add_argument("--svg", "-s", default="", help="Output dialectic radar SVG filepath")
-    p_reflector.add_argument("--json", "-j", action="store_true", help="Output raw JSON assessment telemetry")
-    p_reflector.add_argument("--demo", action="store_true", help="Run with demonstration assumptions suite")
+    p_reflector = subparsers.add_parser("reflector", aliases=["bias", "blindspot"], help="List a thesis and the assumptions you pass. It does not invent a spec or a score.")
+    p_reflector.add_argument("title", nargs="?", default=None, help="Thesis title you pass. Omit it and no thesis is assumed.")
+    p_reflector.add_argument("--assumptions", "-a", nargs="*", default=[], help="Assumptions you write, as 'Label:validated' or 'Label'. None are invented.")
+    p_reflector.add_argument("--perspectives", "-p", type=int, default=2, help="Optional perspective count. It is not used to score your words.")
+    p_reflector.add_argument("--canvas", "-c", default="", help="Canvas path. Written only for --demo, which is a built-in sample.")
+    p_reflector.add_argument("--svg", "-s", default="", help="SVG path. Written only for --demo, which is a built-in sample.")
+    p_reflector.add_argument("--json", "-j", action="store_true", help="Print JSON. Scores appear only for the built-in --demo sample.")
+    p_reflector.add_argument("--demo", action="store_true", help="Show a built-in sample. It is not the user's thesis.")
     
     # horizon
     p_horizon = subparsers.add_parser("horizon", help="Autonomous cognitive multi-scale working memory horizon visualizer")
@@ -1030,58 +1528,58 @@ def main():
     p_evict.add_argument("--demo", action="store_true", help="Run with demonstration working memory node cluster")
     
     # interleave / dampener
-    p_damp = subparsers.add_parser("interleave", aliases=["dampener", "bookmark"], help="Autonomous cognitive spatial schema interleaving and context switch dampener")
-    p_damp.add_argument("project", nargs="?", default="Strategic Workstream", help="Project or active context title")
-    p_damp.add_argument("--thread", "-t", default="Core Architecture Modeling", help="Active sub-thread or task description")
-    p_damp.add_argument("--focus", "-f", type=float, default=8.0, help="Depth of focus 1.0 to 10.0 (default: 8.0)")
-    p_damp.add_argument("--completion", "-c", type=float, default=0.5, help="Task completion ratio 0.0 to 1.0 (default: 0.5)")
-    p_damp.add_argument("--minutes", "-m", type=float, default=35.0, help="Minutes spent in continuous flow (default: 35.0)")
-    p_damp.add_argument("--next-step", "-n", default="Run integration benchmark against edge cluster", help="Immediate first action on return")
-    p_damp.add_argument("--loops", "-l", nargs="*", default=["Uncommitted state buffer", "Pending race condition test"], help="Unresolved open loops or tensions")
-    p_damp.add_argument("--canvas", default="", help="Output Obsidian .canvas filepath")
-    p_damp.add_argument("--svg", "-s", default="", help="Output attention residue gauge SVG filepath")
-    p_damp.add_argument("--json", "-j", action="store_true", help="Output raw JSON interleaving telemetry")
+    p_damp = subparsers.add_parser("interleave", aliases=["dampener", "bookmark"], help="Run a residue formula on numbers you pass. Does not measure a context switch.")
+    p_damp.add_argument("project", nargs="?", default="", help="Project title you pass. No default workstream.")
+    p_damp.add_argument("--thread", "-t", default="", help="Thread title you pass. No default thread.")
+    p_damp.add_argument("--focus", "-f", type=float, default=None, help="Focus number for the formula, 1 to 10. No default.")
+    p_damp.add_argument("--completion", "-c", type=float, default=None, help="Completion ratio for the formula, 0 to 1. No default.")
+    p_damp.add_argument("--minutes", "-m", type=float, default=None, help="Minutes for the formula. No default session.")
+    p_damp.add_argument("--next-step", "-n", default="", help="Next step you pass. No default action.")
+    p_damp.add_argument("--loops", "-l", nargs="*", default=None, help="Open loops you pass. No default loops.")
+    p_damp.add_argument("--canvas", default="", help="Ignored. No canvas is written.")
+    p_damp.add_argument("--svg", "-s", default="", help="Ignored. No svg is written.")
+    p_damp.add_argument("--json", "-j", action="store_true", help="Print the formula as JSON")
     
     # examine / grill / cross-examine
-    p_examine = subparsers.add_parser("examine", aliases=["grill", "cross-examine"], help="Autonomous cognitive multi-perspective architectural Socratic cross-examiner")
-    p_examine.add_argument("title", nargs="?", default="Core System Architecture", help="System or proposal title")
-    p_examine.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_examine.add_argument("--svg", "-s", default="", help="Output 5-axis rigor radar SVG filepath")
-    p_examine.add_argument("--json", "-j", action="store_true", help="Output raw JSON examination scorecard")
-    p_examine.add_argument("--demo", action="store_true", help="Run with demonstration architecture components")
+    p_examine = subparsers.add_parser("examine", aliases=["grill", "cross-examine"], help="Repeat a title you pass. Does not score a system you did not describe.")
+    p_examine.add_argument("title", nargs="?", default="", help="System title you pass. No default system.")
+    p_examine.add_argument("--canvas", "-c", default="", help="Ignored. No canvas is written.")
+    p_examine.add_argument("--svg", "-s", default="", help="Ignored. No svg is written.")
+    p_examine.add_argument("--json", "-j", action="store_true", help="Print the built-in sample as JSON when --demo is set.")
+    p_examine.add_argument("--demo", action="store_true", help="Print a built-in sample system. Not your system.")
 
     # audio-pacer / pacer / soundstage
-    p_pacer = subparsers.add_parser("audio-pacer", aliases=["pacer", "soundstage"], help="Autonomous cognitive spatial saliency decoupler and multi-track audio pacer")
-    p_pacer.add_argument("task", nargs="?", default="Cognitive Architecture Sprint", help="Task name or description")
-    p_pacer.add_argument("--complexity", "-k", type=float, default=0.7, help="Task complexity 0.0 to 1.0 (default: 0.7)")
-    p_pacer.add_argument("--load", "-l", type=float, default=0.6, help="Cognitive load saturation 0.0 to 1.0 (default: 0.6)")
-    p_pacer.add_argument("--streams", "-s", nargs="*", default=[], help="Streams in format 'Name:Type' where Type in primary_focus, telemetry_log, rhythmic_pacer, alert_urgent, background_ambience")
-    p_pacer.add_argument("--canvas", "-c", default="", help="Output Obsidian .canvas filepath")
-    p_pacer.add_argument("--svg", default="", help="Output 2D soundstage radar SVG filepath")
-    p_pacer.add_argument("--manifest", "-m", default="", help="Output Web Audio API manifest JSON filepath")
-    p_pacer.add_argument("--json", "-j", action="store_true", help="Output raw JSON soundstage configuration")
-    p_pacer.add_argument("--demo", action="store_true", help="Run with demonstration multi-track stream setup")
+    p_pacer = subparsers.add_parser("audio-pacer", aliases=["pacer", "soundstage"], help="Run a cadence formula on complexity and load you pass. Does not open a soundstage.")
+    p_pacer.add_argument("task", nargs="?", default="", help="Task name you pass. No default task.")
+    p_pacer.add_argument("--complexity", "-k", type=float, default=None, help="Complexity for the formula, 0 to 1. No default.")
+    p_pacer.add_argument("--load", "-l", type=float, default=None, help="Load for the formula, 0 to 1. No default.")
+    p_pacer.add_argument("--streams", "-s", nargs="*", default=None, help="Stream names you pass. No default channels.")
+    p_pacer.add_argument("--canvas", "-c", default="", help="Ignored. No canvas is written.")
+    p_pacer.add_argument("--svg", default="", help="Ignored. No svg is written.")
+    p_pacer.add_argument("--manifest", "-m", default="", help="Ignored. No audio manifest is written.")
+    p_pacer.add_argument("--json", "-j", action="store_true", help="Print the formula as JSON")
+    p_pacer.add_argument("--demo", action="store_true", help="Print a built-in sample soundstage. Not your task.")
 
     # fovea / tunnel
-    p_fovea = subparsers.add_parser("fovea", aliases=["tunnel", "attention-tunnel"], help="Autonomous cognitive spatial multi-scale attention tunnel and peripheral fovea synchronizer")
-    p_fovea.add_argument("canvas", nargs="?", default="", help="Input Obsidian .canvas filepath")
-    p_fovea.add_argument("--focus", "-f", default="", help="Node ID to focus on")
-    p_fovea.add_argument("--load", "-l", type=float, default=0.6, help="Cognitive load saturation 0.0 to 1.0 (default: 0.6)")
-    p_fovea.add_argument("--mode", "-m", choices=["desaturate_damp", "blur_attenuate", "minimal_skeleton", "adaptive_lod"], default="desaturate_damp", help="Damping mode (default: desaturate_damp)")
-    p_fovea.add_argument("--output-canvas", "-o", default="", help="Output synchronized .canvas filepath")
-    p_fovea.add_argument("--svg", "-s", default="", help="Output attention tunnel radar SVG filepath")
-    p_fovea.add_argument("--json", "-j", action="store_true", help="Output raw JSON fovea telemetry")
-    p_fovea.add_argument("--demo", action="store_true", help="Run with demonstration spatial canvas layout")
+    p_fovea = subparsers.add_parser("fovea", aliases=["tunnel", "attention-tunnel"], help="Run a tunnel formula on a canvas and a load you pass. Does not measure eyes.")
+    p_fovea.add_argument("canvas", nargs="?", default="", help="Canvas JSON file. No default canvas.")
+    p_fovea.add_argument("--focus", "-f", default="", help="Node id to use as the formula focus. No default node.")
+    p_fovea.add_argument("--load", "-l", type=float, default=None, help="Load number for the formula, 0 to 1. No default.")
+    p_fovea.add_argument("--mode", "-m", choices=["desaturate_damp", "blur_attenuate", "minimal_skeleton", "adaptive_lod"], default="desaturate_damp", help="Mode name passed into the formula. Not a measured strategy.")
+    p_fovea.add_argument("--output-canvas", "-o", default="", help="Ignored. No canvas is written.")
+    p_fovea.add_argument("--svg", "-s", default="", help="Ignored. No svg is written.")
+    p_fovea.add_argument("--json", "-j", action="store_true", help="Print the formula as JSON")
+    p_fovea.add_argument("--demo", action="store_true", help="Print a built-in sample canvas. Not your canvas.")
 
     # consensus / merge / resolve-conflict
-    p_cons = subparsers.add_parser("consensus", aliases=["merge", "resolve-conflict"], help="Autonomous cognitive multi-agent workspace consensus and semantic conflict synthesizer")
-    p_cons.add_argument("--base", "-b", default="", help="Base ancestor Obsidian .canvas filepath")
-    p_cons.add_argument("--branch-a", "-1", default="", help="Branch A Obsidian .canvas filepath")
-    p_cons.add_argument("--branch-b", "-2", default="", help="Branch B Obsidian .canvas filepath")
-    p_cons.add_argument("--output-canvas", "-o", default="", help="Output synthesized merge .canvas filepath")
-    p_cons.add_argument("--svg", "-s", default="", help="Output consensus radar SVG filepath")
-    p_cons.add_argument("--json", "-j", action="store_true", help="Output raw JSON consensus scorecard")
-    p_cons.add_argument("--demo", action="store_true", help="Run with demonstration divergent multi-agent canvases")
+    p_cons = subparsers.add_parser("consensus", aliases=["merge", "resolve-conflict"], help="Compare three canvas files you pass. Does not invent a merge.")
+    p_cons.add_argument("--base", "-b", default="", help="Base canvas JSON file. No default canvas.")
+    p_cons.add_argument("--branch-a", "-1", default="", help="First canvas JSON file. No default canvas.")
+    p_cons.add_argument("--branch-b", "-2", default="", help="Second canvas JSON file. No default canvas.")
+    p_cons.add_argument("--output-canvas", "-o", default="", help="Ignored. No merge file is written.")
+    p_cons.add_argument("--svg", "-s", default="", help="Ignored. No svg is written.")
+    p_cons.add_argument("--json", "-j", action="store_true", help="Print the comparison as JSON")
+    p_cons.add_argument("--demo", action="store_true", help="Print a built-in sample merge. Not your canvases.")
 
     # gaze / inertia / saccade-velocity
     p_gaze = subparsers.add_parser("gaze", aliases=["inertia", "saccade-velocity"], help="Autonomous cognitive spatial working memory saccade velocity and gaze inertia balancer")
@@ -1296,14 +1794,14 @@ def main():
     p_lpacer.add_argument("--demo", action="store_true", help="Run with demonstration technical paragraph")
 
     # fatigue-meter / saccadic-fatigue / contrast-damper / ocular-fatigue
-    p_fatigue = subparsers.add_parser("fatigue-meter", aliases=["saccadic-fatigue", "contrast-damper", "ocular-fatigue"], help="Autonomous cognitive spatial working memory saccadic fatigue meter and dynamic contrast damper")
-    p_fatigue.add_argument("input", nargs="?", default="", help="Input gaze session JSON filepath")
-    p_fatigue.add_argument("--baseline", "-b", type=float, default=420.0, help="Baseline saccadic peak velocity in deg/s (default: 420.0)")
-    p_fatigue.add_argument("--session-max", type=float, default=45.0, help="Maximum recommended continuous session duration in minutes (default: 45.0)")
-    p_fatigue.add_argument("--css", default="", help="Output restorative CSS tokens filepath")
-    p_fatigue.add_argument("--svg", default="", help="Output fatigue main sequence SVG diagram filepath")
-    p_fatigue.add_argument("--json", "-j", action="store_true", help="Output raw JSON fatigue telemetry")
-    p_fatigue.add_argument("--demo", action="store_true", help="Run with demonstration 20-sample decaying gaze session")
+    p_fatigue = subparsers.add_parser("fatigue-meter", aliases=["saccadic-fatigue", "contrast-damper", "ocular-fatigue"], help="Run a formula on gaze samples you pass. Does not track eyes.")
+    p_fatigue.add_argument("input", nargs="?", default="", help="JSON file of gaze samples. No default session.")
+    p_fatigue.add_argument("--baseline", "-b", type=float, default=420.0, help="Baseline deg/s used by the formula. Not a measured baseline.")
+    p_fatigue.add_argument("--session-max", type=float, default=45.0, help="Session-max minutes used by the formula. Not a measured session.")
+    p_fatigue.add_argument("--css", default="", help="Write formula CSS for a real sample file. Not written for the built-in sample.")
+    p_fatigue.add_argument("--svg", default="", help="Write formula SVG for a real sample file. Not written for the built-in sample.")
+    p_fatigue.add_argument("--json", "-j", action="store_true", help="Print the formula result as JSON")
+    p_fatigue.add_argument("--demo", action="store_true", help="Print a built-in 20-point sample. Not your eyes.")
 
     # stress-tester / lexical-stress / syntax-friction / stepping-stones
     p_stress = subparsers.add_parser("stress-tester", aliases=["lexical-stress", "syntax-friction", "stepping-stones"], help="Autonomous cognitive spatial dynamic lexical stress-testing and gaze anchor synthesizer")
@@ -1741,6 +2239,12 @@ def main():
         cmd_dump(args)
     elif args.command == "read":
         cmd_read(args)
+    elif args.command == "map":
+        cmd_map(args)
+    elif args.command == "interview":
+        cmd_interview(args)
+    elif args.command == "voice":
+        cmd_voice(args)
     elif args.command in ["storyboard", "visual-storyboard", "speech-scaffold"]:
         cmd_storyboard(args)
     elif args.command in ["napkin", "beer-mat", "radical-simplify"]:
@@ -1760,8 +2264,18 @@ def main():
         tui_mod.main_menu()
     elif args.command == "stamina":
         import scripts.cognitive_fatigue as cf
-        report = cf.calculate_cognitive_stamina(minutes_active=args.minutes, words_drafted=args.words)
-        cf.print_stamina_report(report)
+        if args.minutes is None and args.words is None:
+            print("No session length or word count was given.")
+            print("Example: python3 scripts/dx_cli.py stamina --minutes 10 --words 40")
+        else:
+            minutes = 0 if args.minutes is None else args.minutes
+            words = 0 if args.words is None else args.words
+            report = cf.calculate_cognitive_stamina(minutes_active=minutes, words_drafted=words)
+            cf.print_stamina_report(
+                report,
+                minutes_given=args.minutes is not None,
+                words_given=args.words is not None,
+            )
     elif args.command == "reset":
         import scripts.cognitive_fatigue as cf
         cf.run_terminal_box_breathing(cycles=args.cycles)
@@ -1827,24 +2341,7 @@ def main():
                 print("\n=== [DxSkills: Obsidian Canvas JSON] ===")
                 print(canvas_json)
     elif args.command == "parity":
-        import scripts.multimodal_parity as mp
-        text = read_input(args.input) if args.input else """# Example Strategic Deliverable
-> **BLUF:** Deploying low-latency cognitive offload layer to eliminate phonological friction.
-
-## Core Spatial Architecture
-- High-contrast visual grid with 3:1 spatial margin.
-- Zero linear paragraphs over 3 sentences.
-
-## Execution Milestones
-- [ ] 1. Ship Manifest V3 browser extension and test suite.
-- [ ] 2. Benchmark multi-modal parity across 10 sample corpora.
-- [ ] 3. Verify zero em dash compliance across export pipelines.
-"""
-        res = mp.validate_multimodal_parity(text, title=args.title or None, lang=args.lang)
-        if args.json:
-            print(json.dumps(res, indent=2))
-        else:
-            print(mp.format_terminal_parity_report(res))
+        cmd_parity(args)
     elif args.command == "companion":
         import scripts.desktop_companion as dc
         companion = dc.DesktopCompanion()
@@ -1856,31 +2353,7 @@ def main():
         else:
             companion.launch_floating_hud()
     elif args.command == "dictation":
-        import scripts.voice_streamer as vs
-        text = read_input(args.input) if args.input else "The primary objective is to launch the voice streaming canvas engine. First, decouple audio chunk queues. Second, verify live Obsidian Canvas JSON updates. Third, ship the release to production."
-        streamer = vs.LiveCanvasStreamer(session_title=args.title)
-        chunks = [s.strip() + "." for s in text.split(".") if s.strip()]
-        print(f"\n=== [DxSkills: Live Voice Dictation & Canvas Streamer] ===")
-        for idx, chunk in enumerate(chunks, 1):
-            status = streamer.process_chunk(chunk)
-            print(f" [Stream Chunk {idx}] Nodes: {status['nodes_count']} | Edges: {status['edges_count']} | BLUF: {status['bluf'][:40]}...")
-        
-        if args.export:
-            files = streamer.export_session(output_prefix=args.export)
-            print(f"\n[DxSkills] Session exported:")
-            for k, p in files.items():
-                print(f"  - {k}: {p}")
-        elif args.canvas:
-            with open(args.canvas, "w", encoding="utf-8") as f:
-                f.write(streamer.get_canvas_json())
-            print(f"\n[DxSkills] Saved Obsidian Canvas: {args.canvas}")
-        elif args.svg:
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(streamer.get_canvas_svg())
-            print(f"\n[DxSkills] Saved Vector SVG Canvas: {args.svg}")
-        else:
-            print("\n--- Finalized D-Mode Markdown Summary ---")
-            print(streamer.get_markdown_summary())
+        cmd_dictation(args)
     elif args.command == "cluster":
         import scripts.spatial_cluster as sc
         raw_nodes = []
@@ -1924,22 +2397,7 @@ def main():
         else:
             print(sc.format_cluster_terminal_report(res))
     elif args.command == "debate":
-        import scripts.socratic_debate as sd
-        text = read_input(args.input) if args.input else (
-            "Our spatial canvas architecture effortlessly eliminates all cognitive friction for non-linear thinkers. "
-            "Because users navigate ideas spatially, traditional linear hierarchies will become completely obsolete. "
-            "The engine automatically syncs high-dimensional vector graphs without any configuration overhead."
-        )
-        debate_data, formatted = sd.run_socratic_debate(
-            text,
-            topic=args.topic or None,
-            output_format=args.format,
-            output_file=args.output or None
-        )
-        if not args.output:
-            print(formatted)
-        else:
-            print(f"\n[DxSkills] Debate output written to: {args.output} (Score: {debate_data['thesis_readiness_score']}/100)")
+        cmd_debate(args)
     elif args.command == "sync":
         import scripts.vault_sync as vs
         vault_paths = args.vaults if args.vaults else [os.getcwd()]
@@ -2048,14 +2506,10 @@ def main():
                 print(f"  - HTML: {args.html}")
     elif args.command in ["cinematic-storyboard", "animatic-storyboard"]:
         import scripts.spatial_storyboard as ss
-        text = read_input(args.input) if args.input else (
-            "Establish the friction: Linear text walls overload phonological working memory.\n"
-            "Inciting shift: Non-linear thinkers struggle to communicate complex holistic architectures through sequential slides.\n"
-            "Core exploration: The DxSkills cognitive engine decouples spatial mental models from linear output streams.\n"
-            "Technical deep dive: High-dimensional vector similarity clusters ideas into constellation topologies.\n"
-            "Multi-vault bridge: Cross-repository synchronizers identify dangling wikilinks and orphan nodes in real time.\n"
-            "Resolution vista: The user presents a hardened spatial canvas that disarms reductionist critics instantly."
-        )
+        text = optional_text(getattr(args, "input", ""))
+        if not text.strip():
+            print("No notes were given. No shots were invented.")
+            return
         storyboard, canvas_data, svg_code = ss.run_storyboard(
             text,
             title=args.title or None,
@@ -2102,147 +2556,124 @@ def main():
             if args.svg:
                 print(f"  - SVG Diff Dashboard: {args.svg}")
     elif args.command == "audit":
-        import scripts.metacognition_audit as ma
-        text = read_input(args.input) if args.input else (
-            "# Strategic Spatial Deliverable\n"
-            "> **BLUF:** Decouple phonological working memory from spatial reasoning models.\n\n"
-            "## Architectural Vectors\n"
-            "- 1. High-contrast spatial canvas topology.\n"
-            "- 2. Automated cross-vault synchronization without manual ID linking.\n"
-            "- 3. Lossless multi-modal audio-spatial flashcards.\n\n"
-            "| Pillar | Latency | Status |\n"
-            "| :--- | :--- | :--- |\n"
-            "| Canvas | 0ms | Active |\n"
-            "| Audio | 12ms | Verified |\n"
-        )
-        audit_data, canvas_data, svg_code = ma.run_audit(
-            text,
-            title=args.title or None,
-            output_canvas=args.canvas or None,
-            output_svg=args.svg or None
-        )
-        if args.json:
-            print(json.dumps(audit_data, indent=2))
-        elif not (args.canvas or args.svg):
-            m = audit_data["metrics"]
-            print(f"\n=== [DxSkills: Metacognitive Synthesis Audit ({m['cognitive_leverage_score']}/100)] ===")
-            print(f"Phonological Friction: {m['phonological_friction']}% | Spatial Leverage: {m['spatial_leverage']}%")
-            print(f"Working Memory Tax: {m['working_memory_tax']}% | Connectivity: {m['connectivity_score']}%")
-            print("\nPrimary Directives:")
-            for r in audit_data["recommendations"]:
-                print(f"  - {r}")
-        else:
-            print(f"\n[DxSkills] Completed audit (Cognitive Leverage: {audit_data['metrics']['cognitive_leverage_score']}/100).")
-            if args.canvas:
-                print(f"  - Scorecard Canvas: {args.canvas}")
-            if args.svg:
-                print(f"  - SVG Dashboard: {args.svg}")
+        cmd_audit(args)
     elif args.command == "buffer":
-        import scripts.memory_buffer as mb
-        text = read_input(args.input) if args.input else (
-            "# Cognitive Architecture Working Draft\n"
-            "> **BLUF:** Eliminating phonological working memory bottleneck through spatial anchors.\n\n"
-            "- Spatial Vector 1: High-contrast 2D node map.\n"
-            "- Spatial Vector 2: Dynamic buffer load evaluation.\n"
-            "- Spatial Vector 3: 4-4-4-4 Box Breathing reset triggers.\n\n"
-            "Reviewing technical documentation without visual anchors creates severe phonological loop friction."
-        )
-        telemetry, canvas_data, svg_code = mb.run_buffer_monitor(
-            text,
-            session_minutes=args.minutes,
-            uninterrupted_minutes=args.uninterrupted,
-            title=args.title or None,
-            output_canvas=args.canvas or None,
-            output_svg=args.svg or None
-        )
-        if args.json:
-            print(json.dumps(telemetry, indent=2))
-        elif not (args.canvas or args.svg):
+        note = optional_text(getattr(args, "input", ""))
+        if not note.strip() and args.minutes is None and args.uninterrupted is None:
+            print("Nothing was measured. No note and no minutes were given.")
+            print('Example: python3 scripts/dx_cli.py buffer --minutes 10 --uninterrupted 10 "Ship the notes Friday."')
+        elif not note.strip():
+            print("No note was given, so the text part of the formula was not run.")
+            print("Nothing was measured.")
+        elif args.minutes is None or args.uninterrupted is None:
+            words = len(note.split())
+            print(f"Words in the note: {words}")
+            print("Minutes were not given, so the duration part of the formula was not run.")
+            print("No saturation percentage was printed.")
+        else:
+            from scripts.memory_buffer import MemoryBufferTracker
+            telemetry = MemoryBufferTracker.evaluate_buffer(
+                note,
+                session_minutes=args.minutes,
+                uninterrupted_minutes=args.uninterrupted,
+            )
             m = telemetry["metrics"]
-            print(f"\n=== [DxSkills: Working Memory Buffer HUD ({m['exhaustion_risk'].upper()} RISK)] ===")
-            print(f"Phonological Saturation: {m['phonological_saturation_pct']}% | Visuospatial Utilization: {m['visuospatial_utilization_pct']}%")
-            print(f"Channel Asymmetry Index: {m['channel_asymmetry_index']} | Recommended Reset: {m['recommended_reset_seconds']}s")
-            print(f"\nAction: {telemetry['action_prompt']}")
-        else:
-            print(f"\n[DxSkills] Buffer evaluated: {telemetry['metrics']['exhaustion_risk']} Risk ({telemetry['metrics']['phonological_saturation_pct']}% Phono Load).")
-            if args.canvas:
-                print(f"  - Canvas: {args.canvas}")
-            if args.svg:
-                print(f"  - SVG HUD: {args.svg}")
-    elif args.command == "dataset":
-        import scripts.dataset_synthesizer as dsync
-        corpus = []
-        if args.input:
-            if os.path.isdir(args.input):
-                for root, _, files in os.walk(args.input):
-                    for file in files:
-                        if file.endswith((".md", ".txt")):
-                            p = os.path.join(root, file)
-                            with open(p, "r", encoding="utf-8", errors="ignore") as f:
-                                corpus.append((os.path.splitext(file)[0], f.read()))
-            elif os.path.isfile(args.input):
-                with open(args.input, "r", encoding="utf-8", errors="ignore") as f:
-                    corpus.append((args.title or os.path.basename(args.input), f.read()))
+            payload = {
+                "formula": True,
+                "measured": False,
+                "minutes": args.minutes,
+                "uninterrupted_minutes": args.uninterrupted,
+                "word_count": telemetry["word_count"],
+                "phonological_saturation_pct": m["phonological_saturation_pct"],
+                "visuospatial_utilization_pct": m["visuospatial_utilization_pct"],
+                "channel_asymmetry_index": m["channel_asymmetry_index"],
+                "formula_band": m["exhaustion_risk"],
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
             else:
-                corpus.append((args.title or "Interactive CLI Sample", args.input))
+                print("")
+                print("=== [DxSkills: buffer formula] ===")
+                print(f"Formula on {telemetry['word_count']} words, {args.minutes} minutes, and {args.uninterrupted} uninterrupted minutes.")
+                print(f"Phonological figure: {m['phonological_saturation_pct']}% | Visuospatial figure: {m['visuospatial_utilization_pct']}%")
+                print(f"Asymmetry figure: {m['channel_asymmetry_index']} | Formula band: {m['exhaustion_risk']}")
+                print("These figures are a formula on the note and the minutes you passed, not a measured working-memory state.")
+                print("Bands in the formula are under 40, under 60, under 80, and 80 or more, and also 30 or 45 uninterrupted minutes.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. Those files used to draw the result as measured telemetry.")
+    elif args.command == "dataset":
+        corpus = []
+        if args.input and os.path.isdir(args.input):
+            for root, _, files in os.walk(args.input):
+                for file in files:
+                    if file.endswith((".md", ".txt")):
+                        path = os.path.join(root, file)
+                        with open(path, "r", encoding="utf-8", errors="ignore") as handle:
+                            corpus.append((os.path.splitext(file)[0], handle.read()))
         else:
-            corpus.append((
-                "Core Spatial Scaffolding",
-                "# Cognitive Spatial Architecture\n"
-                "> **BLUF:** Decouple phonological memory from spatial reasoning models.\n\n"
-                "- Spatial Vector 1: 2D radial coordinate positioning.\n"
-                "- Spatial Vector 2: Multi-vault topology federation without orphan links.\n"
-                "- Spatial Vector 3: Working memory dual-channel stamina balance."
-            ))
-        dataset, meta = dsync.compile_dataset(corpus, output_filepath=args.output or None, fmt=args.format)
-        if args.json:
-            print(json.dumps({"meta": meta, "sample": dataset[0] if dataset else None}, indent=2))
-        elif not args.output:
-            print(f"\n=== [DxSkills: Spatial Model Dataset Synthesizer] ===")
-            print(f"Compiled {meta['total_pairs']} pairs ({meta['valid_pairs']} valid) in `{meta['format']}` format.")
-            print(f"Average Quality Score: {meta['average_quality_score']}/100")
-            if dataset:
-                print(f"\n--- Preview Sample ---")
-                sample = dataset[0]
-                if "instruction" in sample:
-                    print(f"Instruction: {sample['instruction']}")
-                    print(f"Input: {sample['input'][:100]}...")
-                elif "conversations" in sample:
-                    print(f"Human: {sample['conversations'][1]['value'][:100]}...")
+            note = optional_text(getattr(args, "input", ""))
+            if note.strip():
+                corpus.append((args.title or "Note", note))
+        if not corpus or not any(body.strip() for _, body in corpus):
+            print("No notes were given. No pairs were compiled.")
+            print("Nothing was scored.")
         else:
-            print(f"\n[DxSkills] Compiled {meta['total_pairs']} fine-tuning pairs to: {args.output}")
-            print(f"  - Format: {meta['format']}")
-            print(f"  - Quality Score: {meta['average_quality_score']}/100")
+            notes = [{"title": title, "text": body} for title, body in corpus if body.strip()]
+            payload = {
+                "notes": notes,
+                "format_name": args.format,
+                "pairs_compiled": 0,
+                "scored": False,
+                "training_corpus": False,
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("")
+                print("=== [DxSkills: dataset] ===")
+                print(f"Notes given: {len(notes)}")
+                print(f"Format name you asked for: {args.format}. No instruction was added.")
+                print("Quality: not scored.")
+                print("This is your text, not a training corpus. No pairs were compiled.")
+                for item in notes:
+                    preview = " ".join(item["text"].split())
+                    if len(preview) > 160:
+                        preview = preview[:160] + "..."
+                    print(f"- {item['title']}: {preview}")
+            if args.output:
+                parent = os.path.dirname(os.path.abspath(args.output))
+                if parent and not os.path.isdir(parent):
+                    print(f"[DxSkills] Output directory not found: {parent}")
+                    sys.exit(1)
+                with open(args.output, "w", encoding="utf-8") as handle:
+                    for item in notes:
+                        handle.write(json.dumps({"title": item["title"], "text": item["text"]}, ensure_ascii=False) + "\n")
+                print(f"Wrote your words to {args.output}. Not a training corpus.")
     elif args.command == "palace":
-        import scripts.mind_palace as mp_tour
-        text = read_input(args.input) if args.input else (
-            "# Spatial Memory Architecture\n"
-            "- Linear text creates phonological loop bottleneck.\n"
-            "- Method-of-loci memory palaces activate hippocampal spatial navigation.\n"
-            "- Binaural acoustic orientation reinforces episodic memory recall.\n"
-            "- Structured chambers allow non-linear review without cognitive exhaustion."
-        )
-        palace, canvas_data, svg_code = mp_tour.run_mind_palace(
-            text,
-            title=args.title or None,
-            output_canvas=args.canvas or None,
-            output_svg=args.svg or None
-        )
-        if args.json:
-            print(json.dumps(palace, indent=2))
-        elif not (args.canvas or args.svg):
-            print(f"\n=== [DxSkills: Cognitive Mind Palace ({palace['total_chambers']} Chambers | {palace['total_loci']} Loci)] ===")
-            for c in palace["chambers"]:
-                print(f"\n[{c['name']}] - {c['theme']}")
-                for loc in c["loci"]:
-                    sa = loc["spatial_audio"]
-                    print(f"  * {loc['fixture']}: {loc['title']} (Azimuth: {sa['azimuth_degrees']} deg, Pan: {sa['stereo_pan']})")
+        note = optional_text(getattr(args, "input", ""))
+        lines = [line.strip() for line in note.splitlines() if line.strip()]
+        if not lines:
+            print("No notes were given. No chambers were built.")
         else:
-            print(f"\n[DxSkills] Mind Palace projected: {palace['total_chambers']} Chambers with {palace['total_loci']} Memory Loci.")
-            if args.canvas:
-                print(f"  - Canvas: {args.canvas}")
-            if args.svg:
-                print(f"  - Blueprint: {args.svg}")
+            payload = {
+                "title": args.title or None,
+                "lines": lines,
+                "chambers_built": 0,
+                "audio_measured": False,
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("")
+                print("=== [DxSkills: palace] ===")
+                if args.title:
+                    print(f"Title you passed: {args.title}")
+                print(f"Lines you gave: {len(lines)}")
+                print("No chambers, themes, or audio angles were added.")
+                for line in lines:
+                    print(f"- {line}")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. Those files used to draw invented chambers.")
     elif args.command == "code-arch":
         import scripts.code_decompiler as cdec
         target_path = os.path.abspath(args.target)
@@ -3038,11 +3469,15 @@ def main():
             print(f"[DxSkills] Decision Matrix SVG exported to: {args.svg}")
     elif args.command == "shed":
         import scripts.load_shedder as ls
-        shedder = ls.WorkingMemoryLoadShedder()
-        if args.input:
-            content = read_input(args.input)
-            shedder.load_from_markdown(content)
-        else:
+
+        def _shed_lines(raw):
+            return [line.strip() for line in (raw or "").splitlines() if line.strip()]
+
+        notes = optional_text(args.input)
+        user_lines = _shed_lines(notes)
+
+        if args.demo:
+            shedder = ls.WorkingMemoryLoadShedder()
             sample_outline = """# Distributed Storage Engine
 - Master coordinator node
   - Heartbeat lease monitor
@@ -3064,121 +3499,259 @@ def main():
     - Micro-buffer watermark high
     - Micro-buffer watermark low"""
             shedder.load_from_markdown(sample_outline)
-
-        audit = shedder.execute_load_shedding(target_cdi=args.target_cdi)
-
-        if args.json:
-            out = {
-                "initial_load_points": audit.initial_telemetry.total_load_points,
-                "initial_cdi": audit.initial_telemetry.cognitive_degradation_index,
-                "initial_status": audit.initial_telemetry.status,
-                "post_shed_load_points": audit.post_shed_telemetry.total_load_points,
-                "post_shed_cdi": audit.post_shed_telemetry.cognitive_degradation_index,
-                "post_shed_status": audit.post_shed_telemetry.status,
-                "load_points_freed": audit.load_points_freed,
-                "reduction_percentage": audit.reduction_percentage,
-                "pruned_leaves_count": audit.pruned_leaves_count,
-                "retained_nodes_count": len(audit.retained_nodes),
-                "shed_nodes": [
-                    {
-                        "label": n.label,
-                        "depth": n.depth,
-                        "shed_tier": n.shed_tier
-                    }
-                    for n in audit.shed_nodes
-                ]
-            }
-            print(json.dumps(out, indent=2))
-        else:
-            print("\n" + shedder.export_summary_markdown(audit))
-
-        if args.canvas:
-            canvas_data = shedder.export_canvas(audit)
-            with open(args.canvas, "w", encoding="utf-8") as f:
-                json.dump(canvas_data, f, indent=2)
-            print(f"\n[DxSkills] Decluttered Cognitive Canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = shedder.export_svg_gauge(audit)
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(svg_code)
-            print(f"[DxSkills] Cognitive Stress Gauge SVG exported to: {args.svg}")
-    elif args.command in ["resilience", "break", "fatigue"]:
-        import scripts.fatigue_resilience as fr
-        harness = fr.FatigueResilienceHarness()
-        step_denom = max(1, int(1.0 / max(0.01, args.regression_rate)))
-        samples = [
-            fr.SaccadeSample(
-                timestamp=i * 0.35,
-                fixation_duration_ms=args.mean_dwell,
-                jump_amplitude_deg=2.5,
-                is_regression=(i % step_denom == 0),
+            audit = shedder.execute_load_shedding(target_cdi=args.target_cdi)
+            note = (
+                "Built-in sample, not the user's notes. "
+                "The tree, branches, and scores below are a canned demonstration. "
+                "They were not written by the user."
             )
-            for i in range(args.fixations)
-        ]
-        telemetry = harness.analyze_saccade_stream(samples, session_duration_min=args.minutes)
-        protocol = harness.generate_break_protocol(telemetry)
-
-        if args.json:
-            out = {
-                "telemetry": telemetry.to_dict(),
-                "protocol": protocol.to_dict(),
+            if args.json:
+                out = {
+                    "built_in_sample": True,
+                    "not_the_users_notes": True,
+                    "note": note,
+                    "initial_load_points": audit.initial_telemetry.total_load_points,
+                    "initial_cdi": audit.initial_telemetry.cognitive_degradation_index,
+                    "initial_status": audit.initial_telemetry.status,
+                    "post_shed_load_points": audit.post_shed_telemetry.total_load_points,
+                    "post_shed_cdi": audit.post_shed_telemetry.cognitive_degradation_index,
+                    "post_shed_status": audit.post_shed_telemetry.status,
+                    "load_points_freed": audit.load_points_freed,
+                    "reduction_percentage": audit.reduction_percentage,
+                    "pruned_leaves_count": audit.pruned_leaves_count,
+                    "retained_nodes_count": len(audit.retained_nodes),
+                    "shed_nodes": [
+                        {
+                            "label": n.label,
+                            "depth": n.depth,
+                            "shed_tier": n.shed_tier
+                        }
+                        for n in audit.shed_nodes
+                    ]
+                }
+                print(json.dumps(out, indent=2))
+            else:
+                print("")
+                print(note)
+                if user_lines:
+                    print("Notes passed with --demo were not used in this sample.")
+                print("")
+                print(shedder.export_summary_markdown(audit))
+            if args.canvas:
+                canvas_data = shedder.export_canvas(audit)
+                with open(args.canvas, "w", encoding="utf-8") as f:
+                    json.dump(canvas_data, f, indent=2)
+                print(f"\n[DxSkills] Built-in sample canvas, not the user's notes, exported to: {args.canvas}")
+            if args.svg:
+                svg_code = shedder.export_svg_gauge(audit)
+                with open(args.svg, "w", encoding="utf-8") as f:
+                    f.write(svg_code)
+                print(f"[DxSkills] Built-in sample SVG, not the user's notes, exported to: {args.svg}")
+        elif not user_lines:
+            payload = {
+                "notes_given": False,
+                "nodes": [],
+                "scored": False,
+                "load": "not given",
+                "reason": "No notes were given and no load was scored.",
             }
-            print(json.dumps(out, indent=2))
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("No notes were given.")
+                print("No load was scored.")
+                print("")
+                print("| Node | Load |")
+                print("| :--- | :--- |")
+                print("| not given | not given |")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. No notes were given.")
         else:
-            print("\n" + harness.generate_markdown_report(telemetry, protocol))
-
-        if args.canvas:
-            harness.export_spatial_canvas(protocol, output_path=args.canvas)
-            print(f"\n[DxSkills] Micro-Break .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = harness.export_svg_breathing_visualizer(protocol)
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(svg_code)
-            print(f"[DxSkills] Breathing Visualizer SVG exported to: {args.svg}")
+            payload = {
+                "notes_given": True,
+                "nodes": user_lines,
+                "scored": False,
+                "load": "not given",
+                "reason": "Not scored. No cognitive load was measured from these lines.",
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("Nodes from the lines you wrote:")
+                for line in user_lines:
+                    print(f"- {line}")
+                print("")
+                print("| Node | Load |")
+                print("| :--- | :--- |")
+                for line in user_lines:
+                    safe = line.replace("|", "/")
+                    print(f"| {safe} | not given |")
+                print("")
+                print("Not scored.")
+                print("No cognitive load was measured. The old CDI and stress points came from a canned tree or from fixed weights, not from a count of these words.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. No load was scored.")
+    elif args.command in ["resilience", "break", "fatigue"]:
+        given = {
+            "minutes": args.minutes,
+            "fixations": args.fixations,
+            "regression_rate": args.regression_rate,
+            "mean_dwell": args.mean_dwell,
+        }
+        missing = [name for name, value in given.items() if value is None]
+        if len(missing) == 4:
+            print("No session numbers were given. No eyes were tracked.")
+            print("Example: python3 scripts/dx_cli.py fatigue --minutes 10 --fixations 12 --regression-rate 0.1 --mean-dwell 200")
+        elif missing:
+            print("Some formula inputs were not given: " + ", ".join(missing) + ".")
+            print("No score was printed. No eyes were tracked.")
+        else:
+            reg_comp = min(100.0, args.regression_rate * 250.0)
+            fix_comp = min(100.0, max(0.0, (args.mean_dwell - 200.0) / 1.8))
+            dur_comp = min(100.0, args.minutes * 2.2)
+            score = round(0.35 * reg_comp + 0.35 * fix_comp + 0.30 * dur_comp, 1)
+            score = max(0.0, min(100.0, score))
+            payload = {
+                "formula": True,
+                "eyes_tracked": False,
+                "minutes": args.minutes,
+                "fixations": args.fixations,
+                "regression_rate": args.regression_rate,
+                "mean_dwell_ms": args.mean_dwell,
+                "formula_result": score,
+                "bands": "under 35, under 55, under 75, else 75 or more",
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("")
+                print("=== [DxSkills: fatigue formula] ===")
+                print(f"Formula result: {score} on {args.minutes} minutes, {args.fixations} fixations, regression rate {args.regression_rate}, and mean dwell {args.mean_dwell} ms.")
+                print("This figure is a formula on those numbers, not eye-tracking telemetry and not a measured fatigue index.")
+                print("No session was observed. Bands in the formula are under 35, under 55, under 75, and 75 or more.")
+                print("")
+                print("### General note")
+                print("Background only, not a prescription for this run.")
+                print("- A short break from the screen is a general suggestion. It is not evidence that you are fatigued.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. Those files used to draw a simulated session.")
     elif args.command in ["reflector", "bias", "blindspot"]:
         import scripts.metacognitive_reflector as mr
-        reflector = mr.MetacognitiveReflector()
-        assumptions = []
-        if args.demo or not args.assumptions:
-            assumptions = [
+
+        def _parse_reflector_assumptions(items):
+            parsed = []
+            for item in items or []:
+                raw = item.strip()
+                if not raw:
+                    continue
+                if ":" in raw:
+                    lbl, val = raw.rsplit(":", 1)
+                    label = lbl.strip()
+                    if not label:
+                        continue
+                    parsed.append({
+                        "label": label,
+                        "validated": val.strip().lower() in ["true", "1", "yes"],
+                    })
+                else:
+                    parsed.append({"label": raw, "validated": False})
+            return parsed
+
+        title = (args.title or "").strip()
+        user_assumptions = _parse_reflector_assumptions(args.assumptions)
+
+        if args.demo:
+            sample_title = "Strategic Architecture Spec"
+            sample_assumptions = [
                 {"label": "Sub-millisecond Edge Replication", "validated": False},
                 {"label": "Zero Consensus Split-Brain", "validated": True},
                 {"label": "Infinite Memory Pool", "validated": False},
                 {"label": "Immutable Audit Log Guarantee", "validated": True},
                 {"label": "Instantaneous Client Re-connection", "validated": False},
             ]
-        else:
-            for item in args.assumptions:
-                if ":" in item:
-                    lbl, val = item.rsplit(":", 1)
-                    assumptions.append({"label": lbl.strip(), "validated": val.strip().lower() in ["true", "1", "yes"]})
-                else:
-                    assumptions.append({"label": item.strip(), "validated": False})
-
-        assessment = reflector.assess_thesis(
-            args.title, assumptions, perspective_breadth=args.perspectives
-        )
-
-        if args.json:
-            out = {
-                "assessment": assessment.to_dict(),
-                "lenses": [l.to_dict() for l in assessment.lenses],
+            reflector = mr.MetacognitiveReflector()
+            assessment = reflector.assess_thesis(
+                sample_title, sample_assumptions, perspective_breadth=args.perspectives
+            )
+            note = (
+                "Built-in sample, not the user's thesis. "
+                "The title, assumptions, verdict, and scores below are a canned demonstration. "
+                "They were not written by the user."
+            )
+            if args.json:
+                out = {
+                    "built_in_sample": True,
+                    "not_the_users_thesis": True,
+                    "note": note,
+                    "assessment": assessment.to_dict(),
+                    "lenses": [lens.to_dict() for lens in assessment.lenses],
+                }
+                print(json.dumps(out, indent=2))
+            else:
+                print("")
+                print(note)
+                if title or user_assumptions:
+                    print("A title or assumptions passed with --demo were not used in this sample.")
+                print("")
+                print(reflector.export_summary_markdown(assessment))
+            if args.canvas:
+                reflector.export_canvas(assessment, output_path=args.canvas)
+                print(f"\n[DxSkills] Built-in sample canvas, not the user's thesis, exported to: {args.canvas}")
+            if args.svg:
+                svg_code = reflector.export_svg_radar(assessment)
+                with open(args.svg, "w", encoding="utf-8") as f:
+                    f.write(svg_code)
+                print(f"[DxSkills] Built-in sample SVG, not the user's thesis, exported to: {args.svg}")
+        elif not title and not user_assumptions:
+            payload = {
+                "thesis": None,
+                "assumptions": [],
+                "scored": False,
+                "reason": "No thesis was given.",
             }
-            print(json.dumps(out, indent=2))
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("No thesis was given.")
+                print("No title and no assumptions were passed, so no score, verdict, or anchors were computed.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. No thesis was given.")
+        elif not user_assumptions:
+            payload = {
+                "thesis": title,
+                "assumptions": [],
+                "scored": False,
+                "reason": "No assumptions were given, so no score was computed.",
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print(title)
+                print("No assumptions were given, so no score was computed.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. No assumptions were given.")
         else:
-            print("\n" + reflector.export_summary_markdown(assessment))
-
-        if args.canvas:
-            reflector.export_canvas(assessment, output_path=args.canvas)
-            print(f"\n[DxSkills] Metacognitive Reflector .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = reflector.export_svg_radar(assessment)
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(svg_code)
-            print(f"[DxSkills] Metacognitive Radar SVG exported to: {args.svg}")
+            payload = {
+                "thesis": title or None,
+                "assumptions": user_assumptions,
+                "scored": False,
+                "reason": "Not scored. The count formula does not depend on the words you wrote.",
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                if title:
+                    print(title)
+                else:
+                    print("No title was given.")
+                print("Assumptions you wrote:")
+                for item in user_assumptions:
+                    flag = "validated" if item["validated"] else "not marked validated"
+                    print(f"- {item['label']} ({flag})")
+                print("Not scored.")
+                print("No fixation score is shown. The old figure used only a count of labels, a validated flag, and a perspective count. It did not depend on the words you wrote.")
+            if args.canvas or args.svg:
+                print("No canvas or svg was written. Those files used to draw a score that does not depend on the words you wrote.")
     elif args.command == "horizon":
         import scripts.horizon_visualizer as hv
         viz = hv.WorkingMemoryHorizonVisualizer()
@@ -3270,186 +3843,227 @@ def main():
             print(f"[DxSkills] Buffer Telemetry SVG exported to: {args.svg}")
     elif args.command in ["interleave", "dampener", "bookmark"]:
         import scripts.context_dampener as cd
-        dampener = cd.ContextSwitchDampener()
-        state = cd.ContextState(
-            project_name=args.project,
-            active_thread=args.thread,
-            depth_of_focus=args.focus,
-            completion_ratio=args.completion,
-            time_in_flow_min=args.minutes,
-            unresolved_tensions=args.loops,
-            immediate_next_step=args.next_step,
-        )
-        telemetry = dampener.evaluate_switch(state)
-
-        if args.json:
-            out = {
-                "state": state.to_dict(),
-                "telemetry": telemetry.to_dict(),
-            }
-            print(json.dumps(out, indent=2))
+        loops = args.loops or []
+        given = any([
+            args.project.strip(),
+            args.thread.strip(),
+            args.focus is not None,
+            args.completion is not None,
+            args.minutes is not None,
+            args.next_step.strip(),
+            loops,
+        ])
+        if not given:
+            print("No workstream was given. No residue was scored.")
+        elif args.focus is None or args.completion is None or args.minutes is None:
+            print("Residue was not scored. The formula needs --focus, --completion, and --minutes.")
+            if args.project.strip():
+                print(f"Project you passed: {args.project}")
+            if args.thread.strip():
+                print(f"Thread you passed: {args.thread}")
+            if loops:
+                print("Loops you passed: " + "; ".join(loops))
+            if args.next_step.strip():
+                print(f"Next step you passed: {args.next_step}")
         else:
-            print("\n" + dampener.export_summary_markdown(state, telemetry))
-
-        if args.canvas:
-            dampener.export_canvas(state, telemetry, output_path=args.canvas)
-            print(f"\n[DxSkills] Context Bookmark .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = dampener.export_svg_gauge(telemetry)
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(svg_code)
-            print(f"[DxSkills] Attention Residue Gauge SVG exported to: {args.svg}")
+            state = cd.ContextState(
+                project_name=args.project or "not given",
+                active_thread=args.thread or "not given",
+                depth_of_focus=args.focus,
+                completion_ratio=args.completion,
+                time_in_flow_min=args.minutes,
+                unresolved_tensions=loops,
+                immediate_next_step=args.next_step or "not given",
+            )
+            telemetry = cd.ContextSwitchDampener().evaluate_switch(state)
+            payload = {
+                "formula": True,
+                "measured": False,
+                "project": state.project_name,
+                "thread": state.active_thread,
+                "focus": args.focus,
+                "completion": args.completion,
+                "minutes": args.minutes,
+                "loops": loops,
+                "next_step": state.immediate_next_step,
+                "residue_figure": telemetry.attention_residue_score,
+                "recovery_minutes_figure": telemetry.estimated_recovery_minutes,
+                "formula_band": telemetry.interleaving_readiness,
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("")
+                print("=== [DxSkills: dampener formula] ===")
+                print(f"Formula on focus {args.focus}, completion {args.completion}, {args.minutes} minutes, and {len(loops)} loops you passed.")
+                print(f"Residue figure: {telemetry.attention_residue_score} | Recovery figure: {telemetry.estimated_recovery_minutes} minutes | Formula band: {telemetry.interleaving_readiness}")
+                print("These figures are a formula on the numbers you passed, not a measured context switch.")
+                print("Bands in the formula are under 35, under 65, and 65 or more.")
+        if args.canvas or args.svg:
+            print("No canvas or svg was written. Those files used to draw the result as measured residue.")
     elif args.command in ["examine", "grill", "cross-examine"]:
         import scripts.socratic_cross_examiner as sce
-        examiner = sce.SocraticCrossExaminer()
-        comps = [
-            {"name": "Ingress API Gateway", "has_tests": True, "has_failover": True, "is_stateless": True},
-            {"name": "Raft State Machine", "has_tests": True, "has_failover": True, "is_stateless": False},
-            {"name": "Async Task Dispatcher", "has_tests": True, "has_failover": False, "is_stateless": True},
-            {"name": "Memory Buffer Ring", "has_tests": False, "has_failover": False, "is_stateless": False},
-        ]
-        scorecard = examiner.cross_examine_architecture(args.title, comps)
-
-        if args.json:
-            print(json.dumps(scorecard.to_dict(), indent=2))
+        title = (args.title or "").strip()
+        if args.demo:
+            examiner = sce.SocraticCrossExaminer()
+            comps = [
+                {"name": "Ingress API Gateway", "has_tests": True, "has_failover": True, "is_stateless": True},
+                {"name": "Raft State Machine", "has_tests": True, "has_failover": True, "is_stateless": False},
+                {"name": "Async Task Dispatcher", "has_tests": True, "has_failover": False, "is_stateless": True},
+                {"name": "Memory Buffer Ring", "has_tests": False, "has_failover": False, "is_stateless": False},
+            ]
+            scorecard = examiner.cross_examine_architecture("Built-in sample", comps)
+            print("Built-in sample, not your system. No score was computed for a system you described.")
+            if args.json:
+                print(json.dumps(scorecard.to_dict(), indent=2))
+            else:
+                print(examiner.export_summary_markdown(scorecard))
+        elif not title:
+            print("No system was given. No score was computed.")
         else:
-            print("\n" + examiner.export_summary_markdown(scorecard))
-
-        if args.canvas:
-            examiner.export_canvas(scorecard, output_path=args.canvas)
-            print(f"\n[DxSkills] Socratic Examination .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = examiner.export_svg_radar(scorecard)
-            with open(args.svg, "w", encoding="utf-8") as f:
-                f.write(svg_code)
-            print(f"[DxSkills] Socratic Rigor Radar SVG exported to: {args.svg}")
+            print(f"Title you passed: {title}")
+            print("No components were given. No score was computed.")
+        if args.canvas or args.svg:
+            print("No canvas or svg was written. Those files used to draw an invented rigor score.")
     elif args.command in ["audio-pacer", "pacer", "soundstage"]:
         import scripts.audio_pacer as ap
-        pacer = ap.SpatialAudioPacer()
-        task_profile = ap.CognitiveTaskProfile(
-            task_name=args.task,
-            complexity_score=args.complexity,
-            cognitive_load=args.load,
-        )
-        raw_streams = []
-        if args.demo or not args.streams:
+        streams = args.streams or []
+        if args.demo and not streams and args.complexity is None and args.load is None and not (args.task or "").strip():
+            pacer = ap.SpatialAudioPacer()
+            task_profile = ap.CognitiveTaskProfile(
+                task_name="Built-in sample",
+                complexity_score=0.7,
+                cognitive_load=0.6,
+            )
             raw_streams = [
                 {"id": "s1", "name": "Primary Code IDE", "track_type": ap.AudioTrackType.PRIMARY_FOCUS, "description": "Active coding AST buffer"},
                 {"id": "s2", "name": "Telemetry Logs", "track_type": ap.AudioTrackType.TELEMETRY_LOG, "description": "Build pipeline and test stream"},
                 {"id": "s3", "name": "Rhythmic Metronome", "track_type": ap.AudioTrackType.RHYTHMIC_PACER, "description": "Cognitive grounding pulse"},
                 {"id": "s4", "name": "Production Alerts", "track_type": ap.AudioTrackType.ALERT_URGENT, "description": "Critical exception alerts"},
             ]
+            config = pacer.decouple_saliency(task_profile, raw_streams)
+            print("Built-in sample, not your task. No soundstage was measured.")
+            if args.json:
+                print(json.dumps(config.to_dict(), indent=2))
+            else:
+                print(pacer.generate_markdown_report(config))
+        elif not (args.task or "").strip() and args.complexity is None and args.load is None and not streams:
+            print("No task was given. No cadence was computed.")
         else:
-            for idx, item in enumerate(args.streams):
-                if ":" in item:
-                    s_name, s_type = item.rsplit(":", 1)
+            names = []
+            for item in streams:
+                names.append(item.split(":", 1)[0].strip() or "not given")
+            if args.complexity is None or args.load is None:
+                print("No cadence was computed. The formula needs --complexity and --load.")
+                if (args.task or "").strip():
+                    print(f"Task you passed: {args.task}")
+                if names:
+                    print("Streams you passed: " + "; ".join(names))
+            else:
+                pacer = ap.SpatialAudioPacer()
+                bpm = pacer.calculate_pacing_bpm(args.complexity, args.load)
+                band = pacer.determine_entrainment_band(bpm)
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "task": (args.task or "").strip() or "not given",
+                    "complexity": args.complexity,
+                    "load": args.load,
+                    "streams": names,
+                    "cadence_bpm_figure": bpm,
+                    "formula_band": band,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
                 else:
-                    s_name, s_type = item, "telemetry_log"
-                raw_streams.append({
-                    "id": f"stream_{idx+1}",
-                    "name": s_name.strip(),
-                    "track_type": s_type.strip(),
-                })
-
-        config = pacer.decouple_saliency(task_profile, raw_streams)
-
-        if args.json:
-            print(json.dumps(config.to_dict(), indent=2))
-        else:
-            print("\n" + pacer.generate_markdown_report(config))
-
-        if args.canvas:
-            pacer.export_canvas(config, output_path=args.canvas)
-            print(f"\n[DxSkills] Spatial Soundstage .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            pacer.export_svg_soundstage(config, output_path=args.svg)
-            print(f"[DxSkills] Soundstage Radar SVG exported to: {args.svg}")
-
-        if args.manifest:
-            manifest_data = pacer.generate_web_audio_manifest(config)
-            with open(args.manifest, "w", encoding="utf-8") as f:
-                json.dump(manifest_data, f, indent=2)
-            print(f"[DxSkills] Web Audio manifest exported to: {args.manifest}")
+                    print("")
+                    print("=== [DxSkills: audio-pacer formula] ===")
+                    if payload["task"] != "not given":
+                        print(f"Task you passed: {payload['task']}")
+                    print(f"Formula on complexity {args.complexity} and load {args.load}.")
+                    print(f"Cadence figure: {bpm} BPM | Formula band: {band}")
+                    print("Streams you passed: " + ("; ".join(names) if names else "none"))
+                    print("This cadence is a formula on the numbers you passed, not a measured soundstage. No azimuths were added.")
+        if args.canvas or args.svg or args.manifest:
+            print("No canvas, svg, or audio manifest was written. Those files used to draw an invented soundstage.")
     elif args.command in ["fovea", "tunnel", "attention-tunnel"]:
         import scripts.fovea_synchronizer as fs
-        sync = fs.SpatialFoveaSynchronizer()
-        canvas_data = None
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                canvas_data = json.load(f)
-        elif args.demo or not args.canvas:
-            canvas_data = {
-                "nodes": [
-                    {"id": "node_core", "x": 0, "y": 0, "width": 260, "height": 140, "color": "1", "text": "### Raft Distributed Consensus\nActive leader heartbeat loop and log replication barrier."},
-                    {"id": "node_wal", "x": 200, "y": 160, "width": 240, "height": 130, "color": "2", "text": "### Write-Ahead Log Ring\nIn-memory circular buffer and fsync batcher."},
-                    {"id": "node_cache", "x": -220, "y": 180, "width": 240, "height": 130, "color": "3", "text": "### L1 Saliency Cache\nLRU eviction cache with TTL invalidation hooks."},
-                    {"id": "node_cold", "x": 850, "y": 750, "width": 250, "height": 140, "color": "4", "text": "### S3 Glacier Cold Storage\nPeriodic multi-part archival upload pipeline."},
-                    {"id": "node_audit", "x": -800, "y": 700, "width": 250, "height": 140, "color": "5", "text": "### Audit Compliance Sink\nCryptographic append-only ledger for telemetry."},
-                ],
-                "edges": []
-            }
-        
-        mode = fs.DampingMode(args.mode)
-        focus_id = args.focus if args.focus else (canvas_data["nodes"][0]["id"] if canvas_data.get("nodes") else None)
-        transformed_canvas, telemetry = sync.apply_attention_tunnel(
-            canvas_data, focus_node_id=focus_id, cognitive_load=args.load, damping_mode=mode
-        )
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+        sample_canvas = {
+            "nodes": [
+                {"id": "node_core", "x": 0, "y": 0, "width": 260, "height": 140, "color": "1", "text": "### Raft Distributed Consensus\nActive leader heartbeat loop and log replication barrier."},
+                {"id": "node_wal", "x": 200, "y": 160, "width": 240, "height": 130, "color": "2", "text": "### Write-Ahead Log Ring\nIn-memory circular buffer and fsync batcher."},
+                {"id": "node_cache", "x": -220, "y": 180, "width": 240, "height": 130, "color": "3", "text": "### L1 Saliency Cache\nLRU eviction cache with TTL invalidation hooks."},
+                {"id": "node_cold", "x": 850, "y": 750, "width": 250, "height": 140, "color": "4", "text": "### S3 Glacier Cold Storage\nPeriodic multi-part archival upload pipeline."},
+                {"id": "node_audit", "x": -800, "y": 700, "width": 250, "height": 140, "color": "5", "text": "### Audit Compliance Sink\nCryptographic append-only ledger for telemetry."},
+            ],
+            "edges": []
+        }
+        if args.demo and not args.canvas:
+            sync = fs.SpatialFoveaSynchronizer()
+            mode = fs.DampingMode(args.mode)
+            _, telemetry = sync.apply_attention_tunnel(
+                sample_canvas, focus_node_id="node_core", cognitive_load=0.6, damping_mode=mode
+            )
+            print("Built-in sample, not your canvas. No eyes were tracked.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print(sync.generate_markdown_report(telemetry))
+        elif not args.canvas:
+            print("No canvas was given. No tunnel was computed.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No tunnel was computed.")
+            sys.exit(1)
         else:
-            print("\n" + sync.generate_markdown_report(telemetry))
-
-        if args.output_canvas:
-            with open(args.output_canvas, "w", encoding="utf-8") as f:
-                json.dump(transformed_canvas, f, indent=2)
-            print(f"\n[DxSkills] Attention-tunneled .canvas exported to: {args.output_canvas}")
-
-        if args.svg:
-            anchors = []
-            fx = canvas_data["nodes"][0].get("x", 0)
-            fy = canvas_data["nodes"][0].get("y", 0)
-            for n in transformed_canvas.get("nodes", []):
-                nx = n.get("x", 0)
-                ny = n.get("y", 0)
-                d = math.hypot(nx - fx, ny - fy)
-                ang = math.degrees(math.atan2(ny - fy, nx - fx))
-                is_f = (n.get("id") == focus_id) or (d <= telemetry.tunnel_radius_px)
-                anchors.append(fs.PeripheralAnchor(
-                    node_id=n.get("id", ""),
-                    label=n.get("text", "").split("\n")[0].replace("#", "").strip() or "Node",
-                    x=nx,
-                    y=ny,
-                    distance_from_focus=round(d, 1),
-                    angle_degrees=round(ang, 1),
-                    opacity=1.0 if is_f else 0.35,
-                    is_foveal=is_f,
-                    color=n.get("color", "1"),
-                ))
-            svg_code = sync.export_svg_tunnel(anchors, telemetry, output_path=args.svg)
-            print(f"[DxSkills] Attention tunnel radar SVG exported to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    canvas_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No tunnel was computed.")
+                sys.exit(1)
+            nodes = canvas_data.get("nodes", []) if isinstance(canvas_data, dict) else []
+            if args.load is None:
+                print(f"Nodes in the file: {len(nodes)}")
+                print("Load was not given, so the tunnel formula was not run.")
+            else:
+                sync = fs.SpatialFoveaSynchronizer()
+                mode = fs.DampingMode(args.mode)
+                focus_id = args.focus or (nodes[0].get("id") if nodes else None)
+                _, telemetry = sync.apply_attention_tunnel(
+                    canvas_data, focus_node_id=focus_id, cognitive_load=args.load, damping_mode=mode
+                )
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "file": args.canvas,
+                    "focus_id": telemetry.focus_node_id,
+                    "load": args.load,
+                    "mode": args.mode,
+                    "node_count": telemetry.total_nodes,
+                    "inside_radius": telemetry.foveal_nodes_count,
+                    "outside_radius": telemetry.damped_peripheral_count,
+                    "radius_px_figure": telemetry.tunnel_radius_px,
+                    "crowding_figure_pct": telemetry.crowding_reduction_pct,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: fovea formula] ===")
+                    print(f"Formula on {telemetry.total_nodes} nodes in {args.canvas}, load {args.load}, mode {args.mode}.")
+                    print(f"Focus id used: {telemetry.focus_node_id or 'not given'}")
+                    print(f"Radius figure: {telemetry.tunnel_radius_px} px | Inside: {telemetry.foveal_nodes_count} | Outside: {telemetry.damped_peripheral_count}")
+                    print(f"Crowding figure: {telemetry.crowding_reduction_pct}%")
+                    print("These figures are a formula on the file and the load you passed, not a measurement of your eyes.")
+                    if not args.focus:
+                        print("No --focus was passed, so the formula used the first node id in the file.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to draw the result as measured vision.")
     elif args.command in ["consensus", "merge", "resolve-conflict"]:
         import scripts.workspace_consensus as wc
-        synthesizer = wc.WorkspaceConsensusSynthesizer()
-        
-        base_canvas = {"nodes": [], "edges": []}
-        canvas_a = {"nodes": [], "edges": []}
-        canvas_b = {"nodes": [], "edges": []}
-        
-        if args.base and os.path.isfile(args.base):
-            with open(args.base, "r", encoding="utf-8") as f:
-                base_canvas = json.load(f)
-        if args.branch_a and os.path.isfile(args.branch_a):
-            with open(args.branch_a, "r", encoding="utf-8") as f:
-                canvas_a = json.load(f)
-        if args.branch_b and os.path.isfile(args.branch_b):
-            with open(args.branch_b, "r", encoding="utf-8") as f:
-                canvas_b = json.load(f)
-                
-        if args.demo or (not args.base and not args.branch_a):
+        if args.demo and not args.base and not args.branch_a and not args.branch_b:
+            synthesizer = wc.WorkspaceConsensusSynthesizer()
             base_canvas = {
                 "nodes": [
                     {"id": "n_core", "x": 0, "y": 0, "text": "### Master Pipeline\nShared deterministic state machine."},
@@ -3479,22 +4093,69 @@ def main():
                     {"id": "e3", "fromNode": "n_cache", "toNode": "n_agent_b"},
                 ]
             }
-
-        merged_canvas, scorecard = synthesizer.synthesize_visual_merge(base_canvas, canvas_a, canvas_b)
-
-        if args.json:
-            print(json.dumps(scorecard.to_dict(), indent=2))
+            _, scorecard = synthesizer.synthesize_visual_merge(base_canvas, canvas_a, canvas_b)
+            print("Built-in sample, not your canvases. Nothing was merged.")
+            if args.json:
+                print(json.dumps(scorecard.to_dict(), indent=2))
+            else:
+                print(synthesizer.generate_markdown_report(scorecard))
+        elif not args.base and not args.branch_a and not args.branch_b:
+            print("No canvases were given. No merge was scored.")
         else:
-            print("\n" + synthesizer.generate_markdown_report(scorecard))
-
-        if args.output_canvas:
-            with open(args.output_canvas, "w", encoding="utf-8") as f:
-                json.dump(merged_canvas, f, indent=2)
-            print(f"\n[DxSkills] Synthesized merge .canvas exported to: {args.output_canvas}")
-
-        if args.svg:
-            svg_code = synthesizer.export_svg_consensus_radar(scorecard, output_path=args.svg)
-            print(f"[DxSkills] Workspace consensus radar SVG exported to: {args.svg}")
+            missing = []
+            loaded = {}
+            for label, path in (("base", args.base), ("branch-a", args.branch_a), ("branch-b", args.branch_b)):
+                if not path:
+                    missing.append(label)
+                elif not os.path.isfile(path):
+                    print(f"File not found: {path}")
+                    missing.append(label)
+                else:
+                    try:
+                        with open(path, "r", encoding="utf-8") as handle:
+                            loaded[label] = json.load(handle)
+                    except json.JSONDecodeError:
+                        print(f"Not JSON: {path}")
+                        missing.append(label)
+            if missing:
+                print("No merge was scored. Need --base, --branch-a, and --branch-b.")
+                print("Missing: " + ", ".join(missing))
+            else:
+                synthesizer = wc.WorkspaceConsensusSynthesizer()
+                _, scorecard = synthesizer.synthesize_visual_merge(loaded["base"], loaded["branch-a"], loaded["branch-b"])
+                conflicts = []
+                for item in scorecard.conflicts:
+                    kind = item.conflict_type.value if hasattr(item.conflict_type, "value") else str(item.conflict_type)
+                    conflicts.append({"target": item.target_id, "kind": kind})
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "merged": False,
+                    "nodes": {
+                        "base": scorecard.total_nodes_base,
+                        "branch_a": scorecard.total_nodes_a,
+                        "branch_b": scorecard.total_nodes_b,
+                    },
+                    "differences": len(conflicts),
+                    "stability_figure": scorecard.consensus_stability_score,
+                    "conflicts": conflicts,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: consensus formula] ===")
+                    print(f"Nodes: base {scorecard.total_nodes_base}, branch-a {scorecard.total_nodes_a}, branch-b {scorecard.total_nodes_b}.")
+                    print(f"Differences the formula counted: {len(conflicts)}")
+                    print(f"Stability figure: {scorecard.consensus_stability_score}")
+                    print("This figure is a formula on those files, not a judgment that the work agrees. Nothing was merged.")
+                    if conflicts:
+                        for item in conflicts:
+                            print(f"- {item['target']}: {item['kind']}")
+                    else:
+                        print("No differing nodes were counted.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to draw an invented merge.")
     elif args.command in ["gaze", "inertia", "saccade-velocity"]:
         import scripts.gaze_inertia_balancer as gib
         balancer = gib.GazeInertiaBalancer()
@@ -3531,41 +4192,67 @@ def main():
             print(f"[DxSkills] Saccade velocity profile SVG exported to: {args.svg}")
     elif args.command in ["scanpath", "flow", "compress-reading"]:
         import scripts.scanpath_compressor as spc
+        sample_text = (
+            "Distributed consensus engines mandate deterministic execution across cluster boundaries. "
+            "Unsynchronized concurrent mutations risk catastrophic state corruption and partitioned quorums. "
+            "Spatial cognitive architectures eliminate phonological decoding strain by mapping complex "
+            "topologies directly into two-dimensional associative graphs."
+        )
         compressor = spc.SaccadicScanpathCompressor(target_line_chars=args.chars)
-        raw_text = ""
-        if args.input and os.path.isfile(args.input):
-            with open(args.input, "r", encoding="utf-8", errors="ignore") as f:
-                raw_text = f.read()
-        elif args.demo or not args.input:
-            raw_text = (
-                "Distributed consensus engines mandate deterministic execution across cluster boundaries. "
-                "Unsynchronized concurrent mutations risk catastrophic state corruption and partitioned quorums. "
-                "Spatial cognitive architectures eliminate phonological decoding strain by mapping complex "
-                "topologies directly into two-dimensional associative graphs."
-            )
-
-        mode = spc.GuidanceMode(args.mode)
-        guided_text, telemetry = compressor.compress_and_guide(raw_text, mode=mode)
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+        if args.demo and not args.input:
+            mode = spc.GuidanceMode(args.mode)
+            guided_text, telemetry = compressor.compress_and_guide(sample_text, mode=mode)
+            print("Built-in sample, not your reading. No eyes were tracked.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + compressor.generate_markdown_report(telemetry))
+                print("\n## Guided Reading Preview\n")
+                print(guided_text[:400] + "..." if len(guided_text) > 400 else guided_text)
+        elif not args.input:
+            print("No text was given. No reading was scored.")
+        elif not os.path.isfile(args.input):
+            print(f"File not found: {args.input}")
+            print("No reading was scored.")
+            sys.exit(1)
         else:
-            print("\n" + compressor.generate_markdown_report(telemetry))
-            print("\n## Guided Reading Preview\n")
-            print(guided_text[:400] + "..." if len(guided_text) > 400 else guided_text)
-
-        if args.output:
-            with open(args.output, "w", encoding="utf-8") as f:
-                f.write(guided_text)
-            print(f"\n[DxSkills] Guided reading text written to: {args.output}")
-
-        if args.canvas:
-            compressor.export_canvas(guided_text, telemetry, output_path=args.canvas)
-            print(f"[DxSkills] Reading corridor .canvas exported to: {args.canvas}")
-
-        if args.svg:
-            svg_code = compressor.export_svg_scanpath(telemetry, output_path=args.svg)
-            print(f"[DxSkills] Saccadic trajectory SVG exported to: {args.svg}")
+            with open(args.input, "r", encoding="utf-8", errors="ignore") as handle:
+                raw_text = handle.read()
+            if not raw_text.strip():
+                print("The file was empty. No reading was scored.")
+            else:
+                mode = spc.GuidanceMode(args.mode)
+                guided_text, telemetry = compressor.compress_and_guide(raw_text, mode=mode)
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "file": args.input,
+                    "mode": args.mode,
+                    "words": telemetry.total_words,
+                    "lines": telemetry.total_lines,
+                    "characters": telemetry.raw_characters_count,
+                    "regression_count_figure": telemetry.estimated_regressions_count,
+                    "regression_rate_figure_pct": telemetry.regression_rate_pct,
+                    "efficiency_figure": telemetry.scanpath_efficiency_ratio,
+                    "baseline_wpm_input": telemetry.baseline_wpm,
+                    "projected_wpm_figure": telemetry.projected_wpm,
+                    "speedup_figure_pct": telemetry.wpm_speedup_pct,
+                    "relief_figure": telemetry.ocular_relief_score,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: scanpath formula] ===")
+                    print(f"Formula on {telemetry.total_words} words in {args.input}, mode {args.mode}.")
+                    print(f"Regression count figure: {telemetry.estimated_regressions_count} ({telemetry.regression_rate_pct}%)")
+                    print(f"Efficiency figure: {telemetry.scanpath_efficiency_ratio} | Relief figure: {telemetry.ocular_relief_score}")
+                    print(f"Pace figure: {telemetry.baseline_wpm} WPM to {telemetry.projected_wpm} WPM ({telemetry.wpm_speedup_pct}%)")
+                    print("The 175 WPM baseline is a formula input, not a measured pace.")
+                    print("These figures are a formula on word length in the file, not a measurement of your eyes.")
+                    print("No guided file was written.")
+        if args.output or args.canvas or args.svg:
+            print("No markdown, canvas, or svg was written. Those files used to present the result as measured reading.")
     elif args.command in ["visual-metronome", "metronome", "pace-reading"]:
         import scripts.visual_metronome as vpm
 
@@ -3628,90 +4315,136 @@ def main():
             print(f"[DxSkills] Syntactic chunk strip SVG exported to: {args.svg}")
     elif args.command in ["memory-shield", "shield", "saliency-shield"]:
         import scripts.memory_shield as wms
-
+        sample = {
+            "nodes": [
+                {"id": "node-core", "x": 0, "y": 0, "width": 300, "height": 180, "text": "Active Architecture Focus\n\nDeterministic state transitions."},
+                {"id": "node-near-1", "x": 380, "y": 50, "width": 260, "height": 140, "text": "Consensus Engine\n\nRaft-based state machine."},
+                {"id": "node-near-2", "x": -380, "y": -40, "width": 260, "height": 140, "text": "Write-Ahead Log\n\nSequential durability log."},
+                {"id": "node-mid", "x": 800, "y": 400, "width": 280, "height": 150, "text": "Cluster Telemetry Gateway\n\nHTTP metrics exposition."},
+                {"id": "node-far", "x": 1600, "y": -700, "width": 320, "height": 200, "text": "ARCHIVED DEPRECATED MIGRATION NOTES\n\nLEGACY SCHEMAS AND SCRIPTS"},
+            ]
+        }
         shield = wms.WorkingMemoryShield(
             focus_radius_px=args.focus_radius,
             orientation_radius_px=args.orientation_radius,
         )
-
-        canvas_data = {}
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                canvas_data = json.load(f)
-        elif args.demo or not args.canvas:
-            canvas_data = {
-                "nodes": [
-                    {"id": "node-core", "x": 0, "y": 0, "width": 300, "height": 180, "text": "Active Architecture Focus\n\nDeterministic state transitions."},
-                    {"id": "node-near-1", "x": 380, "y": 50, "width": 260, "height": 140, "text": "Consensus Engine\n\nRaft-based state machine."},
-                    {"id": "node-near-2", "x": -380, "y": -40, "width": 260, "height": 140, "text": "Write-Ahead Log\n\nSequential durability log."},
-                    {"id": "node-mid", "x": 800, "y": 400, "width": 280, "height": 150, "text": "Cluster Telemetry Gateway\n\nHTTP metrics exposition."},
-                    {"id": "node-far", "x": 1600, "y": -700, "width": 320, "height": 200, "text": "ARCHIVED DEPRECATED MIGRATION NOTES\n\nLEGACY SCHEMAS AND SCRIPTS"},
-                ]
-            }
-
-        focus_ids = args.focus if args.focus else None
-        shielded_canvas, telemetry = shield.apply_memory_shield(canvas_data, focus_ids=focus_ids)
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+        if args.demo and not args.canvas:
+            _, telemetry = shield.apply_memory_shield(sample, focus_ids=args.focus or None)
+            print("Built-in sample, not your canvas. Nothing was shielded.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + shield.render_ascii_report(telemetry))
+        elif not args.canvas:
+            print("No canvas was given. No shield was scored.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No shield was scored.")
+            sys.exit(1)
         else:
-            print("\n" + shield.render_ascii_report(telemetry))
-
-        if args.output_canvas:
-            with open(args.output_canvas, "w", encoding="utf-8") as f:
-                json.dump(shielded_canvas, f, indent=2)
-            print(f"[DxSkills] Shielded .canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            shield.export_svg_shield(telemetry, args.svg)
-            print(f"[DxSkills] Memory shield radar SVG exported to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    canvas_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No shield was scored.")
+                sys.exit(1)
+            _, telemetry = shield.apply_memory_shield(canvas_data, focus_ids=args.focus or None)
+            payload = {
+                "formula": True,
+                "measured": False,
+                "file": args.canvas,
+                "nodes": telemetry.total_nodes,
+                "focus_count": telemetry.focus_count,
+                "orientation_count": telemetry.orientation_count,
+                "dampened_count": telemetry.dampened_count,
+                "mitigation_figure_pct": telemetry.avg_intrusion_mitigation_pct,
+                "bandwidth_figure_pct": telemetry.cognitive_bandwidth_reclaimed_pct,
+                "focus_radius_input": args.focus_radius,
+                "orientation_radius_input": args.orientation_radius,
+            }
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("")
+                print("=== [DxSkills: shield formula] ===")
+                print(f"Formula on {telemetry.total_nodes} nodes in {args.canvas}.")
+                print(f"Focus: {telemetry.focus_count} | Orientation: {telemetry.orientation_count} | Dampened: {telemetry.dampened_count}")
+                print(f"Mitigation figure: {telemetry.avg_intrusion_mitigation_pct:.1f}% | Bandwidth figure: {telemetry.cognitive_bandwidth_reclaimed_pct:.1f}%")
+                print(f"The {args.focus_radius} px focus radius and {args.orientation_radius} px orientation radius are formula inputs, not a measurement.")
+                print("These figures are a formula on node positions in the file, not a measurement of memory or attention.")
+                print("No shielded canvas was written.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as measured attention.")
     elif args.command in ["dual-code", "dual-coder", "dual-track"]:
         import scripts.dual_code_interleaver as dci
-
+        sample_canvas = {
+            "nodes": [
+                {"id": "node-consensus", "text": "Raft Consensus Module\n\nCoordinates cluster leader election and log replication across distributed instances."},
+                {"id": "node-wal", "text": "Write-Ahead Storage Log\n\nPersists append-only state mutations to durable NVMe storage before commit confirmation."},
+                {"id": "node-telemetry", "text": "Cluster Telemetry Gateway\n\nAggregates Prometheus metrics, health heartbeats, and cluster topology status."},
+            ]
+        }
+        sample_prose = (
+            "The Raft consensus module coordinates cluster leader election and ensures deterministic log replication. "
+            "The write-ahead storage log persists append-only state mutations directly to durable disk. "
+            "The cluster telemetry gateway aggregates health heartbeats and distributes performance metrics across nodes."
+        )
         interleaver = dci.DualCodeInterleaver()
-
-        canvas_data = {}
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                canvas_data = json.load(f)
-        elif args.demo or not args.canvas:
-            canvas_data = {
-                "nodes": [
-                    {"id": "node-consensus", "text": "Raft Consensus Module\n\nCoordinates cluster leader election and log replication across distributed instances."},
-                    {"id": "node-wal", "text": "Write-Ahead Storage Log\n\nPersists append-only state mutations to durable NVMe storage before commit confirmation."},
-                    {"id": "node-telemetry", "text": "Cluster Telemetry Gateway\n\nAggregates Prometheus metrics, health heartbeats, and cluster topology status."},
-                ]
-            }
-
-        prose_text = ""
-        if args.prose and os.path.isfile(args.prose):
-            with open(args.prose, "r", encoding="utf-8", errors="ignore") as f:
-                prose_text = f.read()
-        elif args.demo or not args.prose:
-            prose_text = (
-                "The Raft consensus module coordinates cluster leader election and ensures deterministic log replication. "
-                "The write-ahead storage log persists append-only state mutations directly to durable disk. "
-                "The cluster telemetry gateway aggregates health heartbeats and distributes performance metrics across nodes."
-            )
-
-        blocks, telemetry = interleaver.align_channels(canvas_data, prose_text)
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+        if args.demo and not args.canvas and not args.prose:
+            _, telemetry = interleaver.align_channels(sample_canvas, sample_prose)
+            print("Built-in sample, not your canvas or your prose. Nothing was paired.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + interleaver.render_ascii_dual_stream(telemetry))
+        elif not args.canvas and not args.prose:
+            print("No canvas or prose was given. No pairing was scored.")
+        elif not args.canvas or not args.prose:
+            missing = "canvas" if not args.canvas else "prose"
+            print(f"No {missing} was given. No pairing was scored.")
+        elif not os.path.isfile(args.canvas) or not os.path.isfile(args.prose):
+            missing_path = args.canvas if not os.path.isfile(args.canvas) else args.prose
+            print(f"File not found: {missing_path}")
+            print("No pairing was scored.")
+            sys.exit(1)
         else:
-            print("\n" + interleaver.render_ascii_dual_stream(telemetry))
-
-        if args.output_markdown:
-            interleaver.export_interleaved_markdown(telemetry, args.output_markdown)
-            print(f"[DxSkills] Interleaved specification written to: {args.output_markdown}")
-
-        if args.output_canvas:
-            interleaver.export_canvas(telemetry, args.output_canvas)
-            print(f"[DxSkills] Dual-code .canvas exported to: {args.output_canvas}")
-
-        if args.svg:
-            interleaver.export_svg_dual_track(telemetry, args.svg)
-            print(f"[DxSkills] Dual-track SVG exported to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    canvas_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The canvas was not JSON. No pairing was scored.")
+                sys.exit(1)
+            with open(args.prose, "r", encoding="utf-8", errors="ignore") as handle:
+                prose_text = handle.read()
+            if not prose_text.strip():
+                print("The prose file was empty. No pairing was scored.")
+            else:
+                _, telemetry = interleaver.align_channels(canvas_data, prose_text)
+                payload = {
+                    "formula": True,
+                    "measured": False,
+                    "canvas": args.canvas,
+                    "prose": args.prose,
+                    "nodes": telemetry.total_nodes,
+                    "sentences": telemetry.total_verbal_sentences,
+                    "mapped_figure": telemetry.mapped_associations_count,
+                    "unmapped_figure": telemetry.unmapped_verbal_count,
+                    "balance_figure": telemetry.dual_code_balance_ratio,
+                    "friction_figure_pct": telemetry.cognitive_friction_reduction_pct,
+                }
+                if args.json:
+                    print(json.dumps(payload, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: dual-code formula] ===")
+                    noun = "node" if telemetry.total_nodes == 1 else "nodes"
+                    print(f"Formula on {telemetry.total_nodes} {noun} in {args.canvas} and the prose in {args.prose}.")
+                    print(f"Sentences counted: {telemetry.total_verbal_sentences} | Mapped figure: {telemetry.mapped_associations_count} | Unmapped figure: {telemetry.unmapped_verbal_count}")
+                    print(f"Balance figure: {telemetry.dual_code_balance_ratio:.3f} | Friction figure: {telemetry.cognitive_friction_reduction_pct:.1f}%")
+                    print("These figures are a formula on shared words, not a measurement of memory.")
+                    print("Nothing was paired into a new file.")
+        if args.output_markdown or args.output_canvas or args.svg:
+            print("No markdown, canvas, or svg was written. Those files used to present the result as measured memory.")
     elif args.command in ["saccadic-pivot", "pivot", "anchor-restore"]:
         import scripts.saccadic_pivot as spiv
 
@@ -3750,139 +4483,215 @@ def main():
             print(f"[DxSkills] Saccadic trajectory SVG exported to: {args.svg}")
     elif args.command in ["concept-lattice", "lattice", "fca", "resonance-compiler"]:
         import scripts.concept_lattice as clat
+        demo_context = {
+            "mechanical_damper": ["energy_dissipation", "resilience", "hardware", "analog"],
+            "viscoelastic_mount": ["energy_dissipation", "resilience", "hardware", "isolation"],
+            "rate_limiter": ["energy_dissipation", "resilience", "software", "backpressure"],
+            "circuit_breaker": ["resilience", "software", "fault_tolerance", "isolation"],
+            "biological_homeostasis": ["resilience", "adaptation", "feedback_loop", "organic"],
+            "immune_system": ["resilience", "fault_tolerance", "adaptation", "organic"],
+        }
 
-        compiler = clat.ConceptLatticeCompiler(min_resonance=args.min_resonance)
-
-        if args.input and os.path.isfile(args.input):
-            with open(args.input, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            if "nodes" in raw_data:
-                compiler.load_from_canvas(raw_data)
-            elif isinstance(raw_data, dict):
-                compiler.load_context(raw_data)
-        elif args.demo or not args.input:
-            demo_context = {
-                "mechanical_damper": ["energy_dissipation", "resilience", "hardware", "analog"],
-                "viscoelastic_mount": ["energy_dissipation", "resilience", "hardware", "isolation"],
-                "rate_limiter": ["energy_dissipation", "resilience", "software", "backpressure"],
-                "circuit_breaker": ["resilience", "software", "fault_tolerance", "isolation"],
-                "biological_homeostasis": ["resilience", "adaptation", "feedback_loop", "organic"],
-                "immune_system": ["resilience", "fault_tolerance", "adaptation", "organic"],
-            }
-            compiler.load_context(demo_context)
-
-        concepts, edges, leaps, telemetry = compiler.compute_lattice()
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
-        else:
-            print("\n" + "=" * 64)
-            print("  Formal Concept Lattice & Associative Resonance Telemetry")
-            print("=" * 64)
-            print(f"  Total Objects:              {telemetry.total_objects}")
-            print(f"  Total Attributes:           {telemetry.total_attributes}")
-            print(f"  Formal Concepts Discovered: {telemetry.total_concepts}")
-            print(f"  Hasse Cover Edges:          {telemetry.total_hasse_edges}")
-            print(f"  Max Topological Depth:      {telemetry.max_lattice_depth}")
-            print(f"  Associative Leaps Found:    {telemetry.associative_leaps_count}")
-            print(f"  Top Resonance Score:        {telemetry.top_resonance_score:.3f}")
-            print(f"  Galois Connectivity Index:  {telemetry.galois_connectivity_index:.3f}")
-            print("-" * 64)
+        def _print_lattice(compiler, leaps, telemetry, sample_label):
+            if sample_label:
+                print(sample_label)
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+                return
+            print("")
+            print("=== [DxSkills: lattice formula] ===")
+            print(f"Objects: {telemetry.total_objects} | Attributes: {telemetry.total_attributes} | Concepts: {telemetry.total_concepts}")
+            print(f"Cover edges figure: {telemetry.total_hasse_edges} | Depth figure: {telemetry.max_lattice_depth}")
+            print(f"Leaps figure: {telemetry.associative_leaps_count} | Top score figure: {telemetry.top_resonance_score:.3f}")
+            print(f"Connectivity figure: {telemetry.galois_connectivity_index:.3f}")
+            print(f"The {args.min_resonance} resonance floor is a formula input, not a measured link.")
+            print("These figures are a formula on the labels in the file, not a study of intuition.")
             if leaps:
-                print("  Top Cross-Domain Associative Leaps (Eide & Eide I-Strength):")
-                for idx, leap in enumerate(leaps[:5], 1):
+                print("Leaps the formula counted:")
+                for leap in leaps[:5]:
                     src_str = ", ".join(leap.source_extent[:2])
                     tgt_str = ", ".join(leap.target_extent[:2])
-                    inv_str = ", ".join(leap.shared_intent)
-                    print(f"    {idx}. [{leap.category.value}] Score: {leap.resonance_score:.2f}")
-                    print(f"       Bridge: ({src_str}) <---> ({tgt_str})")
-                    print(f"       Invariants: {inv_str}")
-            print("=" * 64 + "\n")
+                    print(f"- {src_str} with {tgt_str}: {leap.resonance_score:.2f}")
 
-        if args.output_canvas:
-            compiler.to_canvas(args.output_canvas, canvas_title="Formal Concept Lattice")
-            print(f"[DxSkills] Concept lattice .canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            compiler.to_svg(args.svg)
-            print(f"[DxSkills] Concept lattice SVG written to: {args.svg}")
+        compiler = clat.ConceptLatticeCompiler(min_resonance=args.min_resonance)
+        if args.demo and not args.input:
+            compiler.load_context(demo_context)
+            _, _, leaps, telemetry = compiler.compute_lattice()
+            _print_lattice(compiler, leaps, telemetry, "Built-in sample, not your notes. No lattice was measured.")
+        elif not args.input:
+            print("No context was given. No lattice was scored.")
+        elif not os.path.isfile(args.input):
+            print(f"File not found: {args.input}")
+            print("No lattice was scored.")
+            sys.exit(1)
+        else:
+            try:
+                with open(args.input, "r", encoding="utf-8") as handle:
+                    raw_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No lattice was scored.")
+                sys.exit(1)
+            loaded = False
+            if isinstance(raw_data, dict) and "nodes" in raw_data:
+                compiler.load_from_canvas(raw_data)
+                loaded = True
+            elif isinstance(raw_data, dict) and raw_data and all(isinstance(v, list) for v in raw_data.values()):
+                compiler.load_context(raw_data)
+                loaded = True
+            if not loaded:
+                print("The file was not an object-to-attribute map or a canvas. No lattice was scored.")
+            elif not compiler.all_objects:
+                print("The file had no objects. No lattice was scored.")
+            else:
+                _, _, leaps, telemetry = compiler.compute_lattice()
+                _print_lattice(compiler, leaps, telemetry, "")
+                print(f"Formula on {args.input}.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as a measured lattice.")
     elif args.command in ["action-sequencer", "sequencer", "dag-runner", "executive-scaffold"]:
         import scripts.action_sequencer as aseq
-
+        demo_tasks = {
+            "scope_problem": {"title": "Define Architecture Scope", "estimated_minutes": 20, "prerequisites": []},
+            "core_engine": {"title": "Implement Core DAG Parser", "estimated_minutes": 35, "prerequisites": ["scope_problem"]},
+            "stepping_stones": {"title": "Synthesize Micro-Commitment Prompter", "estimated_minutes": 25, "prerequisites": ["core_engine"]},
+            "cli_integration": {"title": "Wire CLI Subparsers & Handlers", "estimated_minutes": 15, "prerequisites": ["stepping_stones"]},
+            "svg_visualizer": {"title": "Draft SVG Critical Path Renderer", "estimated_minutes": 30, "prerequisites": ["core_engine"]},
+            "end_to_end_test": {"title": "Full System Integration Suite", "estimated_minutes": 20, "prerequisites": ["cli_integration", "svg_visualizer"]},
+        }
         sequencer = aseq.ActionSequencer(default_task_minutes=args.default_time)
-
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            if "nodes" in raw_data:
-                sequencer.load_canvas(raw_data)
-            elif isinstance(raw_data, dict):
-                sequencer.load_dict(raw_data)
-        elif args.demo or not args.canvas:
-            demo_tasks = {
-                "scope_problem": {"title": "Define Architecture Scope", "estimated_minutes": 20, "prerequisites": []},
-                "core_engine": {"title": "Implement Core DAG Parser", "estimated_minutes": 35, "prerequisites": ["scope_problem"]},
-                "stepping_stones": {"title": "Synthesize Micro-Commitment Prompter", "estimated_minutes": 25, "prerequisites": ["core_engine"]},
-                "cli_integration": {"title": "Wire CLI Subparsers & Handlers", "estimated_minutes": 15, "prerequisites": ["stepping_stones"]},
-                "svg_visualizer": {"title": "Draft SVG Critical Path Renderer", "estimated_minutes": 30, "prerequisites": ["core_engine"]},
-                "end_to_end_test": {"title": "Full System Integration Suite", "estimated_minutes": 20, "prerequisites": ["cli_integration", "svg_visualizer"]},
-            }
+        if args.demo and not args.canvas:
             sequencer.load_dict(demo_tasks)
-
-        nodes, telemetry = sequencer.sequence()
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+            _, telemetry = sequencer.sequence()
+            print("Built-in sample, not your tasks. No runway was measured.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + sequencer.render_ascii_plan(telemetry))
+        elif not args.canvas:
+            print("No tasks were given. No runway was scored.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No runway was scored.")
+            sys.exit(1)
         else:
-            print("\n" + sequencer.render_ascii_plan(telemetry))
-
-        if args.output_canvas:
-            sequencer.to_canvas(args.output_canvas, canvas_title="Executive Runway Canvas")
-            print(f"[DxSkills] Action runway .canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            sequencer.to_svg(args.svg)
-            print(f"[DxSkills] Critical path SVG written to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    raw_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No runway was scored.")
+                sys.exit(1)
+            if isinstance(raw_data, dict) and "nodes" in raw_data:
+                sequencer.load_canvas(raw_data)
+            elif isinstance(raw_data, dict) and raw_data:
+                sequencer.load_dict(raw_data)
+            else:
+                print("The file was not a task map or a canvas. No runway was scored.")
+                raw_data = None
+            if raw_data is not None and not sequencer.nodes:
+                print("The file had no tasks. No runway was scored.")
+            elif raw_data is not None and sequencer.nodes:
+                _, telemetry = sequencer.sequence()
+                if args.json:
+                    print(json.dumps({
+                        "formula": True,
+                        "measured": False,
+                        "file": args.canvas,
+                        "tasks": telemetry.total_nodes,
+                        "dependencies": telemetry.total_dependencies,
+                        "critical_path_tasks_figure": telemetry.critical_path_node_count,
+                        "critical_path_minutes_figure": telemetry.critical_path_duration_minutes,
+                        "ready_figure": telemetry.immediately_executable_count,
+                        "work_minutes_figure": telemetry.total_estimated_work_minutes,
+                    }, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: sequencer formula] ===")
+                    print(f"Formula on {telemetry.total_nodes} tasks in {args.canvas}.")
+                    print(f"Dependencies counted: {telemetry.total_dependencies}")
+                    print(f"Critical path figure: {telemetry.critical_path_duration_minutes} minutes across {telemetry.critical_path_node_count} tasks")
+                    print(f"Ready now figure: {telemetry.immediately_executable_count} | Work minutes figure: {telemetry.total_estimated_work_minutes}")
+                    print(f"The {args.default_time} minute default is a formula input used only when a task has no estimate.")
+                    print("These figures are a sum of the minutes in the file, not a measured plan. Nothing was scheduled.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as a measured plan.")
     elif args.command in ["cognitive-aperture", "aperture", "scope-bound", "cowan-lens"]:
         import scripts.cognitive_aperture as cap
-
+        demo_tasks = {
+            "task_urgent_bug": {"title": "Fix Critical Production Regression", "cognitive_weight": 8.0, "urgency_score": 0.95, "strategic_alignment": 0.3},
+            "task_auth_audit": {"title": "Resolve Token Refresh Leak", "cognitive_weight": 7.0, "urgency_score": 0.90, "strategic_alignment": 0.4},
+            "task_cli_test": {"title": "Complete Suite Unit Tests", "cognitive_weight": 6.0, "urgency_score": 0.85, "strategic_alignment": 0.5},
+            "task_deploy_run": {"title": "Staging Deployment Runway", "cognitive_weight": 5.0, "urgency_score": 0.80, "strategic_alignment": 0.5},
+            "task_refactor_css": {"title": "Refactor Titanium CSS Variables", "cognitive_weight": 4.0, "urgency_score": 0.50, "strategic_alignment": 0.4},
+            "task_doc_cleanup": {"title": "Review Backlog Markdown Archives", "cognitive_weight": 3.0, "urgency_score": 0.35, "strategic_alignment": 0.3},
+            "task_future_arch": {"title": "2030 Holographic Canvas Spec", "cognitive_weight": 9.0, "urgency_score": 0.15, "strategic_alignment": 0.95},
+            "task_infra_migration": {"title": "Multi-Region Cloud Redundancy", "cognitive_weight": 8.5, "urgency_score": 0.20, "strategic_alignment": 0.90},
+        }
         harness = cap.CognitiveApertureHarness(capacity_limit=args.capacity)
-
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            if "nodes" in raw_data:
-                harness.load_canvas(raw_data)
-            elif isinstance(raw_data, dict):
-                harness.load_dict(raw_data)
-        elif args.demo or not args.canvas:
-            demo_tasks = {
-                "task_urgent_bug": {"title": "Fix Critical Production Regression", "cognitive_weight": 8.0, "urgency_score": 0.95, "strategic_alignment": 0.3},
-                "task_auth_audit": {"title": "Resolve Token Refresh Leak", "cognitive_weight": 7.0, "urgency_score": 0.90, "strategic_alignment": 0.4},
-                "task_cli_test": {"title": "Complete Suite Unit Tests", "cognitive_weight": 6.0, "urgency_score": 0.85, "strategic_alignment": 0.5},
-                "task_deploy_run": {"title": "Staging Deployment Runway", "cognitive_weight": 5.0, "urgency_score": 0.80, "strategic_alignment": 0.5},
-                "task_refactor_css": {"title": "Refactor Titanium CSS Variables", "cognitive_weight": 4.0, "urgency_score": 0.50, "strategic_alignment": 0.4},
-                "task_doc_cleanup": {"title": "Review Backlog Markdown Archives", "cognitive_weight": 3.0, "urgency_score": 0.35, "strategic_alignment": 0.3},
-                "task_future_arch": {"title": "2030 Holographic Canvas Spec", "cognitive_weight": 9.0, "urgency_score": 0.15, "strategic_alignment": 0.95},
-                "task_infra_migration": {"title": "Multi-Region Cloud Redundancy", "cognitive_weight": 8.5, "urgency_score": 0.20, "strategic_alignment": 0.90},
-            }
+        if args.demo and not args.canvas:
             harness.load_dict(demo_tasks)
-
-        manual_pins = args.focal if args.focal else None
-        entities, telemetry = harness.calibrate_aperture(manual_focal_ids=manual_pins)
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+            _, telemetry = harness.calibrate_aperture(manual_focal_ids=args.focal or None)
+            print("Built-in sample, not your tasks. No memory was measured.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + harness.render_ascii_lens(telemetry))
+        elif not args.canvas:
+            print("No tasks were given. No aperture was scored.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No aperture was scored.")
+            sys.exit(1)
         else:
-            print("\n" + harness.render_ascii_lens(telemetry))
-
-        if args.output_canvas:
-            harness.to_canvas(args.output_canvas, canvas_title="Cognitive Aperture Runway")
-            print(f"[DxSkills] Aperture canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            harness.to_svg(args.svg)
-            print(f"[DxSkills] Cognitive aperture SVG written to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    raw_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No aperture was scored.")
+                sys.exit(1)
+            loaded = False
+            if isinstance(raw_data, dict) and "nodes" in raw_data:
+                harness.load_canvas(raw_data)
+                loaded = True
+            elif isinstance(raw_data, dict) and raw_data:
+                harness.load_dict(raw_data)
+                loaded = True
+            if not loaded:
+                print("The file was not a task map or a canvas. No aperture was scored.")
+            elif not harness.entities:
+                print("The file had no tasks. No aperture was scored.")
+            else:
+                _, telemetry = harness.calibrate_aperture(manual_focal_ids=args.focal or None)
+                if args.json:
+                    print(json.dumps({
+                        "formula": True,
+                        "measured": False,
+                        "file": args.canvas,
+                        "tasks": telemetry.total_entities,
+                        "capacity_input": telemetry.capacity_limit,
+                        "focal_figure": telemetry.focal_count,
+                        "peripheral_figure": telemetry.peripheral_count,
+                        "horizon_figure": telemetry.horizon_count,
+                        "strain_figure": telemetry.working_memory_strain_index,
+                        "drift_figure": telemetry.scope_drift_index,
+                        "efficiency_figure_pct": telemetry.aperture_focus_efficiency_pct,
+                    }, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: aperture formula] ===")
+                    print(f"Formula on {telemetry.total_entities} tasks in {args.canvas}. Capacity input: {telemetry.capacity_limit}.")
+                    print(f"Focal figure: {telemetry.focal_count} | Peripheral figure: {telemetry.peripheral_count} | Horizon figure: {telemetry.horizon_count}")
+                    print(f"Strain figure: {telemetry.working_memory_strain_index:.2f} | Drift figure: {telemetry.scope_drift_index:.2f} | Efficiency figure: {telemetry.aperture_focus_efficiency_pct:.1f}%")
+                    needs_fill = False
+                    if isinstance(raw_data, dict) and "nodes" not in raw_data:
+                        for info in raw_data.values():
+                            if not isinstance(info, dict) or any(key not in info for key in ("cognitive_weight", "urgency_score", "strategic_alignment")):
+                                needs_fill = True
+                                break
+                    if needs_fill:
+                        print("Missing weight, urgency, or alignment is filled with 5, 0.5, and 0.5. That fill is not a measurement.")
+                    print("These figures are a formula on the numbers in the file, not a measurement of memory.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as measured memory.")
     elif args.command in ["dialectic-synthesizer", "triad", "dialectic-mesh", "aufhebung"]:
         import scripts.dialectic_synthesizer as dsynt
 
@@ -3931,44 +4740,77 @@ def main():
             print(f"[DxSkills] Dialectic synthesis SVG written to: {args.svg}")
     elif args.command in ["density-calibrator", "density", "whitespace-balancer", "bouma-lens"]:
         import scripts.density_calibrator as dcal
-
+        demo_nodes = {
+            "n_auth": {"title": "Core Auth", "x": 300, "y": 250, "width": 240, "height": 130, "text": "OAuth2 JWT verification and identity token issuer."},
+            "n_vault": {"title": "Token Vault", "x": 360, "y": 290, "width": 240, "height": 130, "text": "High entropy cryptographic key vault and rotating secret credentials."},
+            "n_session": {"title": "Session Cache", "x": 330, "y": 350, "width": 240, "height": 130, "text": "Redis-backed distributed session cache and rate limiting counter."},
+            "n_audit": {"title": "Audit Logger", "x": 400, "y": 320, "width": 240, "height": 130, "text": "Immutable security compliance audit event log stream."},
+            "n_gateway": {"title": "API Gateway", "x": 950, "y": 300, "width": 260, "height": 140, "text": "Edge TLS termination, reverse proxy, and global ingress routing."},
+            "n_billing": {"title": "Stripe Billing", "x": 1000, "y": 800, "width": 260, "height": 140, "text": "Subscription billing, webhook processing, and invoice generation."},
+        }
         calibrator = dcal.AttentionDensityCalibrator(
             foveal_sigma=args.foveal_sigma,
             bouma_factor=args.bouma_factor,
         )
-
-        if args.canvas and os.path.isfile(args.canvas):
-            with open(args.canvas, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            if "nodes" in raw_data:
-                calibrator.load_canvas(raw_data)
-            elif isinstance(raw_data, dict):
-                calibrator.load_dict(raw_data)
-        elif args.demo or not args.canvas:
-            demo_nodes = {
-                "n_auth": {"title": "Core Auth", "x": 300, "y": 250, "width": 240, "height": 130, "text": "OAuth2 JWT verification and identity token issuer."},
-                "n_vault": {"title": "Token Vault", "x": 360, "y": 290, "width": 240, "height": 130, "text": "High entropy cryptographic key vault and rotating secret credentials."},
-                "n_session": {"title": "Session Cache", "x": 330, "y": 350, "width": 240, "height": 130, "text": "Redis-backed distributed session cache and rate limiting counter."},
-                "n_audit": {"title": "Audit Logger", "x": 400, "y": 320, "width": 240, "height": 130, "text": "Immutable security compliance audit event log stream."},
-                "n_gateway": {"title": "API Gateway", "x": 950, "y": 300, "width": 260, "height": 140, "text": "Edge TLS termination, reverse proxy, and global ingress routing."},
-                "n_billing": {"title": "Stripe Billing", "x": 1000, "y": 800, "width": 260, "height": 140, "text": "Subscription billing, webhook processing, and invoice generation."},
-            }
+        if args.demo and not args.canvas:
             calibrator.load_dict(demo_nodes)
-
-        nodes, hotspots, telemetry = calibrator.calibrate()
-
-        if args.json:
-            print(json.dumps(telemetry.to_dict(), indent=2))
+            _, _, telemetry = calibrator.calibrate()
+            print("Built-in sample, not your canvas. No eyes were tracked.")
+            if args.json:
+                print(json.dumps(telemetry.to_dict(), indent=2))
+            else:
+                print("\n" + calibrator.render_ascii_report(telemetry))
+        elif not args.canvas:
+            print("No canvas was given. No density was scored.")
+        elif not os.path.isfile(args.canvas):
+            print(f"File not found: {args.canvas}")
+            print("No density was scored.")
+            sys.exit(1)
         else:
-            print("\n" + calibrator.render_ascii_report(telemetry))
-
-        if args.output_canvas:
-            calibrator.to_canvas(args.output_canvas, canvas_title="Calibrated Whitespace Canvas")
-            print(f"[DxSkills] Rebalanced whitespace canvas written to: {args.output_canvas}")
-
-        if args.svg:
-            calibrator.to_svg(args.svg)
-            print(f"[DxSkills] Attention density SVG written to: {args.svg}")
+            try:
+                with open(args.canvas, "r", encoding="utf-8") as handle:
+                    raw_data = json.load(handle)
+            except json.JSONDecodeError:
+                print("The file was not JSON. No density was scored.")
+                sys.exit(1)
+            loaded = False
+            if isinstance(raw_data, dict) and "nodes" in raw_data:
+                calibrator.load_canvas(raw_data)
+                loaded = True
+            elif isinstance(raw_data, dict) and raw_data:
+                calibrator.load_dict(raw_data)
+                loaded = True
+            if not loaded:
+                print("The file was not a node map or a canvas. No density was scored.")
+            elif not calibrator.nodes:
+                print("The file had no nodes. No density was scored.")
+            else:
+                _, _, telemetry = calibrator.calibrate()
+                if args.json:
+                    print(json.dumps({
+                        "formula": True,
+                        "measured": False,
+                        "file": args.canvas,
+                        "nodes": telemetry.total_nodes,
+                        "hotspots_figure": telemetry.hotspots_count,
+                        "initial_density_figure": telemetry.initial_mean_density,
+                        "rebalanced_density_figure": telemetry.rebalanced_mean_density,
+                        "reduction_figure_pct": telemetry.density_reduction_pct,
+                        "fatigue_figure": telemetry.ocular_fatigue_mitigation_score,
+                        "sigma_input": args.foveal_sigma,
+                        "bouma_input": args.bouma_factor,
+                    }, indent=2))
+                else:
+                    print("")
+                    print("=== [DxSkills: density formula] ===")
+                    print(f"Formula on {telemetry.total_nodes} nodes in {args.canvas}.")
+                    print(f"Hotspots figure: {telemetry.hotspots_count} | Crowded nodes figure: {telemetry.crowded_nodes_count}")
+                    print(f"Initial density figure: {telemetry.initial_mean_density:.2f} | Rebalanced figure: {telemetry.rebalanced_mean_density:.2f}")
+                    print(f"Reduction figure: {telemetry.density_reduction_pct:.1f}% | Fatigue figure: {telemetry.ocular_fatigue_mitigation_score:.2f}")
+                    print(f"The {args.foveal_sigma} sigma and {args.bouma_factor} Bouma factor are formula inputs, not a measurement.")
+                    print("These figures are a formula on node positions in the file, not a measurement of your eyes. Nothing was moved.")
+        if args.output_canvas or args.svg:
+            print("No canvas or svg was written. Those files used to present the result as measured vision.")
     elif args.command in ["code-symbol-mesh", "code-mesh", "ast-mesh", "symbol-mesh", "interface-mapper"]:
         import scripts.code_symbol_mesh as csm
 
@@ -4440,19 +5282,12 @@ def main():
     elif args.command in ["fatigue-meter", "saccadic-fatigue", "contrast-damper", "ocular-fatigue"]:
         import scripts.saccadic_fatigue_meter as sfatigue
 
-        meter = sfatigue.SaccadicFatigueMeter(
-            baseline_velocity_deg_s=args.baseline,
-            max_session_minutes=args.session_max,
-        )
-
         samples_input = []
-        if args.input and os.path.isfile(args.input):
-            with open(args.input, "r", encoding="utf-8") as f:
-                raw_data = json.load(f)
-            samples_input = raw_data if isinstance(raw_data, list) else raw_data.get("samples", [])
-        elif args.demo or not args.input:
+        source = ""
+        if args.demo:
+            source = "sample"
             for i in range(20):
-                t_ms = i * 105000.0  # ~35 mins
+                t_ms = i * 105000.0
                 vel = 440.0 - (i * 6.5)
                 blink = 5.0 if i < 10 else 1.8
                 samples_input.append({
@@ -4464,22 +5299,44 @@ def main():
                     "blink_interval_sec": blink,
                     "target_card_id": f"card_{(i % 4) + 1}",
                 })
+        elif args.input and os.path.isfile(args.input):
+            source = "file"
+            with open(args.input, "r", encoding="utf-8") as handle:
+                raw_data = json.load(handle)
+            samples_input = raw_data if isinstance(raw_data, list) else raw_data.get("samples", [])
+        elif args.input:
+            print(f"File not found: {args.input}")
+            print("No eyes were tracked.")
+            sys.exit(1)
+        else:
+            print("No gaze samples were given. No eyes were tracked.")
+            print("Pass a JSON file of samples, or --demo for a built-in sample.")
+            sys.exit(0)
 
+        meter = sfatigue.SaccadicFatigueMeter(
+            baseline_velocity_deg_s=args.baseline,
+            max_session_minutes=args.session_max,
+        )
         result = meter.evaluate_gaze_samples(samples_input)
-
+        if source == "sample":
+            print("Built-in sample of 20 made-up gaze points. Not your eyes.")
+        else:
+            print(f"Formula on the samples in {args.input}. Not a measurement of your eyes.")
+            print(f"The formula used baseline {args.baseline} deg/s and session max {args.session_max} minutes. Those are inputs, not measured values.")
         if args.json:
             print(json.dumps(result.to_dict(), indent=2))
         else:
             print("\n" + meter.generate_ascii_report(result))
-
-        if args.css:
-            with open(args.css, "w", encoding="utf-8") as f:
-                f.write(result.restorative_css_tokens)
-            print(f"[DxSkills] Restorative CSS tokens written to: {args.css}")
-
-        if args.svg:
-            meter.export_svg(result, args.svg)
-            print(f"[DxSkills] Saccadic fatigue SVG diagram written to: {args.svg}")
+        if source == "sample" and (args.css or args.svg):
+            print("No css or svg was written. Those files used to present the sample as measured gaze.")
+        else:
+            if args.css:
+                with open(args.css, "w", encoding="utf-8") as handle:
+                    handle.write(result.restorative_css_tokens)
+                print(f"Wrote formula CSS to {args.css}. Not measured eyes.")
+            if args.svg:
+                meter.export_svg(result, args.svg)
+                print(f"Wrote formula SVG to {args.svg}. Not measured eyes.")
     elif args.command in ["stress-tester", "lexical-stress", "syntax-friction", "stepping-stones"]:
         import scripts.lexical_stress_tester as lst_mod
 

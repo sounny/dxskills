@@ -309,13 +309,11 @@ def main():
         if not sys.stdin.isatty():
             content = sys.stdin.read()
         else:
-            content = (
-                "# Spatial Memory Architecture\n"
-                "- Linear text creates phonological loop bottleneck.\n"
-                "- Method-of-loci memory palaces activate hippocampal spatial navigation.\n"
-                "- Binaural acoustic orientation reinforces episodic memory recall.\n"
-                "- Structured chambers allow non-linear review without cognitive exhaustion."
-            )
+            content = ""
+
+    if not content.strip():
+        print("No notes were given. No chambers were built.")
+        return
 
     palace, canvas_data, svg_code = run_mind_palace(
         content,

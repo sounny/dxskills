@@ -105,11 +105,16 @@ class MetacognitionAuditor:
         if not recommendations:
             recommendations.append("Document displays exceptional spatial-first architecture and low phonological friction.")
 
+        connectivity_raw = (wikilinks * 12.0) + (headers * 6.0) + (table_rows * 4.0)
         return {
             "title": doc_title,
             "word_count": word_count,
             "sentence_count": sentence_count,
             "paragraph_count": paragraph_count,
+            "formula_inputs": {
+                "spatial_anchors": spatial_anchors,
+                "connectivity_raw": connectivity_raw,
+            },
             "metrics": {
                 "cognitive_leverage_score": cognitive_leverage_score,
                 "phonological_friction": round(phonological_friction, 1),
@@ -134,6 +139,10 @@ class MetacognitionAuditor:
             "word_count": 0,
             "sentence_count": 0,
             "paragraph_count": 0,
+            "formula_inputs": {
+                "spatial_anchors": 0,
+                "connectivity_raw": 0.0,
+            },
             "metrics": {
                 "cognitive_leverage_score": 0.0,
                 "phonological_friction": 0.0,
@@ -165,9 +174,6 @@ class MetacognitionExporter:
         recs = audit_data.get("recommendations", [])
         title = audit_data.get("title", "Cognitive Audit")
 
-        score = m.get("cognitive_leverage_score", 0.0)
-        header_color = "4" if score >= 75.0 else ("3" if score >= 50.0 else "1")
-
         # 1. Central Executive Node
         root_id = "node-audit-root"
         nodes.append({
@@ -175,15 +181,16 @@ class MetacognitionExporter:
             "type": "text",
             "text": (
                 f"## {title}\n"
-                f"**Cognitive Leverage Score:** `{score}/100`\n"
-                f"Working Memory Tax: `{m.get('working_memory_tax', 0)}%`\n"
-                f"Words: **{audit_data.get('word_count', 0)}** | Sentences: **{audit_data.get('sentence_count', 0)}**"
+                f"**Cognitive Leverage Score:** not measured\n"
+                f"Working Memory Tax: `{m.get('working_memory_tax', 0)}` "
+                f"(formula on sentence length and anchor counts, not a measured score)\n"
+                f"Words: **{audit_data.get('word_count', 0)}**"
             ),
             "x": 0,
             "y": -220,
             "width": 380,
-            "height": 160,
-            "color": header_color
+            "height": 180,
+            "color": "5"
         })
 
         # 2. Phonological Friction Node
@@ -193,14 +200,14 @@ class MetacognitionExporter:
             "type": "text",
             "text": (
                 f"### Phonological Loop Friction\n"
-                f"**Index:** `{m.get('phonological_friction', 0)}/100`\n\n"
-                f"> Measures phonological decoding resistance, syllable density, and sentence run-on."
+                f"**Index:** `{m.get('phonological_friction', 0)}` "
+                f"(formula on word count and sentence length, not a measured score)"
             ),
             "x": -420,
             "y": 40,
             "width": 320,
             "height": 180,
-            "color": "1" if m.get("phonological_friction", 0) > 50 else "4"
+            "color": "5"
         })
         edges.append({
             "id": "edge-phono",
@@ -208,7 +215,7 @@ class MetacognitionExporter:
             "fromSide": "left",
             "toNode": phono_id,
             "toSide": "top",
-            "label": f"Friction: {m.get('phonological_friction', 0)}"
+            "label": f"Sentence-length formula: {m.get('phonological_friction', 0)}"
         })
 
         # 3. Spatial Leverage Node
@@ -218,7 +225,7 @@ class MetacognitionExporter:
             "type": "text",
             "text": (
                 f"### Spatial Leverage Ratio\n"
-                f"**Index:** `{m.get('spatial_leverage', 0)}/100`\n\n"
+                f"**Index:** {('not measured' if not audit_data.get('formula_inputs', {}).get('spatial_anchors') else str(m.get('spatial_leverage', 0)) + ' (anchor count per sentence, not a measured score)')}\n\n"
                 f"- Bullet Anchors: **{sf.get('bullet_points', 0)}**\n"
                 f"- Section Headers: **{sf.get('headers', 0)}**\n"
                 f"- Relational Tables: **{sf.get('table_rows', 0)}**\n"
@@ -228,7 +235,7 @@ class MetacognitionExporter:
             "y": 40,
             "width": 320,
             "height": 180,
-            "color": "4" if m.get("spatial_leverage", 0) >= 50 else "1"
+            "color": "5"
         })
         edges.append({
             "id": "edge-spatial",
@@ -236,11 +243,15 @@ class MetacognitionExporter:
             "fromSide": "right",
             "toNode": spatial_id,
             "toSide": "top",
-            "label": f"Spatial: {m.get('spatial_leverage', 0)}"
+            "label": (
+                "not measured"
+                if not audit_data.get("formula_inputs", {}).get("spatial_anchors")
+                else f"Anchor formula: {m.get('spatial_leverage', 0)}"
+            )
         })
 
         # 4. Actionable Refactoring Plan
-        rec_text = "### Strategic Refactoring Recommendations\n\n" + "\n".join(f"- {r}" for r in recs)
+        rec_text = "### Strategic Refactoring Recommendations\n\nGeneral suggestions, not findings about this note:\n" + "\n".join(f"- {r}" for r in recs)
         recs_id = "node-recommendations"
         nodes.append({
             "id": recs_id,
@@ -258,7 +269,7 @@ class MetacognitionExporter:
             "fromSide": "bottom",
             "toNode": recs_id,
             "toSide": "top",
-            "label": "Synthesis Remediation"
+            "label": "General suggestions"
         })
 
         return {"nodes": nodes, "edges": edges}
@@ -269,7 +280,8 @@ class MetacognitionExporter:
         height = 360
         m = audit_data.get("metrics", {})
         title = audit_data.get("title", "Cognitive Audit")
-        score = m.get("cognitive_leverage_score", 0.0)
+        anchors = audit_data.get("formula_inputs", {}).get("spatial_anchors", 0)
+        neutral = "#a1a1aa"
 
         svg = []
         svg.append(f'<svg width="100%" height="auto" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">')
@@ -277,14 +289,14 @@ class MetacognitionExporter:
 
         # Header Title
         svg.append(f'<text x="28" y="38" fill="#fafafa" font-size="18" font-weight="bold" font-family="sans-serif">{title}</text>')
-        svg.append(f'<text x="28" y="60" fill="#a1a1aa" font-size="12" font-family="sans-serif">Flavell-Sweller Metacognitive Synthesis Audit | Zero Em Dash Policy Active</text>')
+        svg.append('<text x="28" y="60" fill="#a1a1aa" font-size="12" font-family="sans-serif">Sentence-length formula only. Not a measured cognitive score.</text>')
 
         # Metric Tiles (3 across)
-        score_col = "#10b981" if score >= 75.0 else ("#f59e0b" if score >= 50.0 else "#ef4444")
+        spatial_value = "not measured" if not anchors else f"{m.get('spatial_leverage', 0)} formula"
         tiles = [
-            ("Cognitive Leverage", f"{score}/100", score_col),
-            ("Phonological Friction", f"{m.get('phonological_friction', 0)}%", "#ef4444" if m.get('phonological_friction', 0) > 50 else "#10b981"),
-            ("Spatial Leverage", f"{m.get('spatial_leverage', 0)}%", "#10b981" if m.get('spatial_leverage', 0) >= 50 else "#f59e0b")
+            ("Cognitive Leverage", "not measured", neutral),
+            ("Phonological Friction", f"{m.get('phonological_friction', 0)} formula", neutral),
+            ("Spatial Leverage", spatial_value, neutral)
         ]
 
         tile_w = 195
@@ -305,17 +317,16 @@ class MetacognitionExporter:
         gauge_y = 190
         gauge_w = 624
         tax = m.get("working_memory_tax", 0.0)
-        fill_tax = max(10, int(gauge_w * (tax / 100.0)))
-        tax_col = "#ef4444" if tax > 60 else ("#f59e0b" if tax > 35 else "#10b981")
+        fill_tax = max(10, int(gauge_w * (float(tax) / 100.0))) if tax else 10
 
-        svg.append(f'<text x="28" y="{gauge_y - 8}" fill="#a1a1aa" font-size="11" font-family="sans-serif">Working Memory Stamina Tax ({tax}%)</text>')
+        svg.append(f'<text x="28" y="{gauge_y - 8}" fill="#a1a1aa" font-size="11" font-family="sans-serif">Working Memory Stamina Tax ({tax} formula, not a measured score)</text>')
         svg.append(f'<rect x="28" y="{gauge_y}" width="{gauge_w}" height="14" rx="7" fill="#27272a"/>')
-        svg.append(f'<rect x="28" y="{gauge_y}" width="{fill_tax}" height="14" rx="7" fill="{tax_col}"/>')
+        svg.append(f'<rect x="28" y="{gauge_y}" width="{fill_tax}" height="14" rx="7" fill="#52525b"/>')
 
         # Strategic Recommendation Box
         box_y = 230
         svg.append(f'<rect x="28" y="{box_y}" width="624" height="85" rx="8" fill="#18181b" stroke="#27272a" stroke-width="1"/>')
-        svg.append(f'<text x="44" y="{box_y + 24}" fill="#38bdf8" font-size="12" font-weight="bold" font-family="sans-serif">Primary Refactoring Directive</text>')
+        svg.append(f'<text x="44" y="{box_y + 24}" fill="#38bdf8" font-size="12" font-weight="bold" font-family="sans-serif">General suggestion, not a finding about this note</text>')
 
         recs = audit_data.get("recommendations", ["Optimal spatial balance."])
         rec_snippet = re.sub(r"[<>&]", "", recs[0])[:75] + ("..." if len(recs[0]) > 75 else "")
@@ -352,6 +363,98 @@ def run_audit(
     return audit_data, canvas_data, svg_code
 
 
+def _no_note_message():
+    return "No note was given.\nNo score was printed."
+
+
+def honest_audit_payload(text: str, title: Optional[str] = None) -> Dict[str, Any]:
+    """Counts and formulas only. No composite score."""
+    clean = (text or "").strip()
+    if not clean:
+        return {
+            "note_given": False,
+            "metacognitive_score": "not measured",
+            "message": "No note was given.",
+        }
+    data = MetacognitionAuditor.audit_text(clean, title=title)
+    metrics = data["metrics"]
+    inputs = data.get("formula_inputs", {})
+    anchors = inputs.get("spatial_anchors", 0)
+    connectivity_raw = inputs.get("connectivity_raw", 0.0)
+    spatial = (
+        "not measured"
+        if not anchors
+        else {
+            "value": metrics["spatial_leverage"],
+            "label": "anchor count per sentence, not a measured score",
+        }
+    )
+    connectivity = (
+        "not measured"
+        if not connectivity_raw
+        else {
+            "value": metrics["connectivity_score"],
+            "label": "wikilink, header, and table-row formula, not a measured score",
+        }
+    )
+    return {
+        "note_given": True,
+        "words": data["word_count"],
+        "metacognitive_score": "not measured",
+        "phonological_friction": {
+            "value": metrics["phonological_friction"],
+            "label": "formula on word count and sentence length, not a measured score",
+        },
+        "spatial_leverage": spatial,
+        "working_memory_tax": {
+            "value": metrics["working_memory_tax"],
+            "label": "formula on the sentence-length formula and anchor counts, not a measured score",
+        },
+        "connectivity": connectivity,
+        "primary_directives": {
+            "label": "General suggestions, not findings about this note",
+            "items": data["recommendations"],
+        },
+    }
+
+
+def format_terminal_audit(text: str) -> str:
+    """Terminal report. Formula numbers stay. Constants say not measured."""
+    clean = (text or "").strip()
+    if not clean:
+        return _no_note_message()
+    payload = honest_audit_payload(clean)
+    phono = payload["phonological_friction"]
+    tax = payload["working_memory_tax"]
+    spatial = payload["spatial_leverage"]
+    connectivity = payload["connectivity"]
+    spatial_line = (
+        "Spatial Leverage: not measured"
+        if spatial == "not measured"
+        else "Spatial Leverage: %s (%s)" % (spatial["value"], spatial["label"])
+    )
+    connectivity_line = (
+        "Connectivity: not measured"
+        if connectivity == "not measured"
+        else "Connectivity: %s (%s)" % (connectivity["value"], connectivity["label"])
+    )
+    lines = [
+        "=== [DxSkills: Metacognitive Synthesis Audit] ===",
+        "No metacognitive score was measured.",
+        "Words: %s" % payload["words"],
+        "Phonological Friction: %s (%s)" % (phono["value"], phono["label"]),
+        spatial_line,
+        "Working Memory Tax: %s (%s)" % (tax["value"], tax["label"]),
+        connectivity_line,
+        "",
+        "Primary Directives:",
+        "General suggestions, not findings about this note:",
+    ]
+    for item in payload["primary_directives"]["items"]:
+        lines.append("  - %s" % item)
+    return "\n".join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(description="DxSkills Autonomous Cognitive Metacognition & Synthesis Audit")
     parser.add_argument("input", nargs="?", help="Input text, file path, or markdown note to audit")
@@ -369,24 +472,14 @@ def main():
                 content = f.read()
         else:
             content = args.input
-    else:
-        if not sys.stdin.isatty():
-            content = sys.stdin.read()
-        else:
-            content = (
-                "# Executive Architecture Proposal\n"
-                "> **BLUF:** Decouple phonological working memory from spatial reasoning models.\n\n"
-                "## Core Pillars\n"
-                "- 1. High-contrast spatial canvas topology.\n"
-                "- 2. Automated cross-vault synchronization without manual ID linking.\n"
-                "- 3. Lossless multi-modal audio-spatial flashcards.\n\n"
-                "| Milestone | Target Horizon | Status |\n"
-                "| :--- | :--- | :--- |\n"
-                "| Phase 48 | Q3 2026 | Active Deployment |\n"
-                "| Phase 49 | Q4 2026 | Backlog Scoping |\n"
-            )
+    elif not sys.stdin.isatty():
+        content = sys.stdin.read()
 
-    audit_data, canvas_data, svg_code = run_audit(
+    if not content.strip():
+        print(_no_note_message())
+        return
+
+    run_audit(
         content,
         title=args.title,
         output_canvas=args.canvas,
@@ -394,17 +487,11 @@ def main():
     )
 
     if args.json:
-        print(json.dumps(audit_data, indent=2))
-    elif not (args.canvas or args.svg):
-        m = audit_data["metrics"]
-        print(f"\n=== [DxSkills: Metacognitive Synthesis Audit ({m['cognitive_leverage_score']}/100)] ===")
-        print(f"Phonological Friction: {m['phonological_friction']}% | Spatial Leverage: {m['spatial_leverage']}%")
-        print(f"Working Memory Tax: {m['working_memory_tax']}% | Connectivity: {m['connectivity_score']}%")
-        print("\nPrimary Directives:")
-        for r in audit_data["recommendations"]:
-            print(f"  - {r}")
+        print(json.dumps(honest_audit_payload(content, title=args.title), indent=2))
     else:
-        print(f"[DxSkills] Completed audit (Cognitive Leverage: {audit_data['metrics']['cognitive_leverage_score']}/100).")
+        print(format_terminal_audit(content))
+    if args.canvas or args.svg:
+        print("[DxSkills] Completed audit. No metacognitive score was measured.")
         if args.canvas:
             print(f"  - Scorecard Canvas: {args.canvas}")
         if args.svg:
